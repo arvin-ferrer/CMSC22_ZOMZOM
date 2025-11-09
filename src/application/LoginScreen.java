@@ -1,10 +1,7 @@
 package application;
+ 
+import java.util.ArrayList; 
 
-import java.nio.file.Path;
-import java.nio.file.Paths; // Make sure this is imported if using savePath directly
-import java.util.ArrayList; // Make sure this is imported for saving
-
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene; // Import Scene
@@ -15,11 +12,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.stage.Stage; 
 
 public class LoginScreen {
 	

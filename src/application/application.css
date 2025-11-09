@@ -1,3 +1,4 @@
+/* --- LOGIN SCREEN STYLES --- */
 
 #login-background-panel {
     -fx-background-image: url("background.jpg");
@@ -7,35 +8,34 @@
 
 #login-grid {
     -fx-background-color: rgba(0, 0, 0, 0.7); 
-    
     -fx-background-radius: 10; 
-    
     -fx-border-color: rgba(255, 255, 255, 0.2);
     -fx-border-width: 1;
     -fx-border-radius: 10;
-    
     -fx-padding: 25;
     -fx-max-height: 300px;
     -fx-max-width: 500px; 
 }
+
 .label {
     -fx-font-family: "Zombies Brainless";
     -fx-text-fill: #CCCCCC; 
     -fx-font-size: 16px; 
 }
+
 #welcome-text {
     -fx-font-family: "Zombies Brainless"; 
-    
     -fx-fill: #E8E8E8; 
     -fx-font-size: 28px; 
 }
+
 #root-title{
     -fx-font-family: "Zombies Brainless"; 
     -fx-fill: #E8E8E8; 
     -fx-font-size: 72px; 
-    
     -fx-effect: dropshadow(gaussian, rgba(200, 0, 0, 0.7), 5, 0, 0, 2);
 }
+
 #root-subtitle{
 	-fx-font-family: "Zombies Brainless"; 
     -fx-fill: #CCCCCC; 
@@ -51,21 +51,24 @@
     -fx-prompt-text-fill: #AAAAAA; 
 }
 
-.button {
-    -fx-background-color: rgba(40, 40, 40, 0.8);
-    -fx-text-fill: #E8E8E8;
-    -fx-font-weight: bold;
-    -fx-border-color: #888888;
-    -fx-border-width: 1;
-}
-
+/* * --- FIX 1 ---
+ * Merged the two .button rules. 
+ * This style now applies to your LOGIN screen buttons.
+ */
 .button {
     -fx-font-family: "Zombies Brainless";
     -fx-background-color: rgba(40, 40, 40, 0.8);
     -fx-text-fill: #E8E8E8;
     -fx-font-size: 14px; 
+    -fx-font-weight: bold; /* This was being lost, now it's included */
     -fx-border-color: #888888;
     -fx-border-width: 1;
+}
+
+/* Added a hover for the general login buttons */
+.button:hover {
+    -fx-background-color: rgba(80, 80, 80, 0.9);
+    -fx-border-color: #FFFFFF;
 }
 
 #action-target {
@@ -74,3 +77,89 @@
     -fx-font-weight: bold;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 5, 0, 0, 1);
 }
+/* --- DASHBOARD SCREEN STYLES --- */
+
+#dashboard-background-panel {
+    -fx-background-image: url("dashboardBackground.jpg");
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-font-size: 16px; 
+}
+
+/* * This styles the VBox menu on the left.
+ * We add padding to give it space.
+ */
+#dashboard-vbox {
+    -fx-max-width: 300px; 
+    -fx-padding: 0 0 0 50px; /* Add 50px padding to the left */
+}
+
+/* * This styles the GridPane at the top.
+ * We'll give it a semi-transparent panel background.
+ */
+#dashboard-top-bar {
+    -fx-background-color: rgba(0, 0, 0, 0.6);
+    -fx-padding: 10px 30px; /* 10px top/bottom, 30px left/right */
+    -fx-background-radius: 0 0 10px 10px; /* Rounded bottom corners */
+    -fx-max-height: 80px;
+}
+
+/* This styles your "ZOMZOM" title */
+#dashboard-title-text {
+    -fx-font-family: "Zombies Brainless"; 
+    -fx-fill: #E8E8E8; 
+    -fx-font-size: 3.0em; /* 48px */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 5, 0, 0, 2);
+}
+
+/* This styles the "SURVIVOR: BRO" text */
+#player-info-label {
+    -fx-font-family: "Zombies Brainless";
+    -fx-text-fill: #CCCCCC; /* A slightly dimmer white */
+    -fx-font-size: 1.5em; /* 24px */
+}
+
+/* Style for the dashboard buttons */
+.dashboard-button{
+    -fx-font-family: "Zombies Brainless";
+    -fx-background-color: rgba(40, 40, 40, 0.8);
+    -fx-text-fill: #E8E8E8;
+    -fx-font-size: 1.25em;  /* 20px */
+    -fx-border-color: #888888;
+    -fx-border-width: 1;
+    -fx-pref-width: 250px; 
+    -fx-background-radius: 0; /* Makes them sharp rectangles */
+}
+
+.dashboard-button:hover {
+    -fx-background-color: rgba(80, 80, 80, 0.9);
+    -fx-border-color: #FFFFFF;
+}
+
+/* ... after #player-info-label ... */
+
+/* This styles the "SURVIVOR: BRO" text */
+#player-info-label {
+    -fx-font-family: "Zombies Brainless";
+    -fx-text-fill: #CCCCCC; /* A slightly dimmer white */
+    -fx-font-size: 1.5em; /* 24px */
+}
+
+/* --- ADD THIS NEW STYLE --- */
+/* This styles the new Level, XP, and Coins labels */
+.stat-label {
+    -fx-font-family: "Zombies Brainless";
+    -fx-text-fill: #CCCCCC;
+    -fx-font-size: 1.5em; /* 24px */
+}
+/* ... after #player-info-label style ... */
+
+/* --- ADD THIS NEW STYLE --- */
+/* This styles the "MAIN MENU" title above the buttons */
+#dashboard-menu-title {
+    -fx-font-family: "Zombies Brainless";
+    -fx-fill: #E8E8E8; 
+    -fx-font-size: 2.0em; /* 32px */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 5, 0, 0, 2);
+}
+
