@@ -18,8 +18,8 @@ public class Player implements Serializable {
         
         this.level = 1;
         this.experiencePoints = 0;
-        this.currency = 50; // Example starting currency
-        this.experienceToNextLevel = 100; // Example XP needed for level 2
+        this.currency = 50; // starting currency
+        this.experienceToNextLevel = 100; // XP needed for level 2
 
     }
 
@@ -82,8 +82,8 @@ public class Player implements Serializable {
         this.currency = currency;
     }
     
-    // public Inventory getInventory() {
-    //     return inventory;
-    // }
+//     public Inventory getInventory() {
+//         return inventory;
+//     }
 
 }
