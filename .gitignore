@@ -1,1 +1,36 @@
+# Java
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Virtual machine crash logs
+hs_err_pid*
+
+# Eclipse
+# Compiled output folder
 /bin/
+
+# Eclipse project-specific settings (local)
+.settings/
+
+# Eclipse workspace metadata
+.metadata
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# OS-Specific
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
