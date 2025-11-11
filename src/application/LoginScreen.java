@@ -1,10 +1,9 @@
 package application;
  
 import java.util.ArrayList; 
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene; // Import Scene
+import javafx.scene.Scene; 
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -12,9 +11,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.application.Platform;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.scene.control.Slider;
+import javafx.scene.layout.BorderPane; 
+
 
 public class LoginScreen {
 	
@@ -30,8 +36,7 @@ public class LoginScreen {
         GridPane loginGrid = new GridPane();
         loginGrid.setAlignment(Pos.CENTER);
         loginGrid.setHgap(10);
-        loginGrid.setVgap(10);
-        
+        loginGrid.setVgap(10); 
       //grid id for CSS styling
         loginGrid.setId("login-grid"); 
 
@@ -126,7 +131,19 @@ public class LoginScreen {
         StackPane.setAlignment(rootSubtitle, Pos.TOP_CENTER);
         StackPane.setMargin(rootTitle, new Insets(50, 0, 0, 0)); 
         StackPane.setMargin(rootSubtitle, new Insets(115, 0, 0, 0));
-        rootPane.getChildren().addAll(loginGrid, rootTitle, rootSubtitle); 
+        Button quitButton = new Button("QUIT");
+        quitButton.setId("quit-button"); // For CSS
+        quitButton.setOnAction(e -> Platform.exit()); // closes the app
+        
+        StackPane.setAlignment(quitButton, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(quitButton, new Insets(0, 20, 20, 0)); // 20px margin
+
+        Button settingsButton = new Button("SETTINGS");
+        settingsButton.setId("settings-button"); 
+        settingsButton.setOnAction(e -> showSettingsPopup()); 
+        StackPane.setAlignment(settingsButton, Pos.BOTTOM_LEFT);
+        StackPane.setMargin(settingsButton, new Insets(0, 0, 20, 20)); // 20px margin
+        rootPane.getChildren().addAll(loginGrid, rootTitle, rootSubtitle, settingsButton, quitButton); 
         Scene scene = new Scene(rootPane, 800, 600); 
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         
@@ -134,5 +151,54 @@ public class LoginScreen {
         mainApp.getPrimaryStage().setTitle("ZOMZOM - Login");
         mainApp.getPrimaryStage().show();
     	
+    }
+    private void showSettingsPopup() {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL); // blocks clicks to the main window
+        popupStage.initOwner(mainApp.getPrimaryStage());
+        popupStage.setTitle("Settings");
+
+        BorderPane popupLayout = new BorderPane();
+        popupLayout.setId("settings-popup"); 
+        popupLayout.setPadding(new Insets(20));
+        
+        VBox settingsBox = new VBox(15);
+        settingsBox.setAlignment(Pos.CENTER);
+
+        // title
+        Text settingsTitle = new Text("SETTINGS");
+        settingsTitle.setId("settings-title"); 
+
+        // music slider
+        Label musicLabel = new Label("MUSIC VOLUME");
+        musicLabel.getStyleClass().add("settings-label"); // 
+        Slider musicSlider = new Slider(0, 100, 75); // Min, Max, Default
+        musicSlider.setShowTickLabels(true);
+        musicSlider.setShowTickMarks(true);
+
+        // SFX Slider
+        Label sfxLabel = new Label("SOUND FX VOLUME");
+        sfxLabel.getStyleClass().add("settings-label");
+        Slider sfxSlider = new Slider(0, 100, 90);
+        sfxSlider.setShowTickLabels(true);
+        sfxSlider.setShowTickMarks(true);
+        
+        // close Button
+        Button closeButton = new Button("CLOSE");
+        closeButton.getStyleClass().add("dashboard-button"); // Use existing button style
+        closeButton.setOnAction(e -> popupStage.close());
+
+        settingsBox.getChildren().addAll(settingsTitle, musicLabel, musicSlider, sfxLabel, sfxSlider);
+        
+        popupLayout.setCenter(settingsBox);
+        popupLayout.setBottom(closeButton);
+        BorderPane.setAlignment(closeButton, Pos.CENTER);
+        BorderPane.setMargin(closeButton, new Insets(20, 0, 0, 0));
+
+        Scene popupScene = new Scene(popupLayout, 400, 350);
+        popupScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm()); 
+        
+        popupStage.setScene(popupScene);
+        popupStage.showAndWait(); 
     }
 }

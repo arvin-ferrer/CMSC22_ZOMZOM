@@ -1,4 +1,4 @@
-/* --- LOGIN SCREEN STYLES --- */
+/* LOGIN SCREEN STYLES */
 
 #login-background-panel {
     -fx-background-image: url("background.jpg");
@@ -51,21 +51,20 @@
     -fx-prompt-text-fill: #AAAAAA; 
 }
 
-/* * --- FIX 1 ---
- * Merged the two .button rules. 
- * This style now applies to your LOGIN screen buttons.
+/* 
+ * style to LOGIN screen buttons.
  */
 .button {
     -fx-font-family: "Zombies Brainless";
     -fx-background-color: rgba(40, 40, 40, 0.8);
     -fx-text-fill: #E8E8E8;
     -fx-font-size: 14px; 
-    -fx-font-weight: bold; /* This was being lost, now it's included */
+    -fx-font-weight: bold; 
     -fx-border-color: #888888;
     -fx-border-width: 1;
 }
 
-/* Added a hover for the general login buttons */
+/* a hover for the general login buttons */
 .button:hover {
     -fx-background-color: rgba(80, 80, 80, 0.9);
     -fx-border-color: #FFFFFF;
@@ -77,7 +76,7 @@
     -fx-font-weight: bold;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 5, 0, 0, 1);
 }
-/* --- DASHBOARD SCREEN STYLES --- */
+/* DASHBOARD SCREEN STYLES */
 
 #dashboard-background-panel {
     -fx-background-image: url("dashboardBackground.jpg");
@@ -86,25 +85,23 @@
     -fx-font-size: 16px; 
 }
 
-/* * This styles the VBox menu on the left.
- * We add padding to give it space.
+/* * styles the VBox menu on the left.
  */
 #dashboard-vbox {
     -fx-max-width: 300px; 
-    -fx-padding: 0 0 0 50px; /* Add 50px padding to the left */
+    -fx-padding: 0 0 0 50px; /* add 50px padding to the left */
 }
 
-/* * This styles the GridPane at the top.
- * We'll give it a semi-transparent panel background.
+/* * styles the GridPane at the top.
  */
 #dashboard-top-bar {
     -fx-background-color: rgba(0, 0, 0, 0.6);
     -fx-padding: 10px 30px; /* 10px top/bottom, 30px left/right */
-    -fx-background-radius: 0 0 10px 10px; /* Rounded bottom corners */
+    -fx-background-radius: 0 0 10px 10px; /* rounded bottom corners */
     -fx-max-height: 80px;
 }
 
-/* This styles your "ZOMZOM" title */
+/* styles your "ZOMZOM" title */
 #dashboard-title-text {
     -fx-font-family: "Zombies Brainless"; 
     -fx-fill: #E8E8E8; 
@@ -112,10 +109,10 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 5, 0, 0, 2);
 }
 
-/* This styles the "SURVIVOR: BRO" text */
+/* styles the "SURVIVOR: BRO" text */
 #player-info-label {
     -fx-font-family: "Zombies Brainless";
-    -fx-text-fill: #CCCCCC; /* A slightly dimmer white */
+    -fx-text-fill: #CCCCCC; 
     -fx-font-size: 1.5em; /* 24px */
 }
 
@@ -128,7 +125,7 @@
     -fx-border-color: #888888;
     -fx-border-width: 1;
     -fx-pref-width: 250px; 
-    -fx-background-radius: 0; /* Makes them sharp rectangles */
+    -fx-background-radius: 0; 
 }
 
 .dashboard-button:hover {
@@ -136,26 +133,21 @@
     -fx-border-color: #FFFFFF;
 }
 
-/* ... after #player-info-label ... */
-
-/* This styles the "SURVIVOR: BRO" text */
+/* styles the "SURVIVOR: BRO" text */
 #player-info-label {
     -fx-font-family: "Zombies Brainless";
     -fx-text-fill: #CCCCCC; /* A slightly dimmer white */
     -fx-font-size: 1.5em; /* 24px */
 }
 
-/* --- ADD THIS NEW STYLE --- */
-/* This styles the new Level, XP, and Coins labels */
+/* for new Level, XP, and Coins labels */
 .stat-label {
     -fx-font-family: "Zombies Brainless";
     -fx-text-fill: #CCCCCC;
     -fx-font-size: 1.5em; /* 24px */
 }
-/* ... after #player-info-label style ... */
 
-/* --- ADD THIS NEW STYLE --- */
-/* This styles the "MAIN MENU" title above the buttons */
+/*"MAIN MENU" title above the buttons */
 #dashboard-menu-title {
     -fx-font-family: "Zombies Brainless";
     -fx-fill: #E8E8E8; 
@@ -163,3 +155,48 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 5, 0, 0, 2);
 }
 
+/* FOR QUIT & SETTINGS BUTTONS --- */
+
+#quit-button, #settings-button {
+    -fx-font-family: "Zombies Brainless";
+    -fx-background-color: transparent; /* No background */
+    -fx-text-fill: #AAAAAA; /* Dim text color */
+    -fx-font-size: 1.0em; /* 16px */
+    -fx-border-color: #AAAAAA;
+    -fx-border-width: 1px;
+    -fx-padding: 5px 10px;
+}
+
+#quit-button:hover, #settings-button:hover {
+    -fx-background-color: rgba(40, 40, 40, 0.8);
+    -fx-text-fill: #FFFFFF; /* Bright text */
+    -fx-border-color: #FFFFFF;
+}
+
+#settings-popup {
+    -fx-background-color: rgba(20, 20, 20, 0.95); 
+    -fx-border-color: #555555;
+    -fx-border-width: 1;
+}
+
+#settings-title {
+    -fx-font-family: "Zombies Brainless";
+    -fx-fill: #E8E8E8; 
+    -fx-font-size: 2.0em; /* 32px */
+}
+
+.settings-label {
+    -fx-font-family: "Zombies Brainless";
+    -fx-text-fill: #CCCCCC; 
+    -fx-font-size: 1.25em; /* 20px */
+}
+
+/* Style the sliders */
+.slider .track {
+    -fx-background-color: #333333;
+    -fx-border-color: #555555;
+}
+
+.slider .thumb {
+    -fx-background-color: #AAAAAA; 
+}
