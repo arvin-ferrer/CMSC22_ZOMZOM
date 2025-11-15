@@ -1,9 +1,5 @@
 package application;
 
-/**
- * Defines the map data structure and tile constants.
- * This has been updated for the ZOMZOM 2.0 (10x7 grid) concept.
- */
 public class Map {
 
     // grid dimensions 10x6
