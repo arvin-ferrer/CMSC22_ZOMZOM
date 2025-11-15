@@ -19,6 +19,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		this.primaryStage = primaryStage;
 		
+		
         // Loading existing users
         ArrayList<Player> loadedData = Login.loadUsers(savePath);
         data = FXCollections.observableArrayList(loadedData);
@@ -46,8 +47,11 @@ public class Main extends Application {
     		dashboard.showScreen();
     	}
     	
-    
-        
+   
+    	public void showWarAreaScreen() {
+    	    WarAreaScreen warArea = new WarAreaScreen(this);
+    	    warArea.showScreen();
+    	}
         public ObservableList<Player> getData() {
             return data;
         }

@@ -96,8 +96,8 @@
  */
 #dashboard-top-bar {
     -fx-background-color: rgba(0, 0, 0, 0.6);
-    -fx-padding: 10px 30px; /* 10px top/bottom, 30px left/right */
-    -fx-background-radius: 0 0 10px 10px; /* rounded bottom corners */
+    -fx-padding: 10px 30px; 
+    -fx-background-radius: 0 0 10px 10px; 
     -fx-max-height: 80px;
 }
 
@@ -116,7 +116,7 @@
     -fx-font-size: 1.5em; /* 24px */
 }
 
-/* Style for the dashboard buttons */
+/* style for the dashboard buttons */
 .dashboard-button{
     -fx-font-family: "Zombies Brainless";
     -fx-background-color: rgba(40, 40, 40, 0.8);
@@ -159,9 +159,9 @@
 
 #quit-button, #settings-button {
     -fx-font-family: "Zombies Brainless";
-    -fx-background-color: transparent; /* No background */
-    -fx-text-fill: #AAAAAA; /* Dim text color */
-    -fx-font-size: 1.0em; /* 16px */
+    -fx-background-color: transparent; 
+    -fx-text-fill: #AAAAAA; 
+    -fx-font-size: 1.0em; 
     -fx-border-color: #AAAAAA;
     -fx-border-width: 1px;
     -fx-padding: 5px 10px;
@@ -169,7 +169,7 @@
 
 #quit-button:hover, #settings-button:hover {
     -fx-background-color: rgba(40, 40, 40, 0.8);
-    -fx-text-fill: #FFFFFF; /* Bright text */
+    -fx-text-fill: #FFFFFF; 
     -fx-border-color: #FFFFFF;
 }
 
@@ -191,7 +191,7 @@
     -fx-font-size: 1.25em; /* 20px */
 }
 
-/* Style the sliders */
+/* sliders */
 .slider .track {
     -fx-background-color: #333333;
     -fx-border-color: #555555;
@@ -199,4 +199,30 @@
 
 .slider .thumb {
     -fx-background-color: #AAAAAA; 
+}
+
+/* --- War area screen --- */
+
+#war-area-background {
+
+    -fx-background-image: url("mapbg.png");
+    -fx-background-size: 1280px 720px;
+    -fx-background-repeat: no-repeat;
+}
+
+#game-grid {
+    -fx-background-color: transparent;
+}
+
+.game-grid-cell {
+    -fx-background-color: transparent; 
+    
+    /* to see border delete if final na*/
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 1px;
+}
+
+/* hover effect sa grid*/
+.game-grid-cell:hover {
+    -fx-background-color: rgba(0, 255, 0, 0.3); /* eto yung green tint on hover */
 }

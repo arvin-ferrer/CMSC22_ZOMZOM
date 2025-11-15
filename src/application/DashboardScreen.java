@@ -67,11 +67,11 @@ public class DashboardScreen {
 
         Text menuTitle = new Text("MAIN MENU");
         menuTitle.setId("dashboard-menu-title"); // ID for styling
-        VBox.setMargin(menuTitle, new Insets(0, 0, 10, 0)); // 10px bottom margin
+        VBox.setMargin(menuTitle, new Insets(0, 0, 10, 0)); 
         buttonMenu.getChildren().add(menuTitle);
         Button playButton = new Button("Play");
         playButton.getStyleClass().add("dashboard-button"); 
-
+        
         Button inventoryButton = new Button("Inventory");
         inventoryButton.getStyleClass().add("dashboard-button"); 
 
@@ -97,11 +97,13 @@ public class DashboardScreen {
 //            mainApp.showLoginScreen();    
             Platform.exit(); 
         });
-
+        playButton.setOnAction(e -> {
+            mainApp.showWarAreaScreen(); // 
+        });
 
         StackPane rootPane = new StackPane();
         rootPane.setId("dashboard-background-panel"); 
-        
+       
         rootPane.getChildren().addAll(topBar, buttonMenu); 
 
         
