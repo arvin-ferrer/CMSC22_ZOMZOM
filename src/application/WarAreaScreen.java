@@ -1,5 +1,7 @@
 package application;
 
+import java.util.ArrayList;
+import java.util.List; 	
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,62 +15,98 @@ import javafx.scene.text.Font;
 public class WarAreaScreen {
 
     private Main mainApp;
-    private Map gameMap; 
+    private Map gameMap;
+    
+    private StackPane gamePane; 
+    private List<Zombie> zombies;
+    private long lastUpdateTime = 0;
     
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
         this.gameMap = new Map();
-        
-    }
+        this.zombies = new ArrayList<>(); 
+     }
 
     public void showScreen() {
-        
-        StackPane rootPane = new StackPane();
-        rootPane.setId("war-area-background"); // ID for CSS
-        rootPane.setPrefSize(1280, 720); // set the size of the root
+        gamePane = new StackPane(); 
+        gamePane.setId("war-area-background"); 
+        gamePane.setPrefSize(1280, 720); 
+        gamePane.setMaxSize(1280, 720);  // lock the size 
         
         GridPane gameGrid = new GridPane();
-        gameGrid.setId("game-grid"); // ID for CSS
-        // gameGrid.setGridLinesVisible(true); // uncomment to see grid
+        gameGrid.setId("game-grid"); 
+        // gameGrid.setGridLinesVisible(true); // Uncomment to see grid lines for debugging
         
-        //populate the grid with 70 transparent panes (slots)
+        // populate the grid with 70 transparent panes (slots)
         for (int y = 0; y < Map.MAP_HEIGHT_TILES; y++) {
             for (int x = 0; x < Map.MAP_WIDTH_TILES; x++) {
-            	Pane slot = new Pane();
+                Pane slot = new Pane();
                 slot.setPrefSize(Map.TILE_WIDTH, Map.TILE_HEIGHT);
-                slot.getStyleClass().add("game-grid-cell"); // style for the slot
-                
-                // add this slot to the grid
+                slot.getStyleClass().add("game-grid-cell"); // Style for the slot
                 gameGrid.add(slot, x, y);
             }
         }
 
-        // this is for the position of the grid on the background
         StackPane.setAlignment(gameGrid, Pos.TOP_LEFT);
         
-        // Top: ~150px, Left: ~25px wag nyo burahin tong comment na toh pls lang
+        // Top: ~150px, Left: ~225px 
         StackPane.setMargin(gameGrid, new Insets(150, 0, 0, 225)); 
         
-        rootPane.getChildren().add(gameGrid);
+        gamePane.getChildren().add(gameGrid);
 
-        // scene size same as the bg image
-        Scene scene = new Scene(rootPane, 1280, 720);
+        spawnZombie(1);
+        spawnZombie(3);
+
+      StackPane sceneRoot = new StackPane();
+        sceneRoot.setId("scene-root"); 
+        sceneRoot.getChildren().add(gamePane); 
+        StackPane.setAlignment(gamePane, Pos.CENTER); 
+
+        Scene scene = new Scene(sceneRoot, 1280, 720); // window size
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         
-        // might do this later 
-//        Font.loadFont(getClass().getResourceAsStream("/application/fonts/PressStart2P-Regular.ttf"), 12);
+        // Load font (if needed)
+        // Font.loadFont(getClass().getResourceAsStream("/application/fonts/PressStart2P-Regular.ttf"), 12);
 
         mainApp.getPrimaryStage().setScene(scene);
         mainApp.getPrimaryStage().setTitle("ZOMZOM 2.0 - War Area");
         mainApp.getPrimaryStage().show();
-
-        // 
-        // game loop to move zombies, check for collisions, etc.
+        
+        // main game loop
         new AnimationTimer() {
             @Override
             public void handle(long now) {
-                // updateGame();
+                if (lastUpdateTime == 0) {
+                    lastUpdateTime = now;
+                    return;
+                }
+                double deltaTime = (now - lastUpdateTime) / 1_000_000_000.0; 
+                lastUpdateTime = now;
+                
+                // remove dead zombies from the list and pane, later na toh
+                for (Zombie zombie : zombies) {
+                    if (zombie.isAlive()) { // Only update if alive
+                        zombie.update(deltaTime);
+                    }
+                }
+                
+                // other game updates (soldiers, projectiles, etc.) add here
             }
         }.start();
+    }
+    
+    private void spawnZombie(int lane) {
+    	// starting position of the zombie 
+    	double startX = 1280; 
+        
+        NormalZombie zombie = new NormalZombie(startX, lane);
+        TankZombie tankZombie = new TankZombie(startX, lane);
+        nurseZombie nurse = new nurseZombie(startX, lane);
+        zombies.add(zombie); // keep track of the zombie
+        zombies.add(tankZombie);
+        zombies.add(nurse);
+        gamePane.getChildren().add(zombie.getImageView());
+    	gamePane.getChildren().add(tankZombie.getImageView());
+    	gamePane.getChildren().add(nurse.getImageView());
     }
 }
