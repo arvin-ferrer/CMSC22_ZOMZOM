@@ -12,6 +12,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import java.util.Iterator;
+import java.util.Random; // 1. Import Random
 
 public class WarAreaScreen {
 
@@ -22,39 +23,41 @@ public class WarAreaScreen {
     private List<Zombie> zombies;
     private long lastUpdateTime = 0;
     
+    // randomizer
+    private Random random;
+    private double spawnTimer = 0;
+    
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
         this.gameMap = new Map();
-        this.zombies = new ArrayList<>(); 
+        this.zombies = new ArrayList<>();
+        this.random = new Random(); 
      }
 
     public void showScreen() {
         gamePane = new StackPane(); 
         gamePane.setId("war-area-background"); 
         gamePane.setPrefSize(1280, 720); 
-        gamePane.setMaxSize(1280, 720);  // lock the size 
+        gamePane.setMaxSize(1280, 720); 
         
         GridPane gameGrid = new GridPane();
         gameGrid.setId("game-grid"); 
-        // gameGrid.setGridLinesVisible(true); // Uncomment to see grid lines for debugging
         
-        // populate the grid with 70 transparent panes (slots)
         for (int y = 0; y < Map.MAP_HEIGHT_TILES; y++) {
             for (int x = 0; x < Map.MAP_WIDTH_TILES; x++) {
                 Pane slot = new Pane();
                 slot.setPrefSize(Map.TILE_WIDTH, Map.TILE_HEIGHT);
-                slot.getStyleClass().add("game-grid-cell"); // Style for the slot
+                slot.getStyleClass().add("game-grid-cell"); 
                 gameGrid.add(slot, x, y);
             }
         }
-
-        StackPane.setAlignment(gameGrid, Pos.TOP_LEFT);
         
-        // Top: ~150px, Left: ~225px 
+        StackPane.setAlignment(gameGrid, Pos.TOP_LEFT);
         StackPane.setMargin(gameGrid, new Insets(150, 0, 0, 225)); 
         
         gamePane.getChildren().add(gameGrid);
 
+        // initial zombie wave
         spawnZombie(0);
         spawnZombie(1);
         spawnZombie(2);
@@ -62,23 +65,20 @@ public class WarAreaScreen {
         spawnZombie(4);
         spawnZombie(5);
 
-      StackPane sceneRoot = new StackPane();
+        StackPane sceneRoot = new StackPane();
         sceneRoot.setId("scene-root"); 
         sceneRoot.getChildren().add(gamePane); 
         StackPane.setAlignment(gamePane, Pos.CENTER); 
 
-        Scene scene = new Scene(sceneRoot, 1280, 720); // window size
+        Scene scene = new Scene(sceneRoot, 1280, 720); 
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         
-        // Load font (if needed)
-        // Font.loadFont(getClass().getResourceAsStream("/application/fonts/PressStart2P-Regular.ttf"), 12);
-
         mainApp.getPrimaryStage().setScene(scene);
         mainApp.getPrimaryStage().setTitle("ZOMZOM 2.0 - War Area");
         mainApp.getPrimaryStage().show();
         
        
-     // main game loop
+        // main game loop
         new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -89,46 +89,67 @@ public class WarAreaScreen {
                 double deltaTime = (now - lastUpdateTime) / 1_000_000_000.0; 
                 lastUpdateTime = now;
                 
-                // iterator for looping through current zombies
-                Iterator<Zombie> iterator = zombies.iterator();
+                // for spawning
+                spawnTimer += deltaTime;
                 
+                // spawns every 3 seconds
+                if (spawnTimer >= 3.0) {
+                    // random number for choosing spawn lane
+                    int randomLane = random.nextInt(6); 
+                    spawnZombie(randomLane);
+                    
+                    // reset
+                    spawnTimer = 0;
+                }
+                // for removing zombie-----------------------------
+                
+                //iteratator for current zombies
+                Iterator<Zombie> iterator = zombies.iterator();
+                //loop for constant checking of current zombies
                 while (iterator.hasNext()) {
                     Zombie zombie = iterator.next();
                     
                     if (zombie.isAlive()) {
                         zombie.update(deltaTime);
                         
-                        //gets the x coordinates of zombie
+                        //gets the x coordinate of zombie
                         double currentX = zombie.getImageView().getTranslateX();
                         
-                        // if zombie reaches end of the lawn 
+                        //removes and unrenders the zombie if it reaches the end;
                         if (currentX < -400) {
-                            // removes the image from the screen 
                             gamePane.getChildren().remove(zombie.getImageView());
-                            
-                            // removes the zombie object from the list (Logical Removal)
                             iterator.remove();
                         }
                     }
                 }
-                
-                // other game updates (soldiers, projectiles, etc.) add here
             }
         }.start();
     }
     
     private void spawnZombie(int lane) {
-    	// starting position of the zombie 
     	double startX = 1280; 
         
-        NormalZombie zombie = new NormalZombie(startX, lane);
-        TankZombie tankZombie = new TankZombie(startX, lane);
-        nurseZombie nurse = new nurseZombie(startX, lane);
-        zombies.add(zombie); // keep track of the zombie
-        zombies.add(tankZombie);
-        zombies.add(nurse);
-        gamePane.getChildren().add(zombie.getImageView());
-    	gamePane.getChildren().add(tankZombie.getImageView());
-    	gamePane.getChildren().add(nurse.getImageView());
+       
+        // randomizer for zombie types
+        int zombieType = random.nextInt(3); // 0, 1, 2
+        
+        Zombie newZombie = null;
+
+        switch (zombieType) {
+            case 0:
+                newZombie = new NormalZombie(startX, lane);
+                break;
+            case 1:
+                newZombie = new TankZombie(startX, lane);
+                break;
+            case 2:
+                newZombie = new nurseZombie(startX, lane);
+                break;
+        }
+
+        if (newZombie != null) {
+            zombies.add(newZombie);
+            gamePane.getChildren().add(newZombie.getImageView());
+        }
     }
 }
