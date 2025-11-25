@@ -98,7 +98,7 @@ public class WarAreaScreen {
                     int randomLane = random.nextInt(6); 
                     spawnZombie(randomLane);
                     
-                    // reset
+                    // reset timer
                     spawnTimer = 0;
                 }
                 // for removing zombie-----------------------------
