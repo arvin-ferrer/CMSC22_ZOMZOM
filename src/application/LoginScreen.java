@@ -172,11 +172,11 @@ public class LoginScreen {
         rootPane.getChildren().addAll(loginGrid,  settingsButton, quitButton);
 
         // --- ADD MARGIN TO THE LOGIN CARD HERE ---
-        StackPane.setMargin(loginGrid, new Insets(200, 0, 0, 0));
+        StackPane.setMargin(loginGrid, new Insets(150, 0, 0, 0));
 
         
         // Create the scene and apply the stylesheet
-        Scene scene = new Scene(rootPane, 1920, 1080); 
+        Scene scene = new Scene(rootPane, 1280, 720); 
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         
         // Set the scene on the primary stage
