@@ -19,11 +19,7 @@ public class NormalZombie extends Zombie {
         setAttackRange(5); // can attack if within 5 pixels
         setSpawnRate(0.5); // spawns every 0.5 seconds
         
-        double laneTopY = lane * Map.TILE_HEIGHT; 
-        
-        double centeredY = laneTopY + (Map.TILE_HEIGHT / 2.0) - (ZOMBIE_HEIGHT / 2.0);
-        
-        setPositionY(centeredY); 
+       
     }
     
 

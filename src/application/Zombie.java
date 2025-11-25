@@ -39,6 +39,7 @@ public abstract class Zombie {
             this.imageView.setFitWidth(112); 
             this.imageView.setFitHeight(112);
             this.size = 1.0; 
+            this.imageView.setTranslateY(this.currentLane * 96 - 192); 
             
         } catch (Exception e) {
             System.err.println("ERROR: Could not load zombie image: " + imagePath);
@@ -125,8 +126,7 @@ public abstract class Zombie {
     public double getPositionY() { return positionY; }
     // setter for positionY 
     public void setPositionY(double positionY) { 
-        this.positionY = positionY;
-        this.imageView.setTranslateY(this.positionY); 
+        this.imageView.setTranslateY(positionY); 
     }
 
     public int getLane() { return currentLane; }

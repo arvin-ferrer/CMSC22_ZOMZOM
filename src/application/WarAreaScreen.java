@@ -54,8 +54,12 @@ public class WarAreaScreen {
         
         gamePane.getChildren().add(gameGrid);
 
+        spawnZombie(0);
         spawnZombie(1);
+        spawnZombie(2);
         spawnZombie(3);
+        spawnZombie(4);
+        spawnZombie(5);
 
       StackPane sceneRoot = new StackPane();
         sceneRoot.setId("scene-root"); 
