@@ -11,6 +11,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import java.util.Iterator;
 
 public class WarAreaScreen {
 
@@ -76,7 +77,8 @@ public class WarAreaScreen {
         mainApp.getPrimaryStage().setTitle("ZOMZOM 2.0 - War Area");
         mainApp.getPrimaryStage().show();
         
-        // main game loop
+       
+     // main game loop
         new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -87,10 +89,26 @@ public class WarAreaScreen {
                 double deltaTime = (now - lastUpdateTime) / 1_000_000_000.0; 
                 lastUpdateTime = now;
                 
-                // remove dead zombies from the list and pane, later na toh
-                for (Zombie zombie : zombies) {
-                    if (zombie.isAlive()) { // Only update if alive
+                // iterator for looping through current zombies
+                Iterator<Zombie> iterator = zombies.iterator();
+                
+                while (iterator.hasNext()) {
+                    Zombie zombie = iterator.next();
+                    
+                    if (zombie.isAlive()) {
                         zombie.update(deltaTime);
+                        
+                        //gets the x coordinates of zombie
+                        double currentX = zombie.getImageView().getTranslateX();
+                        
+                        // if zombie reaches end of the lawn 
+                        if (currentX < -400) {
+                            // removes the image from the screen 
+                            gamePane.getChildren().remove(zombie.getImageView());
+                            
+                            // removes the zombie object from the list (Logical Removal)
+                            iterator.remove();
+                        }
                     }
                 }
                 
