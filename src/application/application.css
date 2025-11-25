@@ -1,7 +1,7 @@
 /* LOGIN SCREEN STYLES */
 
 #login-background-panel {
-    -fx-background-image: url("background.jpg");
+    -fx-background-image: url("lockscreen-sprite.gif");
     -fx-background-size: cover; 
     -fx-background-position: center center;
 }
