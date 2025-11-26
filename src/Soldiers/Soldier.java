@@ -36,7 +36,7 @@ public abstract class Soldier{
             this.imageView = new ImageView(soldierImage);
             
             // set x position
-            this.imageView.setTranslateX((this.col * 112 ) - 360);
+            this.imageView.setTranslateX((this.col * 96 ) - 360);
             this.imageView.setTranslateY(this.lane * 96 - 192); 
             
             // set image size
