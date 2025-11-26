@@ -1,7 +1,7 @@
 package application;
 
 public class Spearman extends Soldier{
-	private static final String IMAGE_FILE = "spearman-sprite.gif";
+	private static final String IMAGE_FILE = "/assets/spearman-sprite.gif";
 	private static final String TYPE = Soldier.ARCHER;
 	private static final int HEALTH = 100 ;
 	private static final int DAMAGE = 50 ;

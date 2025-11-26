@@ -6,7 +6,7 @@ import javafx.scene.image.ImageView;
 public class Projectile {
 
     // 1. Load the image ONLY ONCE (static) to prevent lag
-    private static final String IMAGE_PATH = "arrow-sprite.png";
+    private static final String IMAGE_PATH = "/assets/arrow-sprite.png";
     private static Image projectileImage; 
 
     private double x;

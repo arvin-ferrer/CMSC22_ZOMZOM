@@ -2,7 +2,7 @@ package application;
 
 public class TankZombie extends Zombie {
 
-    private static final String IMAGE_FILE = "tankZombie.gif";
+    private static final String IMAGE_FILE = "/assets/tankZombie.gif";
     private static final int ZOMBIE_WIDTH = 166;
     private static final int ZOMBIE_HEIGHT = 166; 
 

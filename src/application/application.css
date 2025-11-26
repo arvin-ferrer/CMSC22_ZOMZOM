@@ -1,7 +1,7 @@
 /* LOGIN SCREEN STYLES */
 
 #login-background-panel {
-    -fx-background-image: url("lockscreen-sprite.gif");
+    -fx-background-image: url("../assets/lockscreen-sprite.gif");
     -fx-background-size: cover; 
     -fx-background-position: center center;
 }
@@ -79,7 +79,7 @@
 /* DASHBOARD SCREEN STYLES */
 
 #dashboard-background-panel {
-    -fx-background-image: url("dashboardBackground.jpg");
+    -fx-background-image: url("../assets/dashboardBackground.jpg");
     -fx-background-size: cover;
     -fx-background-position: center center;
     -fx-font-size: 16px; 
@@ -205,7 +205,7 @@
 
 #war-area-background {
 
-    -fx-background-image: url("mapbg.png");
+    -fx-background-image: url("../assets/mapbg.png");
     -fx-background-size: 1280px 720px;
     -fx-background-repeat: no-repeat;
 }
