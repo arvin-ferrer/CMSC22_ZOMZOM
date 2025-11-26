@@ -24,22 +24,24 @@ public abstract class Soldier{
     protected String imagePath;
     protected ImageView imageView;
 
-    public Soldier(int col, int lane, String imageFileName) {
+    public Soldier(int col, int lane, int width, int  height, String imageFileName) {
         this.lane = lane;
         this.isAlive = true;
         this.imagePath = imageFileName;
+        this.col = col;
 
         // load the GIF
         try {
             Image zombieImage = new Image(getClass().getResourceAsStream(imagePath));
             this.imageView = new ImageView(zombieImage);
             
-            // set initial position
-            this.imageView.setTranslateX(this.col * 112 - 360);
-            
-            this.imageView.setFitWidth(112); 
-            this.imageView.setFitHeight(112); 
+            // set x position
+            this.imageView.setTranslateX((this.col * 112 ) - 360);
             this.imageView.setTranslateY(this.lane * 96 - 192); 
+            
+            // set image size
+            this.imageView.setFitWidth(width); 
+            this.imageView.setFitHeight(height); 
             
         } catch (Exception e) {
             System.err.println("ERROR: Could not load zombie image: " + imagePath);
@@ -85,7 +87,7 @@ public abstract class Soldier{
     public int getLane() { return this.lane; }
     public int getDamage() { return damage; }
     public String getImagePath() {  return imagePath; }
-    public int[] getCoordinates() {
+    public int[] getPosition() {
     	int[] coordinates = {this.col, this.lane};
     	return coordinates;
     	}

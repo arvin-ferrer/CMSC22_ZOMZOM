@@ -85,6 +85,8 @@ public class WarAreaScreen {
         addSoldier(Soldier.ARCHER,0,3);
         addSoldier(Soldier.ARCHER,0,4);
         addSoldier(Soldier.ARCHER,0,5);
+        
+        addSoldier(Soldier.SPEARMAN, 1,0);
        
         // main game loop
         new AnimationTimer() {
@@ -166,6 +168,9 @@ public class WarAreaScreen {
     	switch (soldierType) {
     		case Soldier.ARCHER:
     			newSoldier = new Archer(col, lane);
+    			break;
+    		case Soldier.SPEARMAN:
+    			newSoldier = new Spearman(col, lane);
     			break;
     			
     	}
