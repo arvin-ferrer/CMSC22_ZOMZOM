@@ -19,9 +19,14 @@ import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 
 public class WarAreaScreen {
 
@@ -36,7 +41,7 @@ public class WarAreaScreen {
     // list to track arrows/bullets
     private List<Projectile> projectiles;
     
-    // Map to track attack cooldowns (Soldier -> Time remaining)
+    // Map to track attack cooldowns 
     private java.util.Map<Soldier, Double> soldierAttackTimers;
     
     private long lastUpdateTime = 0;
@@ -45,9 +50,13 @@ public class WarAreaScreen {
     private Random random;
     private double spawnTimer = 0;
     
+    // for planting
+    private String selectedSoldierType = null; //  currently clicked
+    private ImageView selectedCardView = null; // for visual glow effect
+    
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
-        this.gameMap = new GameMap(); // Initialize the map logic
+        this.gameMap = new GameMap(); // initialize the map logic
         this.zombies = new ArrayList<>();
         this.random = new Random(); 
         this.soldiers = new ArrayList<>();
@@ -62,6 +71,8 @@ public class WarAreaScreen {
         gamePane.setId("war-area-background"); 
         gamePane.setPrefSize(1280, 720); 
         gamePane.setMaxSize(1280, 720); 
+        mainApp.getPrimaryStage().setResizable(false);
+
         
         GridPane gameGrid = new GridPane();
         gameGrid.setId("game-grid"); 
@@ -75,6 +86,22 @@ public class WarAreaScreen {
                 
                 // add logic for planting
                 
+                final int finalX = x;
+                final int finalY = y;
+                //event handler for adding soldier
+                slot.setOnMouseClicked(event -> {
+                    // if we have a soldier selected from the cards
+                    if (selectedSoldierType != null) {
+                        System.out.println("Planting " + selectedSoldierType + " at: " + finalX + ", " + finalY);
+                        addSoldier(selectedSoldierType, finalX, finalY);
+                        
+                        // deselect after planting? If you want to plant multiple, remove these lines.
+                         selectedSoldierType = null;
+                         if (selectedCardView != null) selectedCardView.setEffect(null);
+                    }
+                });
+                // ------------------------------------------
+                
                 gameGrid.add(slot, x, y);
             }
         }
@@ -83,6 +110,27 @@ public class WarAreaScreen {
         StackPane.setMargin(gameGrid, new Insets(150, 0, 0, 225)); 
         
         gamePane.getChildren().add(gameGrid);
+        
+        // card ui
+        HBox seedBank = new HBox(10); // 10px spacing between cards
+        seedBank.setPadding(new Insets(10));
+        seedBank.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 10;"); //semi-transparent back
+        seedBank.setMaxHeight(110);
+        seedBank.setMaxWidth(400);
+
+        // create the soldier cards
+        ImageView archerCard = createCard("/assets/archer-card.png", Soldier.ARCHER);
+        ImageView spearmanCard = createCard("/assets/spearman-card.png", Soldier.SPEARMAN);
+        
+        
+
+        seedBank.getChildren().addAll(archerCard, spearmanCard);
+        
+        // position the seed bank at Top Left
+        StackPane.setAlignment(seedBank, Pos.TOP_LEFT);
+        StackPane.setMargin(seedBank, new Insets(20, 0, 0, 20)); 
+        gamePane.getChildren().add(seedBank);
+        // --------------------------------
 
         // initial zombie wave
         spawnZombie(0);
@@ -150,7 +198,7 @@ public class WarAreaScreen {
                 updateProjectiles(deltaTime);
                 // -------------------------------------------------------------
 
-                // Remove dead Zombies
+                // remove dead zombies
                 Iterator<Zombie> iterator = zombies.iterator();
                 while (iterator.hasNext()) {
                     Zombie zombie = iterator.next();
@@ -173,6 +221,46 @@ public class WarAreaScreen {
         }.start();
     }
     
+    // for creating cards
+    private ImageView createCard(String imageName, String soldierType) {
+        ImageView cardView = new ImageView();
+        try {
+            // load image
+            cardView.setImage(new Image(getClass().getResourceAsStream(imageName)));
+        } catch (Exception e) {
+            System.err.println("Could not load card image: " + imageName);
+        }
+        
+        // styling ng card
+        cardView.setFitWidth(96);
+        cardView.setFitHeight(96);
+        cardView.setPreserveRatio(true);
+        cardView.setCursor(javafx.scene.Cursor.HAND); // cursor change
+
+        // click logic
+        cardView.setOnMouseClicked(e -> {
+            // set the selection variable
+            this.selectedSoldierType = soldierType;
+            System.out.println("Selected Card: " + soldierType);
+            
+            // visual highlight
+            if (selectedCardView != null) {
+                selectedCardView.setEffect(null); // Remove glow from previous
+            }
+            selectedCardView = cardView;
+            
+            // add yellow glow
+            DropShadow glow = new DropShadow();
+            glow.setColor(Color.GOLD);
+            glow.setWidth(20);
+            glow.setHeight(20);
+            cardView.setEffect(glow);
+        });
+
+        return cardView;
+    }
+    // ------------------------------------
+
     // COMBAT LOGIC METHODS ====================================================================
     
     private void updateSoldiers(double deltaTime) {
@@ -190,9 +278,12 @@ public class WarAreaScreen {
             // ARCHER
             if (soldier instanceof Archer) {
                 boolean hasTarget = false;
+                
                 for (Zombie z : zombies) {
+                	
                     if (z.isAlive() && z.getLane() == soldier.getLane()) {
-                        // check if zombie is to the right of soldier and on screen
+                        
+                    	// check if zombie is to the right of soldier and on screen
                         if (z.getImageView().getTranslateX() > soldier.getImageView().getTranslateX() 
                                 && z.getPositionX() < 600) { 
                             hasTarget = true;
@@ -200,6 +291,7 @@ public class WarAreaScreen {
                         }
                     }
                 }
+                
                 if (hasTarget) {
                     shootProjectile(soldier);
                     soldierAttackTimers.put(soldier, 1.5); 
@@ -240,27 +332,38 @@ public class WarAreaScreen {
         }
     }
     
+    // for shooting
     private void shootProjectile(Soldier soldier) {
+    	//position of the projectile
         double startX = soldier.getImageView().getTranslateX() + 50;
         double startY = soldier.getImageView().getTranslateY(); 
         
+       
         Projectile proj = new Projectile(startX, startY, soldier.getLane(), soldier.getDamage());
         
+        //add to existing projectiles
         projectiles.add(proj);
         gamePane.getChildren().add(proj.getView());
     }
     
+    // for moving the projectiles
     private void updateProjectiles(double deltaTime) {
+    	
         Iterator<Projectile> it = projectiles.iterator();
+        // while there is a present projectile
         while (it.hasNext()) {
             Projectile p = it.next();
             p.update(deltaTime);
             
             boolean hit = false;
+            // checks every zombie if they are in the lane
             for (Zombie z : zombies) {
                 if (z.isAlive() && z.getLane() == p.getLane()) {
                     double zX = z.getImageView().getTranslateX();
                     double pX = p.getX();
+                    //
+                    
+                    //if collided
                     if (pX >= zX && pX <= zX + 80) {
                         z.takeDamage(p.getDamage());
                         hit = true;
@@ -268,6 +371,7 @@ public class WarAreaScreen {
                     }
                 }
             }
+            //removing the projectile if it hit a zombie or out of bounds
             if (hit || p.getX() > 800) { 
                 p.setInactive();
                 gamePane.getChildren().remove(p.getView());
