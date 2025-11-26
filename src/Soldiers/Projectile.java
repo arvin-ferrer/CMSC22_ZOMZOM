@@ -5,7 +5,7 @@ import javafx.scene.image.ImageView;
 
 public class Projectile {
 
-    // 1. Load the image ONLY ONCE (static) to prevent lag
+    // load the image
     private static final String IMAGE_PATH = "/assets/arrow-sprite.png";
     private static Image projectileImage; 
 
@@ -24,7 +24,7 @@ public class Projectile {
         this.damage = damage;
         this.isActive = true;
         
-        // Initialize image only if it hasn't been loaded yet
+        // initialize image only if its not loaded yet
         if (projectileImage == null) {
             try {
                 projectileImage = new Image(getClass().getResourceAsStream(IMAGE_PATH));
@@ -34,12 +34,11 @@ public class Projectile {
         }
 
         this.imageView = new ImageView(projectileImage);
-        
-        // Optional: Resize if the sprite is too big
+       
 //        this.imageView.setFitWidth(60); 
 //        this.imageView.setFitHeight(20);
         
-        // 2. CRITICAL FIX: You must set the initial visual position!
+        // set the initial visual position!
         this.imageView.setTranslateX(this.x);
         this.imageView.setTranslateY(this.y);
     }
@@ -47,7 +46,7 @@ public class Projectile {
     public void update(double deltaTime) {
         x += speed * deltaTime;
         
-        // Update the visual X position every frame
+        //update the visual x position every frame
         this.imageView.setTranslateX(x);
     }
 
