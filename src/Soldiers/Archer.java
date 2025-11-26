@@ -1,4 +1,4 @@
-package application;
+package Soldiers;
 
 public class Archer extends Soldier{
 	

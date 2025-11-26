@@ -1,4 +1,4 @@
-package application;
+package Soldiers;
 
 public class Spearman extends Soldier{
 	private static final String IMAGE_FILE = "/assets/spearman-sprite.gif";

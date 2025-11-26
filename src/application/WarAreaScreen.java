@@ -7,6 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import Soldiers.Archer;
+import Soldiers.Projectile;
+import Soldiers.Soldier;
+import Soldiers.Spearman;
+import Zombies.NormalZombie;
+import Zombies.TankZombie;
+import Zombies.Zombie;
+import Zombies.nurseZombie;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

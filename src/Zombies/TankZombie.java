@@ -1,4 +1,4 @@
-package application;
+package Zombies;
 
 public class TankZombie extends Zombie {
 
