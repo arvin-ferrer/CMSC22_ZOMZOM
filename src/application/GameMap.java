@@ -1,6 +1,6 @@
 package application;
 
-public class Map {
+public class GameMap {
 
     // grid dimensions 10x6
 	public static final int MAP_WIDTH_TILES = 10;
@@ -18,7 +18,7 @@ public class Map {
 
     private int[][] tileData;
 
-    public Map() {
+    public GameMap() {
         this.tileData = new int[MAP_WIDTH_TILES][MAP_HEIGHT_TILES];
         // empty grid initialization
         for (int y = 0; y < MAP_HEIGHT_TILES; y++) {

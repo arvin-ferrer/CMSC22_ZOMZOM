@@ -5,7 +5,7 @@ public class Archer extends Soldier{
 	private static final String IMAGE_FILE = "archer-sprite.gif";
 	private static final String TYPE = Soldier.ARCHER;
 	private static final int HEALTH = 100 ;
-	private static final int DAMAGE = 50 ;
+	private static final int DAMAGE = 10 ;
 	private static final int WIDTH = 112 ;
 	private static final int HEIGHT = 112 ;
 

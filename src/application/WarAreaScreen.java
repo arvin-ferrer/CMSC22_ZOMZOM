@@ -1,7 +1,12 @@
 package application;
 
 import java.util.ArrayList;
-import java.util.List; 	
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,19 +14,23 @@ import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import java.util.Iterator;
-import java.util.Random; // 1. Import Random
 
 public class WarAreaScreen {
 
     private Main mainApp;
-    private Map gameMap;
-    
+    private GameMap gameMap;
     private StackPane gamePane; 
+    
+    // list for zombies and soldiers
     private List<Zombie> zombies;
     private List<Soldier> soldiers;
+    
+    // list to track arrows/bullets
+    private List<Projectile> projectiles;
+    
+    // Map to track attack cooldowns (Soldier -> Time remaining)
+    private java.util.Map<Soldier, Double> soldierAttackTimers;
+    
     private long lastUpdateTime = 0;
     
     // randomizer
@@ -30,10 +39,14 @@ public class WarAreaScreen {
     
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
-        this.gameMap = new Map();
+        this.gameMap = new GameMap();
         this.zombies = new ArrayList<>();
         this.random = new Random(); 
         this.soldiers = new ArrayList<>();
+        
+        // new lists
+        this.projectiles = new ArrayList<>();
+        this.soldierAttackTimers = new HashMap<>();
      }
 
     public void showScreen() {
@@ -45,10 +58,11 @@ public class WarAreaScreen {
         GridPane gameGrid = new GridPane();
         gameGrid.setId("game-grid"); 
         
-        for (int y = 0; y < Map.MAP_HEIGHT_TILES; y++) {
-            for (int x = 0; x < Map.MAP_WIDTH_TILES; x++) {
+        // for calculating the placement  tiles
+        for (int y = 0; y < GameMap.MAP_HEIGHT_TILES; y++) {
+            for (int x = 0; x < GameMap.MAP_WIDTH_TILES; x++) {
                 Pane slot = new Pane();
-                slot.setPrefSize(Map.TILE_WIDTH, Map.TILE_HEIGHT);
+                slot.setPrefSize(GameMap.TILE_WIDTH, GameMap.TILE_HEIGHT);
                 slot.getStyleClass().add("game-grid-cell"); 
                 gameGrid.add(slot, x, y);
             }
@@ -66,15 +80,18 @@ public class WarAreaScreen {
         spawnZombie(3);
         spawnZombie(4);
         spawnZombie(5);
-
+        
+        // game scene
         StackPane sceneRoot = new StackPane();
         sceneRoot.setId("scene-root"); 
         sceneRoot.getChildren().add(gamePane); 
         StackPane.setAlignment(gamePane, Pos.CENTER); 
-
+        
+        // main scene
         Scene scene = new Scene(sceneRoot, 1280, 720); 
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         
+        //adding the scene
         mainApp.getPrimaryStage().setScene(scene);
         mainApp.getPrimaryStage().setTitle("ZOMZOM 2.0 - War Area");
         mainApp.getPrimaryStage().show();
@@ -112,6 +129,13 @@ public class WarAreaScreen {
                     // reset timer
                     spawnTimer = 0;
                 }
+                
+                // -------------------------------------------------------------
+                // update Soldiers and Projectiles
+                updateSoldiers(deltaTime);
+                updateProjectiles(deltaTime);
+                // -------------------------------------------------------------
+
                 // for removing zombie-----------------------------
                 
                 //iteratator for current zombies
@@ -126,17 +150,124 @@ public class WarAreaScreen {
                         //gets the x coordinate of zombie
                         double currentX = zombie.getImageView().getTranslateX();
                         
-                        //removes and un-renders the zombie if it reaches the end;
+                        //removes and unrenders the zombie if it reaches the end;
                         if (currentX < -400) {
                             gamePane.getChildren().remove(zombie.getImageView());
                             iterator.remove();
                         }
+                    } else {
+                        // remove dead zombies from screen if killed by arrows
+                        gamePane.getChildren().remove(zombie.getImageView());
+                        iterator.remove();
                     }
                 }
             }
         }.start();
     }
     
+    // COMBAT LOGIC METHODS ====================================================================
+    
+    private void updateSoldiers(double deltaTime) {
+        for (Soldier soldier : soldiers) {
+            // update cooldown
+            double currentCooldown = soldierAttackTimers.getOrDefault(soldier, 0.0);
+            if (currentCooldown > 0) {
+                soldierAttackTimers.put(soldier, currentCooldown - deltaTime);
+                continue;
+            }
+
+            // ARCHER ============================================================================================
+            if (soldier instanceof Archer) {
+            	// for checking if it has target
+                boolean hasTarget = false;
+                
+                //checks every current existing zombie
+                for (Zombie z : zombies) {
+                    if (z.isAlive() && z.getLane() == soldier.getLane()) {
+                        // if zombie is within the screen
+                        if (z.getImageView().getTranslateX() > soldier.getImageView().getTranslateX() && z.getPositionX() < 600) {
+                            hasTarget = true;
+                            break;
+                        }
+                    }
+                }
+                
+                //shoots if there is a valid target
+                if (hasTarget) {
+                    shootProjectile(soldier);
+                    soldierAttackTimers.put(soldier, 1.5); // 1.5 sec cooldown
+                }
+            }
+            // SPEARMAN ===================================================================================
+            else if (soldier instanceof Spearman) {
+            	 //checks every current existing zombie
+                for (Zombie z : zombies) {
+                    if (z.isAlive() && z.getLane() == soldier.getLane()) {
+                    	
+                        double dist = z.getImageView().getTranslateX() - soldier.getImageView().getTranslateX();
+                        
+                        // close range check 
+                        if (dist > 0 && dist < 120) {
+                            z.takeDamage(soldier.getDamage());
+                            soldierAttackTimers.put(soldier, 1.0); // 1 sec cooldown
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // logic for shooting
+    private void shootProjectile(Soldier soldier) {
+        //calculate spawn position 
+        // 50 and 40 are offsets to make the arrow appear near the center of the soldier
+        double startX = soldier.getImageView().getTranslateX() + 50;
+        double startY = soldier.getImageView().getTranslateY(); 
+        
+        Projectile proj = new Projectile(startX, startY, soldier.getLane(), soldier.getDamage());
+        
+        projectiles.add(proj);
+        gamePane.getChildren().add(proj.getView());
+    }
+    
+    //for updating the position of projectile
+    private void updateProjectiles(double deltaTime) {
+    	// iterator for projectiles
+        Iterator<Projectile> it = projectiles.iterator();
+        
+        while (it.hasNext()) {
+            Projectile p = it.next();
+            p.update(deltaTime);
+            
+            boolean hit = false;
+            
+            // check collision
+            for (Zombie z : zombies) {
+                if (z.isAlive() && z.getLane() == p.getLane()) {
+                    double zX = z.getImageView().getTranslateX();
+                    double pX = p.getX();
+                    
+                    // simple collision if arrow is within zombie's width around 80px
+                    if (pX >= zX && pX <= zX + 80) {
+                        z.takeDamage(p.getDamage());
+                        hit = true;
+                        break; 
+                    }
+                }
+            }
+            
+            // remove if hit or off screen
+            if (hit || p.getX() > 800) {
+                p.setInactive();
+                gamePane.getChildren().remove(p.getView());
+                it.remove();
+            }
+        }
+    }
+    
+    // SPAWNERS =================================================================
+
     private void spawnZombie(int lane) {
     	double startX = 1280; 
         
@@ -176,7 +307,11 @@ public class WarAreaScreen {
     			
     	}
     	
-    	soldiers.add(newSoldier);
-    	gamePane.getChildren().add(newSoldier.getImageView());
+    	if (newSoldier != null) {
+            soldiers.add(newSoldier);
+            // Initialize cooldown
+            soldierAttackTimers.put(newSoldier, 0.0);
+            gamePane.getChildren().add(newSoldier.getImageView());
+        }
     }
 }

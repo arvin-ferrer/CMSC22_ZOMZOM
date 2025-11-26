@@ -32,8 +32,8 @@ public abstract class Soldier{
 
         // load the GIF
         try {
-            Image zombieImage = new Image(getClass().getResourceAsStream(imagePath));
-            this.imageView = new ImageView(zombieImage);
+            Image soldierImage = new Image(getClass().getResourceAsStream(imagePath));
+            this.imageView = new ImageView(soldierImage);
             
             // set x position
             this.imageView.setTranslateX((this.col * 112 ) - 360);
