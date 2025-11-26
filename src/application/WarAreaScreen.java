@@ -21,6 +21,7 @@ public class WarAreaScreen {
     
     private StackPane gamePane; 
     private List<Zombie> zombies;
+    private List<Soldier> soldiers;
     private long lastUpdateTime = 0;
     
     // randomizer
@@ -32,6 +33,7 @@ public class WarAreaScreen {
         this.gameMap = new Map();
         this.zombies = new ArrayList<>();
         this.random = new Random(); 
+        this.soldiers = new ArrayList<>();
      }
 
     public void showScreen() {
@@ -77,6 +79,12 @@ public class WarAreaScreen {
         mainApp.getPrimaryStage().setTitle("ZOMZOM 2.0 - War Area");
         mainApp.getPrimaryStage().show();
         
+        addSoldier(Soldier.ARCHER,0,0);
+        addSoldier(Soldier.ARCHER,0,1);
+        addSoldier(Soldier.ARCHER,0,2);
+        addSoldier(Soldier.ARCHER,0,3);
+        addSoldier(Soldier.ARCHER,0,4);
+        addSoldier(Soldier.ARCHER,0,5);
        
         // main game loop
         new AnimationTimer() {
@@ -115,7 +123,7 @@ public class WarAreaScreen {
                         //gets the x coordinate of zombie
                         double currentX = zombie.getImageView().getTranslateX();
                         
-                        //removes and unrenders the zombie if it reaches the end;
+                        //removes and un-renders the zombie if it reaches the end;
                         if (currentX < -400) {
                             gamePane.getChildren().remove(zombie.getImageView());
                             iterator.remove();
@@ -151,5 +159,18 @@ public class WarAreaScreen {
             zombies.add(newZombie);
             gamePane.getChildren().add(newZombie.getImageView());
         }
+    }
+    
+    private void addSoldier(String soldierType, int col, int lane) {
+    	Soldier newSoldier = null;
+    	switch (soldierType) {
+    		case Soldier.ARCHER:
+    			newSoldier = new Archer(col, lane);
+    			break;
+    			
+    	}
+    	
+    	soldiers.add(newSoldier);
+    	gamePane.getChildren().add(newSoldier.getImageView());
     }
 }

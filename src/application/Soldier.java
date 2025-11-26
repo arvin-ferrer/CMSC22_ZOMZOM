@@ -4,17 +4,27 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 
 public abstract class Soldier{
-
+	//constants
+	public static final String ARCHER =	"Archer";
+	public static final String SPEARMAN = "Spearman";
+	public static final String SWORDSMAN = "Swordsman";
+	
+	
+	//game attributes
     protected int health;
     protected int damage;
     protected String type; 
     protected boolean isAlive; 
-    protected String imagePath; 
-    protected ImageView imageView;
+     
+    //positions
     private int lane;
     private int col;
+    
+    //for rendering
+    protected String imagePath;
+    protected ImageView imageView;
 
-    public Soldier(int lane, int col, String imageFileName) {
+    public Soldier(int col, int lane, String imageFileName) {
         this.lane = lane;
         this.isAlive = true;
         this.imagePath = imageFileName;
@@ -25,11 +35,11 @@ public abstract class Soldier{
             this.imageView = new ImageView(zombieImage);
             
             // set initial position
-            this.imageView.setTranslateX(this.col * 96 - 400);
+            this.imageView.setTranslateX(this.col * 112 - 360);
             
             this.imageView.setFitWidth(112); 
             this.imageView.setFitHeight(112); 
-            this.imageView.setTranslateY(this.currentLane * 96 - 192); 
+            this.imageView.setTranslateY(this.lane * 96 - 192); 
             
         } catch (Exception e) {
             System.err.println("ERROR: Could not load zombie image: " + imagePath);
@@ -38,7 +48,7 @@ public abstract class Soldier{
         }
     }
 
-    protected int currentLane;
+    
 
     public void update(double deltaTime) {
         if (!isAlive) return;
@@ -66,13 +76,13 @@ public abstract class Soldier{
     public void setHealth(int health) { this.health = health; }
     public void setDamage(int damage) { this.damage = damage; }
     protected void setType(String type) {this.type = type;} 
-    public void setLane(int currentLane) { this.currentLane = currentLane; }
+    public void setLane(int currentLane) { this.lane = currentLane; }
     
     //getters
     public ImageView getImageView() {return this.imageView;}
     public int getHealth() { return health; }
     public String getType() { return type; }
-    public int getLane() { return currentLane; }
+    public int getLane() { return this.lane; }
     public int getDamage() { return damage; }
     public String getImagePath() {  return imagePath; }
     public int[] getCoordinates() {
