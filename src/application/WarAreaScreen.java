@@ -79,6 +79,7 @@ public class WarAreaScreen {
         mainApp.getPrimaryStage().setTitle("ZOMZOM 2.0 - War Area");
         mainApp.getPrimaryStage().show();
         
+        //adds soldier (for testting)
         addSoldier(Soldier.ARCHER,0,0);
         addSoldier(Soldier.ARCHER,0,1);
         addSoldier(Soldier.ARCHER,0,2);

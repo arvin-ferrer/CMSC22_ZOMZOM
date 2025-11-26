@@ -14,7 +14,6 @@ public class TankZombie extends Zombie {
         setSpeed(30); // move 40 px per sec
         setDamage(10);
         setRewardPoints(10);
-        setSize(1.0); 
         setSpecialAbility("None"); // might add later
         setAttackRange(5); // can attack if within 5 pixels
         setSpawnRate(0.5); // spawns every 0.5 seconds

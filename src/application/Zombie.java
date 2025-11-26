@@ -4,21 +4,26 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 
 public abstract class Zombie {
-
+	
+	protected String type; // "Normal", "Speed", "Flying", "Tank"
+	
+	//gameplay attributes
     protected int health;
     protected int speed; 
     protected int damage;
-    protected String type; // "Normal", "Speed", "Flying", "Tank"
-    protected double positionX; 
-    protected double positionY; 
     protected boolean isAlive;
     protected int rewardPoints;
     protected double size; 
     protected String specialAbility; 
-    protected String imagePath; 
     protected int attackRange; 
     protected double spawnRate; 
+    
+    // position and rendering attributes
+    protected String imagePath; 
     protected ImageView imageView;
+    protected int currentLane;
+    protected double positionX; 
+    protected double positionY;
 
     public Zombie(double startX, double startY, int lane, String imageFileName) {
         this.positionX = startX;
@@ -36,6 +41,7 @@ public abstract class Zombie {
             this.imageView.setTranslateX(this.positionX);
             this.imageView.setTranslateY(this.positionY);
             
+            // rendering size adjustments
             this.imageView.setFitWidth(112); 
             this.imageView.setFitHeight(112);
             this.size = 1.0; 
@@ -48,7 +54,7 @@ public abstract class Zombie {
         }
     }
 
-    protected int currentLane;
+
 
     public void update(double deltaTime) {
         if (!isAlive) return;
@@ -58,7 +64,6 @@ public abstract class Zombie {
 
     protected void move(double deltaTime) {
         this.positionX -= this.speed * deltaTime;
-        
         this.imageView.setTranslateX(this.positionX);
     }
 
@@ -70,104 +75,70 @@ public abstract class Zombie {
             // add a death animation or remove from parent here later
         }
     }
+    
+    // GETTERS ===============================================================================
+    public boolean isAlive() {return this.isAlive;}
+    
+    public String getType() { return type; }
+    
+    // gameplay getters ---------------------------------------------------------------------
+    public int getHealth() { return this.health;  }
+   
+    public int getSpeed() { return speed; }
+
+    public int getDamage() { return damage; }
+       
+    public int getLane() { return currentLane; }
+
+    public int getRewardPoints() { return rewardPoints; }
+    
+    public double getSize() { return size; }
+    
+    public String getSpecialAbility() { return specialAbility; }
+    
+    public int getAttackRange() { return attackRange; }
+    
+    public double getSpawnRate() { return spawnRate; }
 
     
-    public ImageView getImageView() {
-        return this.imageView;
-    }
-
-    public boolean isAlive() {
-        return this.isAlive;
-    }
-
-    public int getHealth() { 
-    	return health; 
-    }
-    public void setHealth(int health) { 
-    	
-    	this.health = health; 
-    }
-
-    public int getSpeed() { 
-    	return speed; 
-    }
-    public void setSpeed(int speed) { 
-    	
-    	this.speed = speed; 
- 
-    }
-
-    public int getDamage() { 
-    	
-    	return damage; 
-    }
-    public void setDamage(int damage) { 
-    	
-    	this.damage = damage; 
-    }
-
-    public String getType() { 
-    	return type; 
-    }
-    protected void setType(String type) { 
-    	this.type = type; 
+    // position and rendering getters ----------------------------------------------------------------
+    public ImageView getImageView() {return this.imageView;}
     
-    } 
+    public String getImagePath() {return imagePath; }
+    
+    public double getPositionX() { return positionX; }
+    
+    public double getPositionY() { return positionY; }
 
-    public double getPositionX() { 
-    	return positionX; 
-    }
-    // setter for positionX if needed (pwede mag add ng push back effect)
+    
+    
+    // SETTERS =======================================================================================
+    protected void setType(String type) { this.type = type; } 
+    
+    // gameplay setters ------------------------------------------------------
+    public void setHealth(int health) { this.health = health; }
+    
+    public void setDamage(int damage) { this.damage = damage; }
+    
+    public void setSpeed(int speed) { this.speed = speed; }
+    
+    public void setAttackRange(int attackRange) { this.attackRange = attackRange; }
+    
+    public void setSpecialAbility(String specialAbility) { this.specialAbility = specialAbility; }
+    
+    public void setSpawnRate(double spawnRate) { this.spawnRate = spawnRate; }
+    
+    public void setRewardPoints(int rewardPoints) { this.rewardPoints = rewardPoints; }
+    
+    // position  and rendering setters ----------------------------------------------------------
+    public void setPositionY(double positionY) { this.imageView.setTranslateY(positionY); }
+    
+    public void setLane(int currentLane) { this.currentLane = currentLane; }
+    
     public void setPositionX(double positionX) { 
         this.positionX = positionX;
         this.imageView.setTranslateX(this.positionX); 
     }
 
-    public double getPositionY() { return positionY; }
-    // setter for positionY 
-    public void setPositionY(double positionY) { 
-        this.imageView.setTranslateY(positionY); 
-    }
 
-    public int getLane() { return currentLane; }
-    public void setLane(int currentLane) { this.currentLane = currentLane; }
-
-    
-    public int getRewardPoints() { 
-    	return rewardPoints; 
-    }
-    public void setRewardPoints(int rewardPoints) { 
-    	this.rewardPoints = rewardPoints; 
-    
-    }
-
-    public double getSize() { return size; }
-    public void setSize(double size) { 
-        this.size = size;
-        this.imageView.setFitWidth(112 * size); 
-        this.imageView.setFitHeight(112 * size);
-    }
-
-    public String getSpecialAbility() { return specialAbility; }
-    public void setSpecialAbility(String specialAbility) { this.specialAbility = specialAbility; }
-
-    public String getImagePath() {     	
-    	return imagePath; 
-    }
-
-
-    public int getAttackRange() { 
-    	return attackRange; 
-    	
-    }
-    public void setAttackRange(int attackRange) { 
-    	this.attackRange = attackRange; 
-    }
-
-    public double getSpawnRate() { 
-    	return spawnRate; 
-    }
-    public void setSpawnRate(double spawnRate) { 
-    	this.spawnRate = spawnRate; 
-    }
 }
