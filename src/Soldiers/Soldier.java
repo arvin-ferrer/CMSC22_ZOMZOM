@@ -7,7 +7,7 @@ public abstract class Soldier{
 	//constants
 	public static final String ARCHER =	"Archer";
 	public static final String SPEARMAN = "Spearman";
-	public static final String SWORDSMAN = "Swordsman";
+//	public static final String SWORDSMAN = "Swordsman";
 	
 	
 	//game attributes
@@ -15,7 +15,8 @@ public abstract class Soldier{
     protected int damage;
     protected String type; 
     protected boolean isAlive; 
-     
+    protected int SoldierCost;
+    
     //positions
     private int lane;
     private int col;
@@ -57,9 +58,13 @@ public abstract class Soldier{
         
         // add other update logic here like attack(), checkCollision() etc.
     }
+    public int getSoldierCost() {
+		return this.SoldierCost;
+	}
 
-
-
+    public void setSoldierCost(int cost) {
+    	this.SoldierCost = cost;
+    }
     public void takeDamage(int amount) { 
         this.health -= amount;
         if (this.health <= 0) {

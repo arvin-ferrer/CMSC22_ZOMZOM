@@ -8,12 +8,14 @@ public class Archer extends Soldier{
 	private static final int DAMAGE = 10 ;
 	private static final int WIDTH = 112 ;
 	private static final int HEIGHT = 112 ;
-
+	private static final int COST = 50;
 	
-	public Archer(int col, int lane) {
+	
+	public Archer(int col, int lane, int cost) {
 		super(col, lane, Archer.WIDTH, Archer.HEIGHT, IMAGE_FILE);
 		setDamage(DAMAGE);
 		setHealth(HEALTH);
 		setType(TYPE);
+		setSoldierCost(COST);
 	}
 }

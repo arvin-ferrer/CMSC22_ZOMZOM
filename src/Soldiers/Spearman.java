@@ -7,12 +7,13 @@ public class Spearman extends Soldier{
 	private static final int DAMAGE = 50 ;
 	private static final int WIDTH = 132 ;
 	private static final int HEIGHT = 132 ;
-
+	private static final int COST = 75;
 	
-	public Spearman(int col, int lane) {
+	public Spearman(int col, int lane, int cost) {
 		super(col, lane, Spearman.WIDTH, Spearman.HEIGHT, IMAGE_FILE);
 		setDamage(DAMAGE);
 		setHealth(HEALTH);
 		setType(TYPE);
+		setSoldierCost(COST);
 	}
 }

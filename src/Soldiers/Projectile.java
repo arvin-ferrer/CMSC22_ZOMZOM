@@ -2,7 +2,6 @@ package Soldiers;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
 public class Projectile {
 
     // load the image

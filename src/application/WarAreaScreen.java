@@ -33,7 +33,7 @@ public class WarAreaScreen {
     private Main mainApp;
     private GameMap gameMap; // handles logic for occupied squares
     private StackPane gamePane; 
-    
+    private Player player;
     // list for zombies and soldiers
     private List<Zombie> zombies;
     private List<Soldier> soldiers;
@@ -60,10 +60,11 @@ public class WarAreaScreen {
         this.zombies = new ArrayList<>();
         this.random = new Random(); 
         this.soldiers = new ArrayList<>();
-        
+        this.player = new Player(selectedSoldierType, selectedSoldierType, 500, 0, 0); // starting currency
         // new lists
         this.projectiles = new ArrayList<>();
         this.soldierAttackTimers = new HashMap<>();
+        player.setCurrency(500); 
      }
 
     public void showScreen() {
@@ -408,22 +409,25 @@ public class WarAreaScreen {
             System.out.println("Cannot place soldier at " + col + "," + lane + " - Slot Occupied!");
             return;
         }
-
+    
     	Soldier newSoldier = null;
     	switch (soldierType) {
     		case Soldier.ARCHER:
-    			newSoldier = new Archer(col, lane);
+    			newSoldier = new Archer(col, lane, 50);
     			break;
     		case Soldier.SPEARMAN:
-    			newSoldier = new Spearman(col, lane);
+    			newSoldier = new Spearman(col, lane, 70);
     			break;
     	}
-    	
-    	if (newSoldier != null) {
+    	 System.out.println(player.getCurrency() + " currency left.");
+         System.out.println(newSoldier.getSoldierCost() + " cost of soldier.");
+    	if (newSoldier != null && player.getCurrency() >= newSoldier.getSoldierCost()) {
             soldiers.add(newSoldier);
             soldierAttackTimers.put(newSoldier, 0.0);
             gamePane.getChildren().add(newSoldier.getImageView());
-            
+            player.deductCurrency(newSoldier.getSoldierCost());
+            System.out.println(player.getCurrency() + " currency left.");
+            System.out.println(newSoldier.getSoldierCost() + " cost of soldier.");
             //mark as occupied
             gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
         }
