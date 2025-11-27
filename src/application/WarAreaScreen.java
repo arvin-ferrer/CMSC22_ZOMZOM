@@ -190,7 +190,8 @@ public class WarAreaScreen {
                 if (spawnTimer >= 3.0) {
                     int randomLane = random.nextInt(6); 
                     spawnZombie(randomLane);
-                    spawnTimer = 0;
+                    int randomSpawnTimer = random.nextInt(4); // 0 to 2 seconds
+                    spawnTimer = randomSpawnTimer;
                 }
                 
                 // -------------------------------------------------------------

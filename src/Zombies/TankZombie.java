@@ -10,7 +10,7 @@ public class TankZombie extends Zombie {
         super(startX, 0, lane, IMAGE_FILE); 
         
         setType("Tank");
-        setHealth(100);
+        setHealth(200);
         setSpeed(30); // move 40 px per sec
         setDamage(10);
         setRewardPoints(10);
