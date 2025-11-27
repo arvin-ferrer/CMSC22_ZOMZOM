@@ -44,6 +44,9 @@ public class WarAreaScreen {
     // Map to track attack cooldowns 
     private java.util.Map<Soldier, Double> soldierAttackTimers;
     
+    // --- NEW: Map to track Zombie attack cooldowns ---
+    private java.util.Map<Zombie, Double> zombieAttackTimers;
+    
     private long lastUpdateTime = 0;
     
     // randomizer
@@ -61,9 +64,13 @@ public class WarAreaScreen {
         this.random = new Random(); 
         this.soldiers = new ArrayList<>();
         this.player = new Player(selectedSoldierType, selectedSoldierType, 500, 0, 0); // starting currency
+        
         // new lists
         this.projectiles = new ArrayList<>();
         this.soldierAttackTimers = new HashMap<>();
+        // Initialize zombie timer map
+        this.zombieAttackTimers = new HashMap<>();
+        
         player.setCurrency(500); 
      }
 
@@ -200,18 +207,60 @@ public class WarAreaScreen {
                 updateProjectiles(deltaTime);
                 // -------------------------------------------------------------
 
-                // remove dead zombies
+                // -------------------------------------------------------------
+                // UPDATED: Logic to handle Zombie Movement AND Attacking
+                // -------------------------------------------------------------
                 Iterator<Zombie> iterator = zombies.iterator();
                 while (iterator.hasNext()) {
                     Zombie zombie = iterator.next();
+                    
                     if (zombie.isAlive()) {
-                        zombie.update(deltaTime);
+                        
+                        // 1. manage Zombie Attack Timer
+                        double zCooldown = zombieAttackTimers.getOrDefault(zombie, 0.0);
+                        if (zCooldown > 0) {
+                            zombieAttackTimers.put(zombie, zCooldown - deltaTime);
+                        }
+
+                        // 2. check for collision with any soldier
+                        boolean isEating = false;
+                        Soldier victim = null;
+
+                        for (Soldier s : soldiers) {
+                            if (s.isAlive() && s.getLane() == zombie.getLane()) {
+                                // Calculate distance between Zombie and Soldier
+                                double dist = zombie.getImageView().getTranslateX() - s.getImageView().getTranslateX();
+                                
+                                // Overlap threshold (approx 60-80px depending on sprite size)
+                                // If zombie is to the right of soldier, but touching
+                                if (dist > -20 && dist < 80) { 
+                                    isEating = true;
+                                    victim = s;
+                                    break; 
+                                }
+                            }
+                        }
+
+                        if (isEating && victim != null) {
+                            // ATTACK LOGIC: Don't move, just eat
+                            if (zCooldown <= 0) {
+                                System.out.println("Zombie attacking soldier!");
+                                victim.takeDamage(zombie.getDamage());
+                                zombieAttackTimers.put(zombie, 1.0); // 1 second cooldown between bites
+                            }
+                        } else {
+                            // MOVEMENT LOGIC: Only move if not eating
+                            zombie.update(deltaTime);
+                        }
+                        
+                        // 3. Remove if out of bounds
                         double currentX = zombie.getImageView().getTranslateX();
                         if (currentX < -400) {
                             gamePane.getChildren().remove(zombie.getImageView());
                             iterator.remove();
                         }
                     } else {
+                        // Remove dead zombie
                         gamePane.getChildren().remove(zombie.getImageView());
                         iterator.remove();
                     }
