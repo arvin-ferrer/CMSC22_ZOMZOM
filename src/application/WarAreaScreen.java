@@ -71,7 +71,7 @@ public class WarAreaScreen {
         // Initialize zombie timer map
         this.zombieAttackTimers = new HashMap<>();
         
-        player.setCurrency(500); 
+        player.setCurrency(1500); 
      }
 
     public void showScreen() {
