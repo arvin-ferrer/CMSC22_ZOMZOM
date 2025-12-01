@@ -9,7 +9,7 @@ public class NormalZombie extends Zombie {
     public NormalZombie(double startX, int lane) {
         super(startX, 0, lane, IMAGE_FILE); 
         
-        setType("Normal");
+        setType(Zombie.NORMAL);
         setHealth(100);
         setSpeed(40); // move 40 px per sec
         setDamage(10);

@@ -6,6 +6,10 @@ import javafx.scene.image.Image;
 public abstract class Zombie {
 	
 	protected String type; // "Normal", "Speed", "Flying", "Tank"
+	public static final String NORMAL = "NORMAL";
+	public static final String NURSE = "NURSE";
+	public static final String TANK = "TANK";
+	
 	
 	//gameplay attributes
     protected int health;

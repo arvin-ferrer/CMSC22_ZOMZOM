@@ -9,7 +9,7 @@ public class nurseZombie extends Zombie {
     public nurseZombie(double startX, int lane) {
         super(startX, 0, lane, IMAGE_FILE); 
         
-        setType("fast");
+        setType(Zombie.NURSE);
         setHealth(50);
         setSpeed(100); // move 40 px per sec
         setDamage(10);

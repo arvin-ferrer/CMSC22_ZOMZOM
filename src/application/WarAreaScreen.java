@@ -224,6 +224,19 @@ public class WarAreaScreen {
             } else {
                 gamePane.getChildren().remove(zombie.getImageView());
                 iterator.remove();
+                // adds currency when killing zombie
+                switch(zombie.getType()) {
+                case Zombie.NORMAL:
+                	this.player.addCurrency(15);
+                	break;
+                case Zombie.NURSE:
+                	this.player.addCurrency(25);
+                	break;
+                case Zombie.TANK:
+                	this.player.addCurrency(50);
+                	break;
+                }
+                System.out.println(this.player.getCurrency());
             }
         }
     }

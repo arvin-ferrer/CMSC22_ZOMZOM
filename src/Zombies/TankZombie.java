@@ -9,7 +9,7 @@ public class TankZombie extends Zombie {
     public TankZombie(double startX, int lane) {
         super(startX, 0, lane, IMAGE_FILE); 
         
-        setType("Tank");
+        setType(Zombie.TANK);
         setHealth(200);
         setSpeed(30); // move 40 px per sec
         setDamage(10);
