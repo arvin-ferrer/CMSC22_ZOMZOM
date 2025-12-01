@@ -237,3 +237,12 @@
     -fx-background-color: #222; 
 }
 
+/* --- INVENTORY POPUP STYLES --- */
+
+#inventory-bg {
+    /* Make sure inventorybg.jpg is in src/application */
+    -fx-background-image: url("../assets/inventorybg.png");
+    -fx-background-size: 480px 640px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
