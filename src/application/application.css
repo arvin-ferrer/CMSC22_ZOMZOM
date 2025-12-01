@@ -246,6 +246,28 @@
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
 }
+/* --- INVENTORY GRID STYLES --- */
+
+#inventory-grid {
+    -fx-alignment: center;
+    -fx-hgap: 2px; 
+    -fx-vgap: 2px;
+}
+
+.inventory-slot {
+    -fx-background-color: transparent;
+    
+    -fx-border-color: rgba(0, 255, 0, 0.5); 
+    -fx-border-width: 1px;
+    
+    -fx-cursor: hand;
+}
+
+.inventory-slot:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+}
+
+/*====== */
 #shop-bg{
 	-fx-background-image: url("../assets/shopbg.jpg");
     -fx-background-size: 400px 350px;

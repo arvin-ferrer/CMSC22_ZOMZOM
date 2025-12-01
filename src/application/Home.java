@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -93,7 +94,7 @@ public class Home {
 
     private void createInventoryOverlay() {
         inventoryOverlay = new StackPane();
-        inventoryOverlay.setVisible(false); // Start hidden
+        inventoryOverlay.setVisible(false);
         inventoryOverlay.setAlignment(Pos.CENTER);
         
         StackPane dimmer = new StackPane();
@@ -101,17 +102,50 @@ public class Home {
         dimmer.setOnMouseClicked(e -> inventoryOverlay.setVisible(false));
         
         StackPane inventoryContainer = new StackPane();
-        inventoryContainer.setId("inventory-bg"); // css id
-        inventoryContainer.setMaxSize(480, 640); // size of image
+        inventoryContainer.setId("inventory-bg");
+        inventoryContainer.setMaxSize(480, 640);
         inventoryContainer.setPrefSize(480, 640);
 
+        GridPane inventoryGrid = new GridPane();
+        inventoryGrid.setId("inventory-grid"); // for css
+        // inventoryGrid.setGridLinesVisible(true); // uncomment to debug alignment
+        
+        int cols = 7;
+        int rows = 5;
+        int slotSize = 52; 
+
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                Pane slot = new Pane();
+                slot.setPrefSize(slotSize, slotSize);
+                slot.getStyleClass().add("inventory-slot"); // CSS style
+                
+                // Click Logic
+                int finalX = x;
+                int finalY = y;
+                slot.setOnMouseClicked(e -> {
+                    System.out.println("Clicked Inventory Slot: " + finalX + "," + finalY);
+                    // check your Player's inventory list 
+                    // display the item details in the top box.
+                });
+                
+                inventoryGrid.add(slot, x, y);
+            }
+        }
+
+        // align to bottom center
+        StackPane.setAlignment(inventoryGrid, Pos.BOTTOM_CENTER);
+        // Top, Right, Bottom, Left
+        StackPane.setMargin(inventoryGrid, new Insets(250, 0, 0, 0)); 
+
+        inventoryContainer.getChildren().add(inventoryGrid);
+        
+        // Close Button
         Button closeButton = new Button("X");
         closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold;");
         closeButton.setOnAction(e -> inventoryOverlay.setVisible(false));
-        
         StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
-        StackPane.setMargin(closeButton, new Insets(10, 10, 0, 0));
-
+        StackPane.setMargin(closeButton, new Insets(0, 0, 0, 0));
         inventoryContainer.getChildren().add(closeButton);
         
         inventoryOverlay.getChildren().addAll(dimmer, inventoryContainer);
