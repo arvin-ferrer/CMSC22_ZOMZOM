@@ -71,7 +71,7 @@ public class Main extends Application {
         }
         
         public Path getSavePath() {
-            return savePath;
+            return savePath; 
         }
 
         public Player getCurrentPlayer() {
