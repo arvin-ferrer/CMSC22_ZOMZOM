@@ -23,7 +23,7 @@ public abstract class Item {
     protected String imagePath;
     protected ImageView imageView;
 
-    // Updated Constructor to include Position (col, lane)
+    
     public Item(int col, int lane, int health, String type, String imageFileName) {
         this.col = col;
         this.lane = lane;
@@ -54,7 +54,7 @@ public abstract class Item {
     }
 
     public void update(double deltaTime) {
-        // FIX: If it IS destroyed, stop updating.
+
         if (isDestroyed) return;
         
         

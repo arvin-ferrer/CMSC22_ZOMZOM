@@ -102,7 +102,7 @@ public class Home {
         StackPane dimmer = new StackPane();
         dimmer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
         dimmer.setOnMouseClicked(e -> inventoryOverlay.setVisible(false));
-        
+        	
         StackPane inventoryContainer = new StackPane();
         inventoryContainer.setId("inventory-bg");
         inventoryContainer.setMaxSize(480, 640);
