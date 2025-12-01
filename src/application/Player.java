@@ -1,6 +1,8 @@
 package application;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Player implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -11,43 +13,60 @@ public class Player implements Serializable {
     private int experiencePoints;
     private int experienceToNextLevel; 
     private int currency;
+    private int burger;
+    private List<InventoryItem> inventory; 
 
     public Player(String username, String password) {
+        // ... (existing constructor) ...
         this.username = username;
         this.password = password;
-        
         this.level = 1;
         this.experiencePoints = 0;
-        this.currency = 500; // starting currency
-        this.experienceToNextLevel = 100; // XP needed for level 2
-
+        this.currency = 500; 
+        this.experienceToNextLevel = 100;
+        
+        this.inventory = new ArrayList<>();
     }
 
-    public Player(String username, String password, int level, int xp, int currency) {
+    public Player(String username, String password, int level, int xp, int currency, int burger) {
         this.username = username;
         this.password = password;
         this.level = level;
+        this.burger = burger;
         this.experiencePoints = xp;
         this.currency = currency;
+        this.experienceToNextLevel = 100 * level; 
         
-        this.experienceToNextLevel = 100 * level; // sample lang pwede ibahin pano nagl-level up
+        this.inventory = new ArrayList<>();
         
-        // this.inventory = ... // load this from a text file
+        addItem(new InventoryItem("Medkit", "/assets/medkit.png", "Heals 50 HP"));
+        addItem(new InventoryItem("Burger", "/assets/burger-sprite.png", "Food for Soldiers"));
+        addItem(new InventoryItem("Bandage", "/assets/bandage.png", "Heals 50 HP"));
     }
-    public void addExperience(int amount) {
+    private void addItem(InventoryItem item) {
+        inventory.add(item);
+    }
+    
+
+    public List<InventoryItem> getInventory() {
+        if (this.inventory == null) {
+            this.inventory = new ArrayList<>();
+        }
+        for(int i = 0; i < inventory.size(); i++) {
+			System.out.println("Item " + i + ": " + inventory.get(i).getName());
+		}
+        return this.inventory;
+
+    }
+    
+	public void addExperience(int amount) {
         this.experiencePoints += amount;
-        
         while (this.experiencePoints >= this.experienceToNextLevel) {
-            
             this.level++;
-            
             // subtract the XP required for the level-up
             this.experiencePoints -= this.experienceToNextLevel;
-            
             this.currency += 100; // example reward
-            
             this.experienceToNextLevel = 100 * this.level; 
-            
             System.out.println("Congratulations, " + this.username + "! You are now level " + this.level);
         }
     }
@@ -57,7 +76,18 @@ public class Player implements Serializable {
         return username;
     }
 
-
+    public void addBurger(int amount) {
+		this.burger += amount;
+	}
+    public int getBurger() { 
+    	return burger; 
+    }
+    public void deductBurger(int amount) {
+		this.burger -= amount;
+	}
+    public void setBurger(int burger) {
+    	this.burger = burger;
+    }
     public boolean checkPassword(String attempt) {
         return this.password.equals(attempt);
     }

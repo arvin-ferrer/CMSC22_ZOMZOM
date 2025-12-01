@@ -3,101 +3,93 @@ package Items;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 
-public abstract class Item{
-	//constants
-	public static final String BARRIER = "Barrier";
-	public static final String BOMB = "Bomb";
-	public static final String POTION = "Health Potion";
-	public static final String COIN = "Coin";
-	
-	
-	
-	//game attributes
+public abstract class Item {
+    // Constants
+    public static final String BARRIER = "Barrier";
+    public static final String BOMB = "Bomb";
+    public static final String POTION = "Health Potion";
+    public static final String COIN = "Coin";
+    
+    // Game attributes
     protected int health;
     protected String type; 
     protected boolean isDestroyed; 
     
-    //positions
-//    private int lane;
-//    private int col;
+    // Positions (Crucial for collision detection)
+    protected int lane;
+    protected int col;
     
-    //for rendering
+    // For rendering
     protected String imagePath;
     protected ImageView imageView;
 
-    public Item(int health, String type, String imageFileName) {
-//        this.lane = lane;
-//        this.isAlive = true;
-        this.imagePath = imageFileName;
-//        this.col = col;
+    // Updated Constructor to include Position (col, lane)
+    public Item(int col, int lane, int health, String type, String imageFileName) {
+        this.col = col;
+        this.lane = lane;
         this.health = health;
         this.type = type;
+        this.imagePath = imageFileName;
+        this.isDestroyed = false; // Initially, the item is NOT destroyed
 
-//		 int lane = 0; //default lane
-//		 int col = 0; //default col
-//		 int width = 96; //default width
-//		 int height = 96; //default height
-
-        // load the GIF
+     
         try {
-            Image soldierImage = new Image(getClass().getResourceAsStream(imagePath));
-            this.imageView = new ImageView(soldierImage);
+         
+            Image itemImage = new Image(getClass().getResourceAsStream(imagePath));
+            this.imageView = new ImageView(itemImage);
             
-            // set x position
-//            this.imageView.setTranslateX((this.col * 96 ) - 360);
-//            this.imageView.setTranslateY(this.lane * 96 - 192); 
+            // Set rendering size (96x96 matches your map tiles)
+            this.imageView.setFitWidth(96); 
+            this.imageView.setFitHeight(96); 
             
-            // set image size
-//            this.imageView.setFitWidth(width); 
-//            this.imageView.setFitHeight(height); 
+         
+            this.imageView.setTranslateX(this.col * 96 + 160); 
+            this.imageView.setTranslateY(this.lane * 80 + 80); 
             
         } catch (Exception e) {
-            System.err.println("ERROR: Could not load zombie image: " + imagePath);
-            e.printStackTrace();
-            this.imageView = new ImageView(); 
+            System.err.println("ERROR: Could not load item image: " + imagePath);
+            // e.printStackTrace(); // Optional: keep clean console
+            this.imageView = new ImageView(); // Fallback to empty to prevent crash
         }
     }
-
-    
 
     public void update(double deltaTime) {
-        if (!isDestroyed) return;
+        // FIX: If it IS destroyed, stop updating.
+        if (isDestroyed) return;
         
-        // add other update logic here like attack(), checkCollision() etc.
+        
     }
 
-
-
     public void takeDamage(int amount) { 
+        if (isDestroyed) return;
+
         this.health -= amount;
+        
+       
         if (this.health <= 0) {
-            this.isDestroyed = false;
+            this.isDestroyed = true;
             this.imageView.setVisible(false);
-            // add a death animation or remove from parent here later
+            System.out.println(this.type + " was destroyed!");
         }
     }
 
-    
-    
+   
+    public boolean isAlive() { 
+        return !this.isDestroyed; 
+    }
 
-    public boolean isAlive() { return this.isDestroyed; }
-
-    //setters
     public void setHealth(int health) { this.health = health; }
-//    public void setDamage(int damage) { this.damage = damage; }
-    protected void setType(String type) {this.type = type;} 
-//    public void setLane(int currentLane) { this.lane = currentLane; }
     
-    //getters
-    public ImageView getImageView() {return this.imageView;}
+    public ImageView getImageView() { return this.imageView; }
     public int getHealth() { return health; }
     public String getType() { return type; }
-//    public int getLane() { return this.lane; }
-//    public int getDamage() { return damage; }
-    public String getImagePath() {  return imagePath; }
-//    public int[] getPosition() {
-//    	int[] coordinates = {this.col, this.lane};
-//    	return coordinates;
-//    	}
-
+    public String getImagePath() { return imagePath; }
+    
+    // Position Getters are needed for Zombie collision logic
+    public int getLane() { return this.lane; }
+    public int getCol() { return this.col; }
+    
+    public int[] getPosition() {
+        return new int[] {this.col, this.lane};
+    }
 }

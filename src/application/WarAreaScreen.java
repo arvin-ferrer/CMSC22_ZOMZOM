@@ -19,6 +19,7 @@ import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -27,59 +28,60 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 public class WarAreaScreen {
 
     private Main mainApp;
-    private AnimationTimer gameLoop; // main game loop
+    private AnimationTimer gameLoop;
 
-    private GameMap gameMap; // handles logic for occupied squares
+    private GameMap gameMap;
     private StackPane gamePane;
     private StackPane sceneRoot;
     private Scene scene;
-   // list for zombies and soldiers
+    
     private Player player;
     private List<Zombie> zombies;
     private List<Soldier> soldiers;
-    
-    // list to tract arrows/bullets
     private List<Projectile> projectiles;
     
-    // Map to track attack cooldowns
     private java.util.Map<Soldier, Double> soldierAttackTimers;
-    
-    // Map to to track zombie attack cooldowns
     private java.util.Map<Zombie, Double> zombieAttackTimers;
+    
     private long lastUpdateTime = 0;
     private Random random;
     private double spawnTimer = 0;
     
+    // Labels for the UI
+    private Label burgerLabel;
+    private Label coinLabel;
     
-    // for planting
-    private String selectedSoldierType = null; // currently clicked
-    private ImageView selectedCardView = null; // for visual glow effect
+    private String selectedSoldierType = null;
+    private ImageView selectedCardView = null;
   
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
-        this.gameMap = new GameMap(); // initialize the map logic
+        this.gameMap = new GameMap();
         this.zombies = new ArrayList<>();
         this.random = new Random();
         this.soldiers = new ArrayList<>();
-        this.player = new Player(selectedSoldierType, selectedSoldierType, 500, 0, 0); // starting currency
+        
+        // Level 1, 0 XP, 0 Coins, 500 Burgers to start the fight
+//        this.player = new Player("Survivor", "pass", 1, 0, 0, 500); 
+        this.player = mainApp.getCurrentPlayer(); // Use the getter from Main
         this.projectiles = new ArrayList<>();
         this.soldierAttackTimers = new HashMap<>();
         this.zombieAttackTimers = new HashMap<>();
         
-        player.setCurrency(500); 
-
         gamePane = new StackPane();
         gamePane.setId("war-area-background");
         gamePane.setPrefSize(1280, 720);
         gamePane.setMaxSize(1280, 720);
 
-        // transparent click area for house 
+        // Clickable House
         Pane houseClickArea = new Pane();
-        houseClickArea.setPrefSize(250, 720);
+//        houseClickArea.setPrefSize(250, 720);
+        houseClickArea.setMaxSize(200, 320);
         houseClickArea.setStyle("-fx-background-color: transparent;");
         houseClickArea.setCursor(javafx.scene.Cursor.HAND);
         houseClickArea.setOnMouseClicked(event -> {
@@ -128,6 +130,48 @@ public class WarAreaScreen {
         StackPane.setMargin(seedBank, new Insets(20, 0, 0, 20));
         gamePane.getChildren().add(seedBank);
 
+        // RESOURCE STATUS BAR (Burgers & Coins) 
+        HBox resourceBar = new HBox(20); 
+        resourceBar.setAlignment(Pos.CENTER_LEFT);
+        resourceBar.setPadding(new Insets(5, 15, 5, 15));
+        resourceBar.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6); -fx-background-radius: 15;");
+        resourceBar.setMaxHeight(50);
+        resourceBar.setMaxWidth(300);
+
+        HBox burgerBox = new HBox(10);
+        burgerBox.setAlignment(Pos.CENTER_LEFT);
+        ImageView burgerIcon = new ImageView();
+        try {
+            burgerIcon.setImage(new Image(getClass().getResourceAsStream("/assets/burger-sprite.png"))); 
+        } catch (Exception e) { System.out.println("burger.png not found"); }
+        burgerIcon.setFitWidth(32);
+        burgerIcon.setFitHeight(32);
+        
+        burgerLabel = new Label("0"); // Initial value
+        burgerLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 20; -fx-text-fill: white;");
+        burgerBox.getChildren().addAll(burgerIcon, burgerLabel);
+
+        HBox coinBox = new HBox(10);
+        coinBox.setAlignment(Pos.CENTER_LEFT);
+        ImageView coinIcon = new ImageView();
+        try {
+            coinIcon.setImage(new Image(getClass().getResourceAsStream("/assets/coin-sprite.gif"))); 
+        } catch (Exception e) { System.out.println("coin.png not found"); }
+        coinIcon.setFitWidth(32);
+        coinIcon.setFitHeight(32);
+        
+        coinLabel = new Label("0"); // Initial value
+        coinLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 20; -fx-text-fill: gold;");
+        coinBox.getChildren().addAll(coinIcon, coinLabel);
+
+        resourceBar.getChildren().addAll(burgerBox, coinBox);
+
+        StackPane.setAlignment(resourceBar, Pos.TOP_LEFT);
+        StackPane.setMargin(resourceBar, new Insets(30, 0, 0, 550)); 
+        
+        gamePane.getChildren().add(resourceBar);
+        // ----------------------------------------------------
+
         sceneRoot = new StackPane();
         sceneRoot.setId("scene-root");
         sceneRoot.getChildren().add(gamePane);
@@ -135,7 +179,11 @@ public class WarAreaScreen {
 
         this.scene = new Scene(sceneRoot, 1280, 720);
         this.scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-        // ----------------------------------------
+        
+        // Font loading
+        try {
+            Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12);
+        } catch (Exception e) { System.out.println("Font not found"); }
 
         // Initial Spawns
         spawnZombie(0);
@@ -145,16 +193,11 @@ public class WarAreaScreen {
 
     public void showScreen() {
     	mainApp.getPrimaryStage().setResizable(false);
-        
-        // Set the existing scene ---
         mainApp.getPrimaryStage().setScene(this.scene);
-        
         mainApp.getPrimaryStage().setTitle("ZOMZOM 2.0 - War Area");
         mainApp.getPrimaryStage().show();
 
         lastUpdateTime = 0;
-
-        // start loop
         createAndStartGameLoop();
     }
 
@@ -172,7 +215,14 @@ public class WarAreaScreen {
                 }
                 double deltaTime = (now - lastUpdateTime) / 1_000_000_000.0;
                 lastUpdateTime = now;
-
+                
+                if (burgerLabel != null) {
+                   burgerLabel.setText(String.valueOf(player.getBurger())); 
+                }
+                if (coinLabel != null) {
+                   coinLabel.setText(String.valueOf(player.getCurrency())); 
+                }
+       
                 spawnTimer += deltaTime;
                 if (spawnTimer >= 5.0) {
                     int randomLane = random.nextInt(6);
@@ -224,97 +274,63 @@ public class WarAreaScreen {
             } else {
                 gamePane.getChildren().remove(zombie.getImageView());
                 iterator.remove();
-                // adds currency when killing zombie
-                switch(zombie.getType()) {
-                case Zombie.NORMAL:
-                	this.player.addCurrency(15);
-                	break;
-                case Zombie.NURSE:
-                	this.player.addCurrency(25);
-                	break;
-                case Zombie.TANK:
-                	this.player.addCurrency(50);
-                	break;
-                }
-                System.out.println(this.player.getCurrency());
+                
+                
+                this.player.addCurrency(15); 
+                System.out.println("Zombie killed! Gold: " + this.player.getCurrency());
             }
         }
     }
 
-    // for creating cards
+  
     private ImageView createCard(String imageName, String soldierType) {
         ImageView cardView = new ImageView();
         try {
-            // load image
             cardView.setImage(new Image(getClass().getResourceAsStream(imageName)));
         } catch (Exception e) {
             System.err.println("Could not load card image: " + imageName);
         }
-        
-        // styling ng card
         cardView.setFitWidth(96);
         cardView.setFitHeight(96);
         cardView.setPreserveRatio(true);
-        cardView.setCursor(javafx.scene.Cursor.HAND); // cursor change
-
-        // click logic
+        cardView.setCursor(javafx.scene.Cursor.HAND); 
         cardView.setOnMouseClicked(e -> {
-            // set the selection variable
             this.selectedSoldierType = soldierType;
-            System.out.println("Selected Card: " + soldierType);
-            
-            // visual highlight
-            if (selectedCardView != null) {
-                selectedCardView.setEffect(null); // Remove glow from previous
-            }
+            if (selectedCardView != null) selectedCardView.setEffect(null);
             selectedCardView = cardView;
-            
-            // add yellow glow
             DropShadow glow = new DropShadow();
             glow.setColor(Color.GOLD);
             glow.setWidth(20);
             glow.setHeight(20);
             cardView.setEffect(glow);
         });
-
         return cardView;
     }
+
+   
     private void updateSoldiers(double deltaTime) {
-        // We use a basic loop here. Removal happens in removeDeadSoldiers() to avoid concurrent mod errors.
         for (Soldier soldier : soldiers) {
             if (!soldier.isAlive()) continue;
-
-            // update cooldown
             double currentCooldown = soldierAttackTimers.getOrDefault(soldier, 0.0);
             if (currentCooldown > 0) {
                 soldierAttackTimers.put(soldier, currentCooldown - deltaTime);
                 continue;
             }
-
-            // ARCHER
             if (soldier instanceof Archer) {
                 boolean hasTarget = false;
-                
                 for (Zombie z : zombies) {
-                	
                     if (z.isAlive() && z.getLane() == soldier.getLane()) {
-                        
-                    	// check if zombie is to the right of soldier and on screen
                         if (z.getImageView().getTranslateX() > soldier.getImageView().getTranslateX() 
-                                && z.getPositionX() < 600) { 
-                            hasTarget = true;
-                            break;
+                                && z.getPositionX() < 800) { 
+                            hasTarget = true; break;
                         }
                     }
                 }
-                
                 if (hasTarget) {
                     shootProjectile(soldier);
                     soldierAttackTimers.put(soldier, 1.5); 
                 }
-            }
-            // SPEARMAN
-            else if (soldier instanceof Spearman) {
+            } else if (soldier instanceof Spearman) {
                 for (Zombie z : zombies) {
                     if (z.isAlive() && z.getLane() == soldier.getLane()) {
                         double dist = z.getImageView().getTranslateX() - soldier.getImageView().getTranslateX();
@@ -328,60 +344,38 @@ public class WarAreaScreen {
             }
         }
     }
-    
 
-    // handle soldier death and map updates
     private void removeDeadSoldiers() {
         Iterator<Soldier> it = soldiers.iterator();
         while(it.hasNext()) {
             Soldier s = it.next();
             if(!s.isAlive()) {
-                // remove visual
                 gamePane.getChildren().remove(s.getImageView());
-                
-                // free up the map slot so we can plant there again
-                int[] pos = s.getPosition(); // Returns {col, lane}
+                int[] pos = s.getPosition();
                 gameMap.setSlot(pos[0], pos[1], GameMap.SLOT_EMPTY);
-                
-                // remove from logical list
                 it.remove();
             }
         }
     }
-    
-    // for shooting
+
     private void shootProjectile(Soldier soldier) {
-    	//position of the projectile
         double startX = soldier.getImageView().getTranslateX() + 50;
         double startY = soldier.getImageView().getTranslateY(); 
-        
-       
         Projectile proj = new Projectile(startX, startY, soldier.getLane(), soldier.getDamage());
-        
-        //add to existing projectiles
         projectiles.add(proj);
         gamePane.getChildren().add(proj.getView());
     }
-    
-    
-    // for moving the projectiles
+
     private void updateProjectiles(double deltaTime) {
-    	
         Iterator<Projectile> it = projectiles.iterator();
-        // while there is a present projectile
         while (it.hasNext()) {
             Projectile p = it.next();
             p.update(deltaTime);
-            
             boolean hit = false;
-            // checks every zombie if they are in the lane
             for (Zombie z : zombies) {
                 if (z.isAlive() && z.getLane() == p.getLane()) {
                     double zX = z.getImageView().getTranslateX();
                     double pX = p.getX();
-                    //
-                    
-                    //if collided
                     if (pX >= zX && pX <= zX + 80) {
                         z.takeDamage(p.getDamage());
                         hit = true;
@@ -389,41 +383,33 @@ public class WarAreaScreen {
                     }
                 }
             }
-            //removing the projectile if it hit a zombie or out of bounds
-            if (hit || p.getX() > 800) { 
+            if (hit || p.getX() > 1280) {
                 p.setInactive();
                 gamePane.getChildren().remove(p.getView());
                 it.remove();
             }
         }
     }
-    // SPAWNERS =================================================================
 
     private void spawnZombie(int lane) {
     	double startX = 1280; 
         int zombieType = random.nextInt(3); 
-        
         Zombie newZombie = null;
-
         switch (zombieType) {
             case 0: newZombie = new NormalZombie(startX, lane); break;
             case 1: newZombie = new TankZombie(startX, lane); break;
             case 2: newZombie = new nurseZombie(startX, lane); break;
         }
-
         if (newZombie != null) {
             zombies.add(newZombie);
             gamePane.getChildren().add(newZombie.getImageView());
         }
     }
     
-    
-    // checks GameMap before adding
+  
     private void addSoldier(String soldierType, int col, int lane) {
-        // if slot is occupied
         if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
-            System.out.println("Cannot place soldier at " + col + "," + lane + " - Slot Occupied!");
-            return;
+            System.out.println("Slot Occupied!"); return;
         }
     
     	Soldier newSoldier = null;
@@ -435,17 +421,21 @@ public class WarAreaScreen {
     			newSoldier = new Spearman(col, lane, 70);
     			break;
     	}
-    	 System.out.println(player.getCurrency() + " currency left.");
-         System.out.println(newSoldier.getSoldierCost() + " cost of soldier.");
-    	if (newSoldier != null && player.getCurrency() >= newSoldier.getSoldierCost()) {
+    	
+    	
+    	int cost = newSoldier.getSoldierCost();
+    	if (newSoldier != null && player.getBurger() >= cost) {
             soldiers.add(newSoldier);
             soldierAttackTimers.put(newSoldier, 0.0);
             gamePane.getChildren().add(newSoldier.getImageView());
-            player.deductCurrency(newSoldier.getSoldierCost());
-            System.out.println(player.getCurrency() + " currency left.");
-            System.out.println(newSoldier.getSoldierCost() + " cost of soldier.");
-            //mark as occupied
+            
+            // DEDUCT BURGER
+            player.deductBurger(cost);
+            System.out.println("Soldier placed. Burgers left: " + player.getBurger());
+            
             gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
+        } else {
+            System.out.println("Not enough burgers!");
         }
     }
 }

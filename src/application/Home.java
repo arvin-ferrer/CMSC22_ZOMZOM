@@ -1,13 +1,15 @@
 package application;
 
+import java.util.List; 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image; 
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 // import javafx.scene.text.Font; 
 
 public class Home {
@@ -107,40 +109,65 @@ public class Home {
         inventoryContainer.setPrefSize(480, 640);
 
         GridPane inventoryGrid = new GridPane();
-        inventoryGrid.setId("inventory-grid"); // for css
-        // inventoryGrid.setGridLinesVisible(true); // uncomment to debug alignment
+        inventoryGrid.setId("inventory-grid"); 
         
         int cols = 7;
         int rows = 5;
         int slotSize = 52; 
 
+        List<InventoryItem> playerItems = mainApp.getCurrentPlayer().getInventory();
+        
+        if (playerItems == null || playerItems.isEmpty()) {
+            System.out.println("Inventory empty (Old Save File detected). Adding starter pack...");
+            playerItems.add(new InventoryItem("Medkit", "/assets/medkit.png", "Heals 50 HP"));
+            playerItems.add(new InventoryItem("Grenade", "/assets/grenade-sprite.png", "Boom"));
+    
+        }
+//         -------------------------------
+
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
                 Pane slot = new Pane();
                 slot.setPrefSize(slotSize, slotSize);
-                slot.getStyleClass().add("inventory-slot"); // CSS style
+                slot.getStyleClass().add("inventory-slot"); 
                 
+                final int index = (y * cols) + x; 
+
+                if (index < playerItems.size()) {
+                    InventoryItem item = playerItems.get(index);
+                    try {
+                        System.out.println("Loading item: " + item.getName());
+                        
+                        ImageView itemIcon = new ImageView(new Image(getClass().getResourceAsStream(item.getImagePath())));
+                        itemIcon.setFitWidth(40); 
+                        itemIcon.setFitHeight(40);
+                        itemIcon.setPreserveRatio(true);
+                        itemIcon.setLayoutX(6);
+                        itemIcon.setLayoutY(6);
+                        slot.getChildren().add(itemIcon);
+                    } catch (Exception e) {
+                        System.err.println("ERROR: Could not load image: " + item.getImagePath());
+                    }
+                }
+
                 // Click Logic
-                int finalX = x;
-                int finalY = y;
+                final List<InventoryItem> finalItemsList = playerItems;
                 slot.setOnMouseClicked(e -> {
-                    System.out.println("Clicked Inventory Slot: " + finalX + "," + finalY);
-                    // check your Player's inventory list 
-                    // display the item details in the top box.
+                    if (index < finalItemsList.size()) {
+                        InventoryItem clickedItem = finalItemsList.get(index);
+                        System.out.println("Selected: " + clickedItem.getName());
+                    }
                 });
                 
                 inventoryGrid.add(slot, x, y);
             }
         }
 
-        // align to bottom center
         StackPane.setAlignment(inventoryGrid, Pos.BOTTOM_CENTER);
-        // Top, Right, Bottom, Left
         StackPane.setMargin(inventoryGrid, new Insets(250, 0, 0, 0)); 
 
         inventoryContainer.getChildren().add(inventoryGrid);
         
-        // Close Button
         Button closeButton = new Button("X");
         closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold;");
         closeButton.setOnAction(e -> inventoryOverlay.setVisible(false));
