@@ -14,7 +14,8 @@ public class Home {
     private Main mainApp;
     private StackPane rootPane; 
     private StackPane inventoryOverlay; 
-
+    private StackPane shopOverlay;
+    
     public Home(Main mainApp) {
         this.mainApp = mainApp;
     }
@@ -50,21 +51,43 @@ public class Home {
             showInventory();
         });
 
-        StackPane.setAlignment(chestClickArea, Pos.TOP_LEFT);
+        StackPane.setAlignment(chestClickArea, Pos.TOP_RIGHT);
         // Margins: Top ~115px, Left ~600px 
-        StackPane.setMargin(chestClickArea, new Insets(115, 0, 0, 600)); 
+        StackPane.setMargin(chestClickArea, new Insets(115, 350, 0, 0)); 
         
         rootPane.getChildren().add(chestClickArea);
 
-
+        
         createInventoryOverlay(); 
         rootPane.getChildren().add(inventoryOverlay); 
 
+        
+        
+        Pane shopClickArea = new Pane();
+        shopClickArea.setPrefSize(20, 20);
+        shopClickArea.setMaxSize(320, 250); // max size
+        shopClickArea.setMinSize(320, 250); // min size
+        shopClickArea.setStyle("-fx-background-color: transparent;"); // invisible
+        shopClickArea.setStyle("-fx-background-color: rgba(255, 0, 0, 0.3);"); // comment this out to make invisible
+        shopClickArea.setCursor(javafx.scene.Cursor.HAND);
+      
+        
+        
+        StackPane.setAlignment(shopClickArea, Pos.TOP_LEFT);
+        StackPane.setMargin(shopClickArea, new Insets(50, 0, 0, 50)); 
+        rootPane.getChildren().add(shopClickArea);
+        createShopOverlay();
+        rootPane.getChildren().add(shopOverlay);
+        shopClickArea.setOnMouseClicked(e -> {
+			showShop();
+		});
+        
+        
         Scene scene = new Scene(rootPane, 1280, 720);
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-
+        
         mainApp.getPrimaryStage().setScene(scene);
-        mainApp.getPrimaryStage().setTitle("ZOMZOM 2.0 - Safe House Interior");
+        mainApp.getPrimaryStage().setTitle("Safe House Interior");
         mainApp.getPrimaryStage().show();
     }
 
@@ -93,9 +116,43 @@ public class Home {
         
         inventoryOverlay.getChildren().addAll(dimmer, inventoryContainer);
     }
+    private void createShopOverlay() {
+        shopOverlay = new StackPane();
+        shopOverlay.setVisible(false); // Start hidden
+        shopOverlay.setAlignment(Pos.CENTER);
+        
+        StackPane dimmer = new StackPane();
+        dimmer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+        
+        dimmer.setOnMouseClicked(e -> shopOverlay.setVisible(false));
+        
+        StackPane shopContainer = new StackPane();
+        shopContainer.setId("shop-bg"); // CSS ID
+        shopContainer.setMaxSize(418, 370);
+        shopContainer.setPrefSize(418, 370);
+
+        Button closeButton = new Button("X");
+        closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold;");
+        
+        closeButton.setOnAction(e -> shopOverlay.setVisible(false));
+        
+        StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(closeButton, new Insets(10, 10, 0, 0));
+
+        shopContainer.getChildren().add(closeButton);
+        
+        shopOverlay.getChildren().addAll(dimmer, shopContainer);
+    }
 
     private void showInventory() {
         System.out.println("Opening Inventory...");
         inventoryOverlay.setVisible(true);
     }
+    
+    private void showShop() {
+		System.out.println("Opening Shop...");
+		shopOverlay.setVisible(true);
+	}
+    
+    
 }
