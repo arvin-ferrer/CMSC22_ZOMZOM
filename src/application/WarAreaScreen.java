@@ -31,6 +31,8 @@ import javafx.scene.paint.Color;
 public class WarAreaScreen {
 
     private Main mainApp;
+    private AnimationTimer gameLoop; //main game loop
+    
     private GameMap gameMap; // handles logic for occupied squares
     private StackPane gamePane; 
     private Player player;
@@ -76,11 +78,29 @@ public class WarAreaScreen {
 
     public void showScreen() {
         gamePane = new StackPane(); 
+        // transparent click area for house
+        Pane houseClickArea = new Pane();
+        houseClickArea.setPrefSize(250, 720);
+        houseClickArea.setStyle("-fx-background-color: transparent;");
+        houseClickArea.setCursor(javafx.scene.Cursor.HAND);
+        houseClickArea.setOnMouseClicked(e -> {
+            System.out.println("House clicked! Entering safe house...");
+            // if game loop exists, stop it
+            if (gameLoop != null) {
+                gameLoop.stop();
+            }
+            
+            mainApp.showHomeScreen();
+        });
+        StackPane.setAlignment(houseClickArea, Pos.CENTER_LEFT);
+        gamePane.getChildren().add(houseClickArea);
+        
+        
         gamePane.setId("war-area-background"); 
         gamePane.setPrefSize(1280, 720); 
         gamePane.setMaxSize(1280, 720); 
         mainApp.getPrimaryStage().setResizable(false);
-
+	
         
         GridPane gameGrid = new GridPane();
         gameGrid.setId("game-grid"); 

@@ -226,3 +226,14 @@
 .game-grid-cell:hover {
     -fx-background-color: rgba(0, 255, 0, 0.3); /* eto yung green tint on hover */
 }
+
+
+/*Home screen */
+#home-screen-background {
+    -fx-background-image: url("../assets/home.png"); 
+    -fx-background-size: 1280px 720px; 
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-color: #222; 
+}
+

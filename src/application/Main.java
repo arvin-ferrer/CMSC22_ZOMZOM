@@ -14,7 +14,7 @@ public class Main extends Application {
 	 private Path savePath = Paths.get("src/storage/userLogin.txt");
 	 private Stage primaryStage;
 	 private Player currentPlayer;
-	 
+	 private WarAreaScreen persistentWarAreaScreen;
 	@Override
 	public void start(Stage primaryStage) {
 		this.primaryStage = primaryStage;
@@ -47,11 +47,21 @@ public class Main extends Application {
     		dashboard.showScreen();
     	}
     	
-   
+    	public void showHomeScreen() {
+		    Home homeScreen = new Home(this);
+		    homeScreen.showScreen();
+		}
+    	
     	public void showWarAreaScreen() {
-    	    WarAreaScreen warArea = new WarAreaScreen(this);
-    	    warArea.showScreen();
-    	}
+            if (persistentWarAreaScreen == null) {
+                System.out.println("Creating new War Area Screen");
+                persistentWarAreaScreen = new WarAreaScreen(this);
+            } else {
+                System.out.println("Returning to existing War Area Screen");
+            }
+            
+            persistentWarAreaScreen.showScreen();
+        }
         public ObservableList<Player> getData() {
             return data;
         }
