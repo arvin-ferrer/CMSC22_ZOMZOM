@@ -54,14 +54,12 @@ public class WarAreaScreen {
     private Random random;
     private double spawnTimer = 0;
     
-    // Labels for the UI
     private Label burgerLabel;
     private Label coinLabel;
     
     private String selectedSoldierType = null;
     private ImageView selectedCardView = null;
   
-    // this is for zom
     private MainCharacter mainCharacter;
     
     public WarAreaScreen(Main mainApp) {
@@ -70,11 +68,14 @@ public class WarAreaScreen {
         this.zombies = new ArrayList<>();
         this.random = new Random();
         this.soldiers = new ArrayList<>();
+        
+        // --- 1. SETUP MAIN CHARACTER ---
         this.mainCharacter = new MainCharacter(0, 2);
-//        soldiers.add(this.mainCharacter);
-        // Level 1, 0 XP, 0 Coins, 500 Burgers to start the fight
-//        this.player = new Player("Survivor", "pass", 1, 0, 0, 500); 
-        this.player = mainApp.getCurrentPlayer(); // Use the getter from Main
+        this.soldiers.add(this.mainCharacter); 
+        this.gameMap.setSlot(0, 2, GameMap.SLOT_SOLDIER); // Occupy start tile
+        // -------------------------------
+
+        this.player = mainApp.getCurrentPlayer(); 
         this.projectiles = new ArrayList<>();
         this.soldierAttackTimers = new HashMap<>();
         this.zombieAttackTimers = new HashMap<>();
@@ -83,26 +84,26 @@ public class WarAreaScreen {
         gamePane.setId("war-area-background");
         gamePane.setPrefSize(1280, 720);
         gamePane.setMaxSize(1280, 720);
+        
         // Clickable House
         Pane houseClickArea = new Pane();
-//        houseClickArea.setPrefSize(250, 720);
         houseClickArea.setMaxSize(200, 320);
         houseClickArea.setStyle("-fx-background-color: transparent;");
         houseClickArea.setCursor(javafx.scene.Cursor.HAND);
         houseClickArea.setOnMouseClicked(event -> {
-            System.out.println("House clicked! Retreating to safety...");
-            if (gameLoop != null) {
-                gameLoop.stop();
-            }
+            if (gameLoop != null) gameLoop.stop();
             mainApp.showHomeScreen();
         });
         StackPane.setAlignment(houseClickArea, Pos.CENTER_LEFT);
         gamePane.getChildren().add(houseClickArea);
+        
+        // Add Main Character Image
         gamePane.getChildren().add(mainCharacter.getImageView());
+        
         // Grid
         GridPane gameGrid = new GridPane();
         gameGrid.setId("game-grid");
-        soldiers.add(mainCharacter);
+        
         for (int y = 0; y < GameMap.MAP_HEIGHT_TILES; y++) {
             for (int x = 0; x < GameMap.MAP_WIDTH_TILES; x++) {
                 Pane slot = new Pane();
@@ -110,13 +111,13 @@ public class WarAreaScreen {
                 slot.getStyleClass().add("game-grid-cell");
                 final int finalX = x;
                 final int finalY = y;
+                
                 slot.setOnMouseClicked(event -> {
                     if (selectedSoldierType != null) {
                         addSoldier(selectedSoldierType, finalX, finalY);
                     }
                     else {
-                    	addSoldier(Soldier.MAIN_CHARACTER, finalX, finalY);
-//                        soldiers.add(this.mainCharacter);
+                        // --- 2. MOVE MAIN CHARACTER ---
                         updateZom(finalX, finalY); 
                     }
                 });
@@ -142,6 +143,7 @@ public class WarAreaScreen {
         StackPane.setMargin(seedBank, new Insets(20, 0, 0, 20));
         gamePane.getChildren().add(seedBank);
 
+        // Resources
         HBox resourceBar = new HBox(20); 
         resourceBar.setAlignment(Pos.CENTER_LEFT);
         resourceBar.setPadding(new Insets(5, 15, 5, 15));
@@ -152,36 +154,25 @@ public class WarAreaScreen {
         HBox burgerBox = new HBox(10);
         burgerBox.setAlignment(Pos.CENTER_LEFT);
         ImageView burgerIcon = new ImageView();
-        try {
-            burgerIcon.setImage(new Image(getClass().getResourceAsStream("/assets/burger-sprite.png"))); 
-        } catch (Exception e) { System.out.println("burger sprite not found"); }
-        burgerIcon.setFitWidth(32);
-        burgerIcon.setFitHeight(32);
-        
-        burgerLabel = new Label("0"); // Initial value
+        try { burgerIcon.setImage(new Image(getClass().getResourceAsStream("/assets/burger-sprite.png"))); } catch (Exception e) {}
+        burgerIcon.setFitWidth(32); burgerIcon.setFitHeight(32);
+        burgerLabel = new Label("0"); 
         burgerLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 20; -fx-text-fill: white;");
         burgerBox.getChildren().addAll(burgerIcon, burgerLabel);
 
         HBox coinBox = new HBox(10);
         coinBox.setAlignment(Pos.CENTER_LEFT);
         ImageView coinIcon = new ImageView();
-        try {
-            coinIcon.setImage(new Image(getClass().getResourceAsStream("/assets/coin-sprite.gif"))); 
-        } catch (Exception e) { System.out.println("coin sprite not found"); }
-        coinIcon.setFitWidth(32);
-        coinIcon.setFitHeight(32);
-        
-        coinLabel = new Label("0"); // Initial value
+        try { coinIcon.setImage(new Image(getClass().getResourceAsStream("/assets/coin-sprite.gif"))); } catch (Exception e) {}
+        coinIcon.setFitWidth(32); coinIcon.setFitHeight(32);
+        coinLabel = new Label("0");
         coinLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 20; -fx-text-fill: gold;");
         coinBox.getChildren().addAll(coinIcon, coinLabel);
 
         resourceBar.getChildren().addAll(burgerBox, coinBox);
-
         StackPane.setAlignment(resourceBar, Pos.TOP_LEFT);
         StackPane.setMargin(resourceBar, new Insets(30, 0, 0, 550)); 
-        
         gamePane.getChildren().add(resourceBar);
-        // ----------------------------------------------------
 
         sceneRoot = new StackPane();
         sceneRoot.setId("scene-root");
@@ -191,12 +182,9 @@ public class WarAreaScreen {
         this.scene = new Scene(sceneRoot, 1280, 720);
         this.scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         
-        // Font loading
-        try {
-            Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12);
-        } catch (Exception e) { System.out.println("Font not found"); }
+        try { Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12); } catch (Exception e) {}
         this.player.setBurger(5000);
-        // Initial Spawns
+        
         spawnZombie(0);
         spawnZombie(2);
         spawnZombie(4);
@@ -210,36 +198,26 @@ public class WarAreaScreen {
 
         lastUpdateTime = 0;
         createAndStartGameLoop();
-        
     }
 
     private void createAndStartGameLoop() {
-        if (gameLoop != null) {
-        	gameLoop.stop(); 
-        }
+        if (gameLoop != null) gameLoop.stop(); 
 
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if (lastUpdateTime == 0) {
-                    lastUpdateTime = now;
-                    return;
-                }
+                if (lastUpdateTime == 0) { lastUpdateTime = now; return; }
                 double deltaTime = (now - lastUpdateTime) / 1_000_000_000.0;
                 lastUpdateTime = now;
                 
-                if (burgerLabel != null) {
-                   burgerLabel.setText(String.valueOf(player.getBurger())); 
-                }
-                if (coinLabel != null) {
-                   coinLabel.setText(String.valueOf(player.getCurrency())); 
-                }
+                if (burgerLabel != null) burgerLabel.setText(String.valueOf(player.getBurger())); 
+                if (coinLabel != null) coinLabel.setText(String.valueOf(player.getCurrency())); 
        
                 spawnTimer += deltaTime;
                 if (spawnTimer >= 5.0) {
                     int randomLane = random.nextInt(6);
                     spawnZombie(randomLane);
-                    spawnZombie(randomLane);
+                    spawnZombie(randomLane); // triple spawn for difficulty?
                     spawnZombie(randomLane);
                     spawnTimer = 0;
                 }
@@ -253,6 +231,32 @@ public class WarAreaScreen {
         gameLoop.start();
     }
 
+    // --- 3. MOVEMENT LOGIC FIX ---
+    private void updateZom(int targetCol, int targetLane) {
+        if (!mainCharacter.isAlive()) return;
+
+        // 1. Check if clicking the exact same spot (no movement needed)
+        int[] currentPos = mainCharacter.getPosition();
+        if (currentPos[0] == targetCol && currentPos[1] == targetLane) {
+            return;
+        }
+
+        // 2. Check if target is empty
+        if (gameMap.getSlot(targetCol, targetLane) != GameMap.SLOT_EMPTY) {
+             System.out.println("Slot Occupied! Cannot move there.");
+             return;
+        }
+
+        // 3. Clear OLD slot
+        gameMap.setSlot(currentPos[0], currentPos[1], GameMap.SLOT_EMPTY);
+        
+        // 4. Update coordinates in object
+        mainCharacter.moveTo(targetCol, targetLane);
+        
+        // 5. Occupy NEW slot
+        gameMap.setSlot(targetCol, targetLane, GameMap.SLOT_SOLDIER);
+    }
+
     private void updateZombies(double deltaTime) {
         Iterator<Zombie> iterator = zombies.iterator();
         while (iterator.hasNext()) {
@@ -263,6 +267,7 @@ public class WarAreaScreen {
 
                 boolean isEating = false;
                 Soldier victim = null;
+                
                 for (Soldier s : soldiers) {
                     if (s.isAlive() && s.getLane() == zombie.getLane()) {
                         double dist = zombie.getImageView().getTranslateX() - s.getImageView().getTranslateX();
@@ -288,42 +293,12 @@ public class WarAreaScreen {
             } else {
                 gamePane.getChildren().remove(zombie.getImageView());
                 iterator.remove();
-                
-                
                 this.player.addCurrency(zombie.getRewardPoints()); 
                 this.player.addBurger(zombie.getBurgerPoints());
-//                this.player.addBurger(500); // add burger here
-                System.out.println("Zombie killed! Gold: " + this.player.getCurrency());
             }
         }
     }
 
-  
-    private ImageView createCard(String imageName, String soldierType) {
-        ImageView cardView = new ImageView();
-        try {
-            cardView.setImage(new Image(getClass().getResourceAsStream(imageName)));
-        } catch (Exception e) {
-            System.err.println("Could not load card image: " + imageName);
-        }
-        cardView.setFitWidth(96);
-        cardView.setFitHeight(96);
-        cardView.setPreserveRatio(true);
-        cardView.setCursor(javafx.scene.Cursor.HAND); 
-        cardView.setOnMouseClicked(e -> {
-            this.selectedSoldierType = soldierType;
-            if (selectedCardView != null) selectedCardView.setEffect(null);
-            selectedCardView = cardView;
-            DropShadow glow = new DropShadow();
-            glow.setColor(Color.GOLD);
-            glow.setWidth(20);
-            glow.setHeight(20);
-            cardView.setEffect(glow);
-        });
-        return cardView;
-    }
-
-   
     private void updateSoldiers(double deltaTime) {
         for (Soldier soldier : soldiers) {
             if (!soldier.isAlive()) continue;
@@ -338,7 +313,6 @@ public class WarAreaScreen {
                     if (z.isAlive() && z.getLane() == soldier.getLane()) {
                         if (z.getImageView().getTranslateX() > soldier.getImageView().getTranslateX() 
                                 && z.getPositionX() < 600) {
-                        	
                             hasTarget = true; break;
                         }
                     }
@@ -358,19 +332,6 @@ public class WarAreaScreen {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    private void removeDeadSoldiers() {
-        Iterator<Soldier> it = soldiers.iterator();
-        while(it.hasNext()) {
-            Soldier s = it.next();
-            if(!s.isAlive()) {
-                gamePane.getChildren().remove(s.getImageView());
-                int[] pos = s.getPosition();
-                gameMap.setSlot(pos[0], pos[1], GameMap.SLOT_EMPTY);
-                it.remove();
             }
         }
     }
@@ -395,8 +356,7 @@ public class WarAreaScreen {
                     double pX = p.getX();
                     if (pX >= zX && pX <= zX + 80) {
                         z.takeDamage(p.getDamage());
-                        hit = true;
-                        break; 
+                        hit = true; break; 
                     }
                 }
             }
@@ -406,6 +366,40 @@ public class WarAreaScreen {
                 it.remove();
             }
         }
+    }
+
+    private void removeDeadSoldiers() {
+        Iterator<Soldier> it = soldiers.iterator();
+        while(it.hasNext()) {
+            Soldier s = it.next();
+            if(!s.isAlive()) {
+                gamePane.getChildren().remove(s.getImageView());
+                int[] pos = s.getPosition();
+                gameMap.setSlot(pos[0], pos[1], GameMap.SLOT_EMPTY);
+                it.remove();
+            }
+        }
+    }
+
+    private ImageView createCard(String imageName, String soldierType) {
+        ImageView cardView = new ImageView();
+        try { cardView.setImage(new Image(getClass().getResourceAsStream(imageName))); } catch (Exception e) {}
+        cardView.setFitWidth(96); cardView.setFitHeight(96); cardView.setPreserveRatio(true); cardView.setCursor(javafx.scene.Cursor.HAND); 
+        cardView.setOnMouseClicked(e -> {
+            if (this.selectedSoldierType != null && this.selectedSoldierType.equals(soldierType)) {
+                this.selectedSoldierType = null;
+                if (selectedCardView != null) selectedCardView.setEffect(null);
+                selectedCardView = null;
+            } else {
+                this.selectedSoldierType = soldierType;
+                if (selectedCardView != null) selectedCardView.setEffect(null);
+                selectedCardView = cardView;
+                DropShadow glow = new DropShadow();
+                glow.setColor(Color.GOLD); glow.setWidth(20); glow.setHeight(20);
+                cardView.setEffect(glow);
+            }
+        });
+        return cardView;
     }
 
     private void spawnZombie(int lane) {
@@ -422,34 +416,16 @@ public class WarAreaScreen {
             gamePane.getChildren().add(newZombie.getImageView());
         }
     }
-    private void updateZom(int col, int lane) {
-          if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
-             System.out.println("Slot Occupied! Cannot move there.");
-             return;
-        }
-
-        if (mainCharacter != null) {
-            mainCharacter.moveTo(col, lane);
-        }
-    }
+    
     private void addSoldier(String soldierType, int col, int lane) {
-        
         if (soldierType.equals(Soldier.BARRIER)) {
-            if (lane + 2 >= GameMap.MAP_HEIGHT_TILES) {
-                System.out.println("Cannot place barrier: Not enough vertical space!");
-                return;
-            }
-
-            // check if all 3 slots are empty
-            if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY ||
+            if (lane + 2 >= GameMap.MAP_HEIGHT_TILES || 
+                gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY ||
                 gameMap.getSlot(col, lane + 1) != GameMap.SLOT_EMPTY ||
                 gameMap.getSlot(col, lane + 2) != GameMap.SLOT_EMPTY) {
-                System.out.println("Cannot place barrier: Slots occupied!");
                 return;
             }
-
-            int barrierCost = 70; // cost of barrier
-            
+            int barrierCost = 70; 
             if (player.getBurger() >= barrierCost) {
                 Soldier mainBarrier = new Soldiers.Barrier(col, lane, barrierCost); 
                 soldiers.add(mainBarrier);
@@ -457,54 +433,40 @@ public class WarAreaScreen {
                 gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
 
                 Soldier dummy1 = new Soldiers.Barrier(col, lane + 1, barrierCost);
-                dummy1.getImageView().setVisible(false); // Invisible
-                soldiers.add(dummy1); 
+                dummy1.getImageView().setVisible(false); soldiers.add(dummy1); 
                 gameMap.setSlot(col, lane + 1, GameMap.SLOT_SOLDIER);
 
                 Soldier dummy2 = new Soldiers.Barrier(col, lane + 2, barrierCost);
-                dummy2.getImageView().setVisible(false); // Invisible
-                soldiers.add(dummy2); 
+                dummy2.getImageView().setVisible(false); soldiers.add(dummy2); 
                 gameMap.setSlot(col, lane + 2, GameMap.SLOT_SOLDIER);
 
                 player.deductBurger(barrierCost);
-                System.out.println("Barrier placed.");
-            } else {
-                System.out.println("Not enough burgers!");
             }
             return; 
         }
 
-        
         if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
              System.out.println("Slot Occupied!");
              return;
         }
-	        Soldier newSoldier = null;
-	        switch (soldierType) {
-	            case Soldier.ARCHER:
-	                newSoldier = new Archer(col, lane, 50);
-	                break;
-	            case Soldier.SPEARMAN:
-	                newSoldier = new Spearman(col, lane, 70);
-	                break;
-	            	
-	       }
-	
-	        if (newSoldier != null) {
-	            int cost = newSoldier.getSoldierCost();
-	            if (player.getBurger() >= cost) {
-	                soldiers.add(newSoldier);
-	                soldierAttackTimers.put(newSoldier, 0.0);
-	                gamePane.getChildren().add(newSoldier.getImageView());
-	
-	                // DEDUCT BURGER
-	                player.deductBurger(cost);
-	                System.out.println("Soldier placed. Burgers left: " + player.getBurger());
-	
-	                gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
-	            } else {
-	                System.out.println("Not enough burgers!");
-	            }
-	        }
-	    }
-	}
+        
+        Soldier newSoldier = null;
+        switch (soldierType) {
+            case Soldier.ARCHER: newSoldier = new Archer(col, lane, 50); break;
+            case Soldier.SPEARMAN: newSoldier = new Spearman(col, lane, 70); break;
+        }
+
+        if (newSoldier != null) {
+            int cost = newSoldier.getSoldierCost();
+            if (player.getBurger() >= cost) {
+                soldiers.add(newSoldier);
+                soldierAttackTimers.put(newSoldier, 0.0);
+                gamePane.getChildren().add(newSoldier.getImageView());
+                player.deductBurger(cost);
+                gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
+            } else {
+                System.out.println("Not enough burgers!");
+            }
+        }
+    }
+}
