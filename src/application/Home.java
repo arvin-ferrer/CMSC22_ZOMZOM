@@ -257,54 +257,52 @@ public class Home {
         dimmer.setOnMouseClicked(e -> craftingOverlay.setVisible(false));
         
         StackPane craftingContainer = new StackPane();
-        craftingContainer.setId("crafting-bg"); // CSS ID for the new image
-        craftingContainer.setMaxSize(480, 640); // 480x640 portrait orientation
+        craftingContainer.setId("crafting-bg"); // CSS ID 
+        craftingContainer.setMaxSize(480, 640); // 480x640
         craftingContainer.setPrefSize(480, 640);
 
-        // --- 1. Crafting Input Grid (3x3) ---
+        // Crafting Input Grid (3x3) 
         GridPane inputGrid = new GridPane();
         // inputGrid.setGridLinesVisible(true);
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
                 Pane slot = new Pane();
-                slot.setPrefSize(60, 60); // Slots for 3x3
+                slot.setPrefSize(70, 70); // Slots for 3x3
                 slot.getStyleClass().add("inventory-slot");
                 inputGrid.add(slot, x, y);
             }
         }
         
         StackPane.setAlignment(inputGrid, Pos.TOP_LEFT);
-        // Adjust these margins to fit the 3x3 grid in your generated image
-        StackPane.setMargin(inputGrid, new Insets(50, 0, 0, 40)); 
-        
+        StackPane.setMargin(inputGrid, new Insets(37, 0, 0, 40)); 
+       
         craftingContainer.getChildren().add(inputGrid);
 
-        // --- 2. Output Slot (1x1) ---
+        // Output Slot (1x1) 
         Pane outputSlot = new Pane();
-        outputSlot.setPrefSize(60, 60);
+        outputSlot.setPrefSize(20, 20);
+        outputSlot.setMaxSize(70, 70);
         outputSlot.getStyleClass().add("inventory-slot");
         
         StackPane.setAlignment(outputSlot, Pos.TOP_RIGHT);
-        // Adjust to fit the single box on the right of the image
-        StackPane.setMargin(outputSlot, new Insets(110, 60, 0, 0));
+        StackPane.setMargin(outputSlot, new Insets(108, 38, 0, 0));
         
         craftingContainer.getChildren().add(outputSlot);
         
-        // --- 3. Inventory Grid (Bottom half) ---
-        // Reuse logic to show player inventory so they can drag items up
+        // the inventory
         GridPane inventoryGrid = new GridPane();
         int cols = 7;
         int rows = 5;
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
                 Pane slot = new Pane();
-                slot.setPrefSize(52, 52);
+                slot.setPrefSize(55, 55);
                 slot.getStyleClass().add("inventory-slot");
                 inventoryGrid.add(slot, x, y);
             }
         }
         StackPane.setAlignment(inventoryGrid, Pos.BOTTOM_CENTER);
-        StackPane.setMargin(inventoryGrid, new Insets(0, 0, 35, 0));
+        StackPane.setMargin(inventoryGrid, new Insets(310, 0, 35, 50));
         craftingContainer.getChildren().add(inventoryGrid);
 
 
