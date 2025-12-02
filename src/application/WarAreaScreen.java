@@ -9,6 +9,7 @@ import java.util.Random;
 
 import Soldiers.Archer;
 import Soldiers.Barrier;
+import Soldiers.MainCharacter;
 import Soldiers.Projectile;
 import Soldiers.Soldier;
 import Soldiers.Spearman;
@@ -60,13 +61,17 @@ public class WarAreaScreen {
     private String selectedSoldierType = null;
     private ImageView selectedCardView = null;
   
+    // this is for zom
+    private MainCharacter mainCharacter;
+    
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
         this.gameMap = new GameMap();
         this.zombies = new ArrayList<>();
         this.random = new Random();
         this.soldiers = new ArrayList<>();
-        
+        this.mainCharacter = new MainCharacter(0, 2);
+//        soldiers.add(this.mainCharacter);
         // Level 1, 0 XP, 0 Coins, 500 Burgers to start the fight
 //        this.player = new Player("Survivor", "pass", 1, 0, 0, 500); 
         this.player = mainApp.getCurrentPlayer(); // Use the getter from Main
@@ -78,7 +83,6 @@ public class WarAreaScreen {
         gamePane.setId("war-area-background");
         gamePane.setPrefSize(1280, 720);
         gamePane.setMaxSize(1280, 720);
-
         // Clickable House
         Pane houseClickArea = new Pane();
 //        houseClickArea.setPrefSize(250, 720);
@@ -94,7 +98,7 @@ public class WarAreaScreen {
         });
         StackPane.setAlignment(houseClickArea, Pos.CENTER_LEFT);
         gamePane.getChildren().add(houseClickArea);
-
+        gamePane.getChildren().add(mainCharacter.getImageView());
         // Grid
         GridPane gameGrid = new GridPane();
         gameGrid.setId("game-grid");
@@ -108,6 +112,11 @@ public class WarAreaScreen {
                 slot.setOnMouseClicked(event -> {
                     if (selectedSoldierType != null) {
                         addSoldier(selectedSoldierType, finalX, finalY);
+                    }
+                    else {
+                    	addSoldier(Soldier.MAIN_CHARACTER, finalX, finalY);
+//                        soldiers.add(this.mainCharacter);
+                        updateZom(finalX, finalY); 
                     }
                 });
                 gameGrid.add(slot, x, y);
@@ -132,7 +141,6 @@ public class WarAreaScreen {
         StackPane.setMargin(seedBank, new Insets(20, 0, 0, 20));
         gamePane.getChildren().add(seedBank);
 
-        // RESOURCE STATUS BAR (Burgers & Coins) 
         HBox resourceBar = new HBox(20); 
         resourceBar.setAlignment(Pos.CENTER_LEFT);
         resourceBar.setPadding(new Insets(5, 15, 5, 15));
@@ -201,6 +209,7 @@ public class WarAreaScreen {
 
         lastUpdateTime = 0;
         createAndStartGameLoop();
+        
     }
 
     private void createAndStartGameLoop() {
@@ -412,11 +421,19 @@ public class WarAreaScreen {
             gamePane.getChildren().add(newZombie.getImageView());
         }
     }
-    
+    private void updateZom(int col, int lane) {
+          if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
+             System.out.println("Slot Occupied! Cannot move there.");
+             return;
+        }
+
+        if (mainCharacter != null) {
+            mainCharacter.moveTo(col, lane);
+        }
+    }
     private void addSoldier(String soldierType, int col, int lane) {
         
         if (soldierType.equals(Soldier.BARRIER)) {
-            // check if there is space (needs 3 slots)
             if (lane + 2 >= GameMap.MAP_HEIGHT_TILES) {
                 System.out.println("Cannot place barrier: Not enough vertical space!");
                 return;
@@ -469,6 +486,10 @@ public class WarAreaScreen {
 	            case Soldier.SPEARMAN:
 	                newSoldier = new Spearman(col, lane, 70);
 	                break;
+	            case Soldier.MAIN_CHARACTER:
+	            	newSoldier = this.mainCharacter;
+	            	break;
+	            	
 	       }
 	
 	        if (newSoldier != null) {

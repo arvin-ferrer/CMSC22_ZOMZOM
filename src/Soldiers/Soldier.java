@@ -9,7 +9,7 @@ public abstract class Soldier{
 	public static final String SPEARMAN = "Spearman";
 //	public static final String SWORDSMAN = "Swordsman";
 	public static final String BARRIER = "Barrier"; 
-	
+	public static final String MAIN_CHARACTER = "MainCharacter"; 
 	//game attributes
     protected int health;
     protected int damage;
