@@ -36,8 +36,8 @@ public class Home {
             System.out.println("Exiting safe house...");
             mainApp.showWarAreaScreen();
         });
-        StackPane.setAlignment(returnButton, Pos.BOTTOM_CENTER);
-        StackPane.setMargin(returnButton, new Insets(0, 0, 50, 0));
+        StackPane.setAlignment(returnButton, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(returnButton, new Insets(0, 50, 300, 0));
         rootPane.getChildren().add(returnButton);
 
         // clickable area of chest

@@ -143,7 +143,7 @@ public class WarAreaScreen {
         ImageView burgerIcon = new ImageView();
         try {
             burgerIcon.setImage(new Image(getClass().getResourceAsStream("/assets/burger-sprite.png"))); 
-        } catch (Exception e) { System.out.println("burger.png not found"); }
+        } catch (Exception e) { System.out.println("burger sprite not found"); }
         burgerIcon.setFitWidth(32);
         burgerIcon.setFitHeight(32);
         
@@ -156,7 +156,7 @@ public class WarAreaScreen {
         ImageView coinIcon = new ImageView();
         try {
             coinIcon.setImage(new Image(getClass().getResourceAsStream("/assets/coin-sprite.gif"))); 
-        } catch (Exception e) { System.out.println("coin.png not found"); }
+        } catch (Exception e) { System.out.println("coin sprite not found"); }
         coinIcon.setFitWidth(32);
         coinIcon.setFitHeight(32);
         
@@ -184,7 +184,7 @@ public class WarAreaScreen {
         try {
             Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12);
         } catch (Exception e) { System.out.println("Font not found"); }
-
+        this.player.setBurger(5000);
         // Initial Spawns
         spawnZombie(0);
         spawnZombie(2);
@@ -277,6 +277,7 @@ public class WarAreaScreen {
                 
                 
                 this.player.addCurrency(15); 
+//                this.player.addBurger(500); // add burger here
                 System.out.println("Zombie killed! Gold: " + this.player.getCurrency());
             }
         }
