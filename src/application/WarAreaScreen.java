@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import Items.Item;
 import Soldiers.Archer;
 import Soldiers.Barrier;
 import Soldiers.MainCharacter;
@@ -63,7 +64,7 @@ public class WarAreaScreen {
   
     // this is for zom
     private MainCharacter mainCharacter;
-    
+    List<InventoryItem> inventory = new ArrayList<>(); 
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
         this.gameMap = new GameMap();
@@ -101,6 +102,11 @@ public class WarAreaScreen {
         
         // Add Main Character Image
         gamePane.getChildren().add(mainCharacter.getImageView());
+        
+//        inventory = new Inventory(mainApp, player);
+        inventory.add(new InventoryItem("Medkit", "/assets/medkit.png", "Heals 50 HP"));
+        inventory.add(new InventoryItem("Grenade", "/assets/grenade-sprite.png", "Boom"));
+        player.setInventory(inventory);
         
         // Grid
         GridPane gameGrid = new GridPane();

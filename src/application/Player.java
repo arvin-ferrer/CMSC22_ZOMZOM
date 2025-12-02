@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import Items.Item;
+
 public class Player implements Serializable {
 	private static final long serialVersionUID = 1L;
     private String username;
@@ -17,7 +19,6 @@ public class Player implements Serializable {
     private List<InventoryItem> inventory; 
 
     public Player(String username, String password) {
-        // ... (existing constructor) ...
         this.username = username;
         this.password = password;
         this.level = 1;
@@ -45,10 +46,19 @@ public class Player implements Serializable {
         addItem(new InventoryItem("Bandage", "/assets/bandage.png", "Heals 50 HP"));
     }
     private void addItem(InventoryItem item) {
-        inventory.add(item);
-    }
+            if (this.inventory == null) {
+                this.inventory = new ArrayList<>();
+            }
+            inventory.add(item);
+        }
     
-
+    
+	public void setInventory(List<InventoryItem> inventory) {
+    this.inventory = inventory;
+    if (this.inventory == null) {
+        this.inventory = new ArrayList<>();
+    	}
+	}
     public List<InventoryItem> getInventory() {
         if (this.inventory == null) {
             this.inventory = new ArrayList<>();
@@ -118,6 +128,7 @@ public class Player implements Serializable {
     public void deductCurrency(int amount) {
     	this.currency -= amount;
     }
+ 
     
 //     public Inventory getInventory() {
 //         return inventory;

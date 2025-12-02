@@ -134,8 +134,8 @@ public class Home {
         
         if (playerItems == null || playerItems.isEmpty()) {
             System.out.println("Inventory empty (Old Save File detected). Adding starter pack...");
-            playerItems.add(new InventoryItem("Medkit", "/assets/medkit.png", "Heals 50 HP"));
-            playerItems.add(new InventoryItem("Grenade", "/assets/grenade-sprite.png", "Boom"));
+//            playerItems.add(new InventoryItem("Medkit", "/assets/medkit.png", "Heals 50 HP"));
+//            playerItems.add(new InventoryItem("Grenade", "/assets/grenade-sprite.png", "Boom"));
     
         }
         
