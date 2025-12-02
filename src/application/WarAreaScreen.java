@@ -325,7 +325,7 @@ public class WarAreaScreen {
                 for (Zombie z : zombies) {
                     if (z.isAlive() && z.getLane() == soldier.getLane()) {
                         if (z.getImageView().getTranslateX() > soldier.getImageView().getTranslateX() 
-                                && z.getPositionX() < 800) { 
+                                && z.getPositionX() < 600) { 
                             hasTarget = true; break;
                         }
                     }
