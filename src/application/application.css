@@ -79,7 +79,7 @@
 /* DASHBOARD SCREEN STYLES */
 
 #dashboard-background-panel {
-    -fx-background-image: url("../assets/dashboardBackground.jpg");
+    -fx-background-image: url("../assets/dashboardBackground.png");
     -fx-background-size: cover;
     -fx-background-position: center center;
     -fx-font-size: 16px; 
