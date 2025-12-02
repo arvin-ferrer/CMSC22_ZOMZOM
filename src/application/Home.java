@@ -18,7 +18,7 @@ public class Home {
     private StackPane rootPane; 
     private StackPane inventoryOverlay; 
     private StackPane shopOverlay;
-    
+    private StackPane craftingOverlay;
     public Home(Main mainApp) {
         this.mainApp = mainApp;
     }
@@ -74,7 +74,22 @@ public class Home {
         shopClickArea.setStyle("-fx-background-color: rgba(255, 0, 0, 0.3);"); // comment this out to make invisible
         shopClickArea.setCursor(javafx.scene.Cursor.HAND);
       
+        Pane craftingClickArea = new Pane();
+        craftingClickArea.setMaxSize(400, 150); 
+        craftingClickArea.setMinSize(400, 150);
+        craftingClickArea.setStyle("-fx-background-color: transparent;");
+         craftingClickArea.setStyle("-fx-background-color: rgba(0, 255, 0, 0.3);"); // Debug: Green box
+        craftingClickArea.setCursor(javafx.scene.Cursor.HAND);
+
+        craftingClickArea.setOnMouseClicked(e -> showCrafting());
+
+        StackPane.setAlignment(craftingClickArea, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(craftingClickArea, new Insets(0, 0, 0, 0)); 
         
+        rootPane.getChildren().add(craftingClickArea);
+        
+        createCraftingOverlay();
+        rootPane.getChildren().add(craftingOverlay);
         
         StackPane.setAlignment(shopClickArea, Pos.TOP_LEFT);
         StackPane.setMargin(shopClickArea, new Insets(50, 0, 0, 50)); 
@@ -231,6 +246,78 @@ public class Home {
         shopContainer.getChildren().add(closeButton);
         shopOverlay.getChildren().addAll(dimmer, shopContainer);
     }
+    
+    private void createCraftingOverlay() {
+        craftingOverlay = new StackPane();
+        craftingOverlay.setVisible(false);
+        craftingOverlay.setAlignment(Pos.CENTER);
+        
+        StackPane dimmer = new StackPane();
+        dimmer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+        dimmer.setOnMouseClicked(e -> craftingOverlay.setVisible(false));
+        
+        StackPane craftingContainer = new StackPane();
+        craftingContainer.setId("crafting-bg"); // CSS ID for the new image
+        craftingContainer.setMaxSize(480, 640); // 480x640 portrait orientation
+        craftingContainer.setPrefSize(480, 640);
+
+        // --- 1. Crafting Input Grid (3x3) ---
+        GridPane inputGrid = new GridPane();
+        // inputGrid.setGridLinesVisible(true);
+        for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 3; x++) {
+                Pane slot = new Pane();
+                slot.setPrefSize(60, 60); // Slots for 3x3
+                slot.getStyleClass().add("inventory-slot");
+                inputGrid.add(slot, x, y);
+            }
+        }
+        
+        StackPane.setAlignment(inputGrid, Pos.TOP_LEFT);
+        // Adjust these margins to fit the 3x3 grid in your generated image
+        StackPane.setMargin(inputGrid, new Insets(50, 0, 0, 40)); 
+        
+        craftingContainer.getChildren().add(inputGrid);
+
+        // --- 2. Output Slot (1x1) ---
+        Pane outputSlot = new Pane();
+        outputSlot.setPrefSize(60, 60);
+        outputSlot.getStyleClass().add("inventory-slot");
+        
+        StackPane.setAlignment(outputSlot, Pos.TOP_RIGHT);
+        // Adjust to fit the single box on the right of the image
+        StackPane.setMargin(outputSlot, new Insets(110, 60, 0, 0));
+        
+        craftingContainer.getChildren().add(outputSlot);
+        
+        // --- 3. Inventory Grid (Bottom half) ---
+        // Reuse logic to show player inventory so they can drag items up
+        GridPane inventoryGrid = new GridPane();
+        int cols = 7;
+        int rows = 5;
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                Pane slot = new Pane();
+                slot.setPrefSize(52, 52);
+                slot.getStyleClass().add("inventory-slot");
+                inventoryGrid.add(slot, x, y);
+            }
+        }
+        StackPane.setAlignment(inventoryGrid, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(inventoryGrid, new Insets(0, 0, 35, 0));
+        craftingContainer.getChildren().add(inventoryGrid);
+
+
+        // Close Button
+        Button closeButton = new Button("X");
+        closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold;");
+        closeButton.setOnAction(e -> craftingOverlay.setVisible(false));
+        StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(closeButton, new Insets(10, 10, 0, 0));
+        craftingContainer.getChildren().add(closeButton);
+        
+        craftingOverlay.getChildren().addAll(dimmer, craftingContainer);
+    }
     private void showInventory() {
         System.out.println("Opening Inventory...");
         inventoryOverlay.setVisible(true);
@@ -240,6 +327,10 @@ public class Home {
 		System.out.println("Opening Shop...");
 		shopOverlay.setVisible(true);
 	}
+    private void showCrafting() {
+        System.out.println("Opening Crafting Table...");
+        craftingOverlay.setVisible(true);
+    }
     
     
 }

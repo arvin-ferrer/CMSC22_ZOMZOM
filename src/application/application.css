@@ -274,3 +274,10 @@
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
 }
+
+#crafting-bg {
+    -fx-background-image: url("../assets/crafting_bg.jpg");
+    -fx-background-size: 480px 640px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}

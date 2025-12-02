@@ -9,7 +9,7 @@ public class MainCharacter extends Soldier {
         // Initialize Parent
         super(startCol, startRow, 140, 140, "/assets/Zom-base.gif");
 
-        this.health = 2000;
+        this.health = 200;
         this.damage = 20;
         this.setSoldierCost(0); 
     }
