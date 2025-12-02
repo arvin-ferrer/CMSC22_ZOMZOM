@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Random;
 
 import Soldiers.Archer;
+import Soldiers.Barrier;
 import Soldiers.Projectile;
 import Soldiers.Soldier;
 import Soldiers.Spearman;
@@ -125,7 +126,8 @@ public class WarAreaScreen {
         seedBank.setPickOnBounds(false);
         ImageView archerCard = createCard("/assets/archer-card.png", Soldier.ARCHER);
         ImageView spearmanCard = createCard("/assets/spearman-card.png", Soldier.SPEARMAN);
-        seedBank.getChildren().addAll(archerCard, spearmanCard);
+        ImageView barrierCard = createCard("/assets/barrier-card.png", Soldier.BARRIER);
+        seedBank.getChildren().addAll(archerCard, spearmanCard, barrierCard);
         StackPane.setAlignment(seedBank, Pos.TOP_LEFT);
         StackPane.setMargin(seedBank, new Insets(20, 0, 0, 20));
         gamePane.getChildren().add(seedBank);
@@ -184,7 +186,7 @@ public class WarAreaScreen {
         try {
             Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12);
         } catch (Exception e) { System.out.println("Font not found"); }
-        this.player.setBurger(300);
+        this.player.setBurger(5000);
         // Initial Spawns
         spawnZombie(0);
         spawnZombie(2);
@@ -408,36 +410,78 @@ public class WarAreaScreen {
         }
     }
     
-  
     private void addSoldier(String soldierType, int col, int lane) {
+        
+        if (soldierType.equals(Soldier.BARRIER)) {
+            // check if there is space (needs 3 slots)
+            if (lane + 2 >= GameMap.MAP_HEIGHT_TILES) {
+                System.out.println("Cannot place barrier: Not enough vertical space!");
+                return;
+            }
+
+            // check if all 3 slots are empty
+            if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY ||
+                gameMap.getSlot(col, lane + 1) != GameMap.SLOT_EMPTY ||
+                gameMap.getSlot(col, lane + 2) != GameMap.SLOT_EMPTY) {
+                System.out.println("Cannot place barrier: Slots occupied!");
+                return;
+            }
+
+            int barrierCost = 70; // cost of barrier
+            
+            if (player.getBurger() >= barrierCost) {
+                Soldier mainBarrier = new Soldiers.Barrier(col, lane, barrierCost); 
+                soldiers.add(mainBarrier);
+                gamePane.getChildren().add(mainBarrier.getImageView());
+                gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
+
+                Soldier dummy1 = new Soldiers.Barrier(col, lane + 1, barrierCost);
+                dummy1.getImageView().setVisible(false); // Invisible
+                soldiers.add(dummy1); 
+                gameMap.setSlot(col, lane + 1, GameMap.SLOT_SOLDIER);
+
+                Soldier dummy2 = new Soldiers.Barrier(col, lane + 2, barrierCost);
+                dummy2.getImageView().setVisible(false); // Invisible
+                soldiers.add(dummy2); 
+                gameMap.setSlot(col, lane + 2, GameMap.SLOT_SOLDIER);
+
+                player.deductBurger(barrierCost);
+                System.out.println("Barrier placed.");
+            } else {
+                System.out.println("Not enough burgers!");
+            }
+            return; 
+        }
+
         if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
-            System.out.println("Slot Occupied!"); return;
+             System.out.println("Slot Occupied!");
+             return;
         }
-    
-    	Soldier newSoldier = null;
-    	switch (soldierType) {
-    		case Soldier.ARCHER:
-    			newSoldier = new Archer(col, lane, 50);
-    			break;
-    		case Soldier.SPEARMAN:
-    			newSoldier = new Spearman(col, lane, 70);
-    			break;
-    	}
-    	
-    	
-    	int cost = newSoldier.getSoldierCost();
-    	if (newSoldier != null && player.getBurger() >= cost) {
-            soldiers.add(newSoldier);
-            soldierAttackTimers.put(newSoldier, 0.0);
-            gamePane.getChildren().add(newSoldier.getImageView());
-            
-            // DEDUCT BURGER
-            player.deductBurger(cost);
-            System.out.println("Soldier placed. Burgers left: " + player.getBurger());
-            
-            gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
-        } else {
-            System.out.println("Not enough burgers!");
-        }
-    }
-}
+	        Soldier newSoldier = null;
+	        switch (soldierType) {
+	            case Soldier.ARCHER:
+	                newSoldier = new Archer(col, lane, 50);
+	                break;
+	            case Soldier.SPEARMAN:
+	                newSoldier = new Spearman(col, lane, 70);
+	                break;
+	       }
+	
+	        if (newSoldier != null) {
+	            int cost = newSoldier.getSoldierCost();
+	            if (player.getBurger() >= cost) {
+	                soldiers.add(newSoldier);
+	                soldierAttackTimers.put(newSoldier, 0.0);
+	                gamePane.getChildren().add(newSoldier.getImageView());
+	
+	                // DEDUCT BURGER
+	                player.deductBurger(cost);
+	                System.out.println("Soldier placed. Burgers left: " + player.getBurger());
+	
+	                gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
+	            } else {
+	                System.out.println("Not enough burgers!");
+	            }
+	        }
+	    }
+	}
