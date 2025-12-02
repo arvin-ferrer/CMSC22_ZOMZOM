@@ -16,7 +16,7 @@ public class MainCharacter extends Soldier {
     public MainCharacter(int startCol, int startRow) {
         super(startCol, startRow, 140, 140, "/assets/Zom-base.gif");
 
-        this.health = 100;
+        this.health = 2000;
         this.damage = 20;
         this.setSoldierCost(0); 
         updateVisualPosition();
@@ -34,12 +34,5 @@ public class MainCharacter extends Soldier {
         this.getImageView().setTranslateY(this.row * 96 - 192); 
 
     }
-//
-//    public ImageView getImageView() {
-//        return imageView;
-//    }
-    
-    // Getters for collision logic later
-    public int getCol() { return col; }
-    public int getRow() { return row; }
+
 }

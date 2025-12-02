@@ -102,7 +102,7 @@ public class WarAreaScreen {
         // Grid
         GridPane gameGrid = new GridPane();
         gameGrid.setId("game-grid");
-        
+        soldiers.add(mainCharacter);
         for (int y = 0; y < GameMap.MAP_HEIGHT_TILES; y++) {
             for (int x = 0; x < GameMap.MAP_WIDTH_TILES; x++) {
                 Pane slot = new Pane();
@@ -487,9 +487,6 @@ public class WarAreaScreen {
 	            case Soldier.SPEARMAN:
 	                newSoldier = new Spearman(col, lane, 70);
 	                break;
-	            case Soldier.MAIN_CHARACTER:
-	            	newSoldier = this.mainCharacter;
-	            	break;
 	            	
 	       }
 	
