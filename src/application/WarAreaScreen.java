@@ -102,6 +102,7 @@ public class WarAreaScreen {
         // Grid
         GridPane gameGrid = new GridPane();
         gameGrid.setId("game-grid");
+        
         for (int y = 0; y < GameMap.MAP_HEIGHT_TILES; y++) {
             for (int x = 0; x < GameMap.MAP_WIDTH_TILES; x++) {
                 Pane slot = new Pane();

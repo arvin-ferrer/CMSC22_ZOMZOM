@@ -21,6 +21,7 @@ public class MainCharacter extends Soldier {
         this.setSoldierCost(0); 
         updateVisualPosition();
     }
+    
     public void moveTo(int targetCol, int targetRow) {
         if (targetCol >= 0 && targetCol < 10 && targetRow >= 0 && targetRow < 6) {
             this.col = targetCol;
