@@ -269,7 +269,7 @@
 
 /*====== */
 #shop-bg{
-	-fx-background-image: url("../assets/shopbg.jpg");
+	-fx-background-image: url("../assets/shop-bg.gif");
     -fx-background-size: 400px 350px;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
