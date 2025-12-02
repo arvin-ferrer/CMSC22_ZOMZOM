@@ -453,6 +453,7 @@ public class WarAreaScreen {
             return; 
         }
 
+        
         if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
              System.out.println("Slot Occupied!");
              return;
