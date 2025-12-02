@@ -338,9 +338,9 @@ public class WarAreaScreen {
                 for (Zombie z : zombies) {
                     if (z.isAlive() && z.getLane() == soldier.getLane()) {
                         double dist = z.getImageView().getTranslateX() - soldier.getImageView().getTranslateX();
-                        if (dist > 0 && dist < 120) {
+                        if (dist > 0 && dist < 240) {
                             z.takeDamage(soldier.getDamage());
-                            soldierAttackTimers.put(soldier, 1.0); 
+                            soldierAttackTimers.put(soldier, 2.0); 
                             break;
                         }
                     }
