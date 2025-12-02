@@ -54,12 +54,14 @@ public class WarAreaScreen {
     private Random random;
     private double spawnTimer = 0;
     
+    // Labels for the UI
     private Label burgerLabel;
     private Label coinLabel;
     
     private String selectedSoldierType = null;
     private ImageView selectedCardView = null;
   
+    // this is for zom
     private MainCharacter mainCharacter;
     
     public WarAreaScreen(Main mainApp) {
@@ -112,13 +114,33 @@ public class WarAreaScreen {
                 final int finalX = x;
                 final int finalY = y;
                 
+                // --- FIX: Logic for selecting Zom or Moving ---
                 slot.setOnMouseClicked(event -> {
-                    if (selectedSoldierType != null) {
+                    // Case 1: We have a card selected (e.g. Archer), try to plant
+                    if (selectedSoldierType != null && !selectedSoldierType.equals(Soldier.MAIN_CHARACTER)) {
                         addSoldier(selectedSoldierType, finalX, finalY);
                     }
                     else {
-                        // --- 2. MOVE MAIN CHARACTER ---
-                        updateZom(finalX, finalY); 
+                        // Case 2: No card selected OR Zom is selected
+                        
+                        // Check if we clicked on Zom's current position
+                        if (mainCharacter.getCol() == finalX && mainCharacter.getLane() == finalY) {
+                            // Select Zom!
+                            System.out.println("Main Character Selected!");
+                            selectedSoldierType = Soldier.MAIN_CHARACTER;
+                            
+                            // Visual feedback (optional: deselect cards)
+                            if (selectedCardView != null) {
+                                selectedCardView.setEffect(null);
+                                selectedCardView = null;
+                            }
+                        } 
+                        // Case 3: Zom is already selected, and we clicked a different tile -> MOVE
+                        else if (Soldier.MAIN_CHARACTER.equals(selectedSoldierType)) {
+                            updateZom(finalX, finalY);
+                            // Optional: Deselect after moving? 
+                            // selectedSoldierType = null; 
+                        }
                     }
                 });
                 gameGrid.add(slot, x, y);
@@ -235,26 +257,31 @@ public class WarAreaScreen {
     private void updateZom(int targetCol, int targetLane) {
         if (!mainCharacter.isAlive()) return;
 
-        // 1. Check if clicking the exact same spot (no movement needed)
+        // 1. Get current position
         int[] currentPos = mainCharacter.getPosition();
+        
+        // 2. If clicking the same tile, do nothing
         if (currentPos[0] == targetCol && currentPos[1] == targetLane) {
             return;
         }
 
-        // 2. Check if target is empty
+        // 3. Check if target is empty
         if (gameMap.getSlot(targetCol, targetLane) != GameMap.SLOT_EMPTY) {
              System.out.println("Slot Occupied! Cannot move there.");
              return;
         }
 
-        // 3. Clear OLD slot
+        // 4. Clear OLD slot
         gameMap.setSlot(currentPos[0], currentPos[1], GameMap.SLOT_EMPTY);
         
-        // 4. Update coordinates in object
+        // 5. Update coordinates in object
         mainCharacter.moveTo(targetCol, targetLane);
         
-        // 5. Occupy NEW slot
+        // 6. Occupy NEW slot
         gameMap.setSlot(targetCol, targetLane, GameMap.SLOT_SOLDIER);
+        
+        // 7. Optional: Deselect character after move?
+        // selectedSoldierType = null; 
     }
 
     private void updateZombies(double deltaTime) {
