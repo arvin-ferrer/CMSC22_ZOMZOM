@@ -332,6 +332,17 @@ public class WarAreaScreen {
                         }
                     }
                 }
+            } else if (soldier instanceof MainCharacter){
+            	for (Zombie z : zombies) {
+                    if (z.isAlive() && z.getLane() == soldier.getLane()) {
+                        double dist = z.getImageView().getTranslateX() - soldier.getImageView().getTranslateX();
+                        if (dist > 0 && dist < 180) {
+                            z.takeDamage(soldier.getDamage());
+                            soldierAttackTimers.put(soldier, 1.0); 
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
