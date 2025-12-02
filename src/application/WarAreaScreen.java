@@ -184,7 +184,7 @@ public class WarAreaScreen {
         try {
             Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12);
         } catch (Exception e) { System.out.println("Font not found"); }
-        this.player.setBurger(5000);
+        this.player.setBurger(300);
         // Initial Spawns
         spawnZombie(0);
         spawnZombie(2);
@@ -276,7 +276,8 @@ public class WarAreaScreen {
                 iterator.remove();
                 
                 
-                this.player.addCurrency(15); 
+                this.player.addCurrency(zombie.getRewardPoints()); 
+                this.player.addBurger(zombie.getBurgerPoints());
 //                this.player.addBurger(500); // add burger here
                 System.out.println("Zombie killed! Gold: " + this.player.getCurrency());
             }

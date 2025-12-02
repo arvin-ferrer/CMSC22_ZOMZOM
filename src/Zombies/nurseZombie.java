@@ -17,7 +17,8 @@ public class nurseZombie extends Zombie {
         setSpecialAbility("None"); // might add later
         setAttackRange(5); // can attack if within 5 pixels
         setSpawnRate(0.5); // spawns every 0.5 seconds
-        
+        setBurgerPoints(15);
+
        
     }
     

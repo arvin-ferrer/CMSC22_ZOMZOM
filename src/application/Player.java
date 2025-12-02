@@ -23,6 +23,7 @@ public class Player implements Serializable {
         this.level = 1;
         this.experiencePoints = 0;
         this.currency = 500; 
+        this.burger = 300;
         this.experienceToNextLevel = 100;
         
         this.inventory = new ArrayList<>();

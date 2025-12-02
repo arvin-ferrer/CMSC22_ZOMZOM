@@ -17,6 +17,7 @@ public abstract class Zombie {
     protected int damage;
     protected boolean isAlive;
     protected int rewardPoints;
+    protected int burgerPoints;
     protected double size; 
     protected String specialAbility; 
     protected int attackRange; 
@@ -113,6 +114,7 @@ public abstract class Zombie {
     public double getPositionX() { return positionX; }
     
     public double getPositionY() { return positionY; }
+    public int getBurgerPoints() { return this.burgerPoints;}
 
     
     
@@ -142,6 +144,9 @@ public abstract class Zombie {
     public void setPositionX(double positionX) { 
         this.positionX = positionX;
         this.imageView.setTranslateX(this.positionX); 
+    }
+    public void setBurgerPoints(int burger) {
+    	this.burgerPoints = burger;
     }
 
 
