@@ -229,6 +229,8 @@ public class WarAreaScreen {
                 if (spawnTimer >= 5.0) {
                     int randomLane = random.nextInt(6);
                     spawnZombie(randomLane);
+                    spawnZombie(randomLane);
+                    spawnZombie(randomLane);
                     spawnTimer = 0;
                 }
 
