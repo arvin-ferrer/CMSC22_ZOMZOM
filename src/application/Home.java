@@ -123,8 +123,7 @@ public class Home {
             playerItems.add(new InventoryItem("Grenade", "/assets/grenade-sprite.png", "Boom"));
     
         }
-//         -------------------------------
-
+        
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
                 Pane slot = new Pane();
@@ -179,32 +178,60 @@ public class Home {
     }
     private void createShopOverlay() {
         shopOverlay = new StackPane();
-        shopOverlay.setVisible(false); // Start hidden
+        shopOverlay.setVisible(false); // start hidden
         shopOverlay.setAlignment(Pos.CENTER);
         
         StackPane dimmer = new StackPane();
         dimmer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
-        
         dimmer.setOnMouseClicked(e -> shopOverlay.setVisible(false));
         
         StackPane shopContainer = new StackPane();
         shopContainer.setId("shop-bg"); // CSS ID
-        shopContainer.setMaxSize(418, 370);
-        shopContainer.setPrefSize(418, 370);
+        shopContainer.setMaxSize(480, 640);
+        shopContainer.setPrefSize(480, 640);
 
+        // shop grid
+        GridPane shopGrid = new GridPane();
+        shopGrid.setId("shop-grid"); 
+        
+        int cols = 4;
+        int rows = 5;
+        int slotSize = 52; 
+
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                Pane slot = new Pane();
+                slot.setPrefSize(slotSize, slotSize);
+                slot.getStyleClass().add("inventory-slot"); // reuse the inventory slot style
+                // click logic
+                final int finalX = x;
+                final int finalY = y;
+                slot.setOnMouseClicked(e -> {
+                    System.out.println("Clicked Shop Slot: " + finalX + "," + finalY);
+                    // add logic to buy item here
+                });
+                
+                shopGrid.add(slot, x, y);
+            }
+        }
+
+        StackPane.setAlignment(shopGrid, Pos.BOTTOM_CENTER);
+        // Top, Right, Bottom, Left
+        StackPane.setMargin(shopGrid, new Insets(220, 0, 85, 54)); 
+
+        shopContainer.getChildren().add(shopGrid);
+        
         Button closeButton = new Button("X");
         closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold;");
-        
         closeButton.setOnAction(e -> shopOverlay.setVisible(false));
         
         StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
-        StackPane.setMargin(closeButton, new Insets(10, 10, 0, 0));
+        StackPane.setMargin(closeButton, new Insets(145, 40, 0, 0));
 
         shopContainer.getChildren().add(closeButton);
         
         shopOverlay.getChildren().addAll(dimmer, shopContainer);
     }
-
     private void showInventory() {
         System.out.println("Opening Inventory...");
         inventoryOverlay.setVisible(true);
