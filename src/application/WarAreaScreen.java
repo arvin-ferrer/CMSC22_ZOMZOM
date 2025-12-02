@@ -455,33 +455,51 @@ public class WarAreaScreen {
         }
     }
     
-    private void addSoldier(String soldierType, int col, int lane) {
+private void addSoldier(String soldierType, int col, int lane) {
+        
         if (soldierType.equals(Soldier.BARRIER)) {
-            if (lane + 2 >= GameMap.MAP_HEIGHT_TILES || 
-                gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY ||
-                gameMap.getSlot(col, lane + 1) != GameMap.SLOT_EMPTY ||
-                gameMap.getSlot(col, lane + 2) != GameMap.SLOT_EMPTY) {
+            // 1. Check bounds (must have 3 vertical spaces)
+            if (lane + 2 >= GameMap.MAP_HEIGHT_TILES) {
+                System.out.println("Cannot place barrier: Not enough vertical space!");
                 return;
             }
+
+            // 2. Check if all 3 slots are empty
+            if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY ||
+                gameMap.getSlot(col, lane + 1) != GameMap.SLOT_EMPTY ||
+                gameMap.getSlot(col, lane + 2) != GameMap.SLOT_EMPTY) {
+                System.out.println("Cannot place barrier: Slots occupied!");
+                return;
+            }
+
             int barrierCost = 70; 
+            
             if (player.getBurger() >= barrierCost) {
-                Soldier mainBarrier = new Soldiers.Barrier(col, lane, barrierCost); 
+                // 3. Create MAIN barrier (Visible) at top slot
+                // Note: We cast to Barrier so we can pass it to the dummies
+                Barrier mainBarrier = new Barrier(col, lane, barrierCost); 
                 soldiers.add(mainBarrier);
                 gamePane.getChildren().add(mainBarrier.getImageView());
                 gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
 
-                Soldier dummy1 = new Soldiers.Barrier(col, lane + 1, barrierCost);
-                dummy1.getImageView().setVisible(false); soldiers.add(dummy1); 
+                // 4. Create DUMMY 1 (Invisible) - pass 'mainBarrier' as reference
+                Barrier dummy1 = new Barrier(col, lane + 1, barrierCost, mainBarrier);
+                soldiers.add(dummy1); 
                 gameMap.setSlot(col, lane + 1, GameMap.SLOT_SOLDIER);
 
-                Soldier dummy2 = new Soldiers.Barrier(col, lane + 2, barrierCost);
-                dummy2.getImageView().setVisible(false); soldiers.add(dummy2); 
+                // 5. Create DUMMY 2 (Invisible) - pass 'mainBarrier' as reference
+                Barrier dummy2 = new Barrier(col, lane + 2, barrierCost, mainBarrier);
+                soldiers.add(dummy2); 
                 gameMap.setSlot(col, lane + 2, GameMap.SLOT_SOLDIER);
 
                 player.deductBurger(barrierCost);
+                System.out.println("Barrier placed.");
+            } else {
+                System.out.println("Not enough burgers!");
             }
             return; 
         }
+
 
         if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
              System.out.println("Slot Occupied!");
