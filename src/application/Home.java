@@ -229,7 +229,6 @@ public class Home {
         StackPane.setMargin(closeButton, new Insets(145, 40, 0, 0));
 
         shopContainer.getChildren().add(closeButton);
-        
         shopOverlay.getChildren().addAll(dimmer, shopContainer);
     }
     private void showInventory() {
