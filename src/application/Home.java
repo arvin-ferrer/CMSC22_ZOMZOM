@@ -23,7 +23,7 @@ public class Home {
     
     // --- NEW FIELD: The Grid we need to refresh ---
     private GridPane inventoryGrid; 
-    
+    private GridPane craftingInventoryGrid;
     // --- UI Elements we need to update ---
     private Label nameLabel;
     private Label descLabel;
@@ -111,7 +111,64 @@ public class Home {
         mainApp.getPrimaryStage().setTitle("Safe House Interior");
         mainApp.getPrimaryStage().show();
     }
+    private void refreshCraftingGrid() {
+        if (craftingInventoryGrid == null) return;
 
+        // 1. Clear old items
+        craftingInventoryGrid.getChildren().clear();
+
+        int cols = 7;
+        int rows = 5;
+        int slotSize = 52;
+
+        // 2. Get current items
+        List<InventoryItem> playerItems = mainApp.getCurrentPlayer().getInventory();
+        if (playerItems == null) playerItems = new java.util.ArrayList<>();
+
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                Pane slot = new Pane();
+                slot.setPrefSize(slotSize, slotSize);
+                slot.getStyleClass().add("inventory-slot");
+                
+                final int index = (y * cols) + x;
+
+                // 3. Render Items & Quantities
+                if (index < playerItems.size()) {
+                    InventoryItem item = playerItems.get(index);
+                    try {
+                        ImageView itemIcon = new ImageView(new Image(getClass().getResourceAsStream(item.getImagePath())));
+                        itemIcon.setFitWidth(40);
+                        itemIcon.setFitHeight(40);
+                        itemIcon.setPreserveRatio(true);
+                        itemIcon.setLayoutX(6);
+                        itemIcon.setLayoutY(6);
+                        slot.getChildren().add(itemIcon);
+
+                        // Quantity Label
+                        if (item.getQuantity() > 1) {
+                            javafx.scene.control.Label qtyLabel = new javafx.scene.control.Label("x" + item.getQuantity());
+                            qtyLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, black, 2, 1, 0, 0);");
+                            qtyLabel.setLayoutX(28);
+                            qtyLabel.setLayoutY(35);
+                            slot.getChildren().add(qtyLabel);
+                        }
+                    } catch (Exception e) {}
+                }
+
+                // 4. Click Logic (Placeholder for future crafting logic)
+                final List<InventoryItem> finalItemsList = playerItems;
+                slot.setOnMouseClicked(e -> {
+                    if (index < finalItemsList.size()) {
+                        System.out.println("Crafting Select: " + finalItemsList.get(index).getName());
+                        // Future: Move this item to the 3x3 input grid
+                    }
+                });
+
+                craftingInventoryGrid.add(slot, x, y);
+            }
+        }
+    }
     // --- NEW METHOD: Rebuilds the Inventory Grid from Scratch ---
     private void refreshInventoryGrid() {
         if (inventoryGrid == null) return;
@@ -419,7 +476,6 @@ public class Home {
                 Pane slot = new Pane();
                 slot.setPrefSize(70, 70); 
                 slot.getStyleClass().add("inventory-slot");
-                // TODO: Add drag-and-drop logic here later to accept items
                 inputGrid.add(slot, x, y);
             }
         }
@@ -432,57 +488,26 @@ public class Home {
         outputSlot.setPrefSize(70, 70);
         outputSlot.setMaxSize(70, 70);
         outputSlot.getStyleClass().add("inventory-slot");
+        
         StackPane.setAlignment(outputSlot, Pos.TOP_RIGHT);
         StackPane.setMargin(outputSlot, new Insets(108, 38, 0, 0));
         craftingContainer.getChildren().add(outputSlot);
         
-        // --- 3. Inventory Grid (Bottom half) - NOW WITH ITEMS ---
-        GridPane inventoryGrid = new GridPane();
-        int cols = 7;
-        int rows = 5;
-        int slotSize = 52; // slightly smaller to fit width? or 55 as you had
-
-        // --- ADDED: Get Items ---
-        List<InventoryItem> playerItems = mainApp.getCurrentPlayer().getInventory();
-        if (playerItems == null) playerItems = new java.util.ArrayList<>();
-
-        for (int y = 0; y < rows; y++) {
-            for (int x = 0; x < cols; x++) {
-                Pane slot = new Pane();
-                slot.setPrefSize(55, 55);
-                slot.getStyleClass().add("inventory-slot");
-                
-                // --- ADDED: Render Items ---
-                final int index = (y * cols) + x;
-                if (index < playerItems.size()) {
-                    InventoryItem item = playerItems.get(index);
-                    try {
-                        ImageView itemIcon = new ImageView(new Image(getClass().getResourceAsStream(item.getImagePath())));
-                        itemIcon.setFitWidth(40); 
-                        itemIcon.setFitHeight(40);
-                        itemIcon.setPreserveRatio(true);
-                        itemIcon.setLayoutX(7); // Center manually
-                        itemIcon.setLayoutY(7);
-                        slot.getChildren().add(itemIcon);
-                    } catch (Exception e) {}
-                }
-                
-                // Click Logic
-                final List<InventoryItem> finalItemsList = playerItems;
-                slot.setOnMouseClicked(e -> {
-                    if (index < finalItemsList.size()) {
-                        System.out.println("Crafting Select: " + finalItemsList.get(index).getName());
-                        // Future: Move this item to the inputGrid
-                    }
-                });
-
-                inventoryGrid.add(slot, x, y);
-            }
-        }
-        StackPane.setAlignment(inventoryGrid, Pos.BOTTOM_CENTER);
-        // I adjusted your margin slightly to align better, tweak if needed
-        StackPane.setMargin(inventoryGrid, new Insets(310, 0, 35, 50)); 
-        craftingContainer.getChildren().add(inventoryGrid);
+        // ====================================================================
+        // --- 3. INVENTORY GRID (Using the Class Field) ---
+        // ====================================================================
+        this.craftingInventoryGrid = new GridPane(); 
+        this.craftingInventoryGrid.setId("inventory-grid");
+        
+        // Apply the alignment that works for your background
+        StackPane.setAlignment(craftingInventoryGrid, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(craftingInventoryGrid, new Insets(290, 0, 35, 0));
+        
+        craftingContainer.getChildren().add(craftingInventoryGrid);
+        
+        // Populate it initially
+        refreshCraftingGrid();
+        // ====================================================================
 
 
         // Close Button
@@ -490,7 +515,7 @@ public class Home {
         closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold;");
         closeButton.setOnAction(e -> craftingOverlay.setVisible(false));
         StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
-        StackPane.setMargin(closeButton, new Insets(10, 10, 0, 0));
+        StackPane.setMargin(closeButton, new Insets(0, 0, 0, 0));
         craftingContainer.getChildren().add(closeButton);
         
         craftingOverlay.getChildren().addAll(dimmer, craftingContainer);
@@ -506,8 +531,12 @@ public class Home {
 	}
     private void showCrafting() {
         System.out.println("Opening Crafting Table...");
+        
+        // --- FIX: REFRESH DATA BEFORE SHOWING ---
+        refreshCraftingGrid(); 
+        // ----------------------------------------
+        
         craftingOverlay.setVisible(true);
     }
-    
     
 }
