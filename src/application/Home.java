@@ -126,6 +126,19 @@ public class Home {
         GridPane inventoryGrid = new GridPane();
         inventoryGrid.setId("inventory-grid"); 
         
+        
+        // for 1x1 grid
+//        Pane outputSlot = new Pane();
+//        outputSlot.setPrefSize(20, 20);
+//        outputSlot.setMaxSize(70, 70);
+//        outputSlot.getStyleClass().add("inventory-slot");
+//        
+//        StackPane.setAlignment(outputSlot, Pos.TOP_RIGHT);
+//        StackPane.setMargin(outputSlot, new Insets(108, 38, 0, 0));
+//        
+//        inventoryContainer.getChildren().add(outputSlot);
+
+        
         int cols = 7;
         int rows = 5;
         int slotSize = 52; 

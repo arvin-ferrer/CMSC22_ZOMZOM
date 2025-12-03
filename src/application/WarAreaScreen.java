@@ -205,8 +205,8 @@ public class WarAreaScreen {
         coinBox.getChildren().addAll(coinIcon, coinLabel);
 
         resourceBar.getChildren().addAll(burgerBox, coinBox);
-        StackPane.setAlignment(resourceBar, Pos.TOP_LEFT);
-        StackPane.setMargin(resourceBar, new Insets(30, 0, 0, 550)); 
+        StackPane.setAlignment(resourceBar, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(resourceBar, new Insets(30, 100, 0, 0)); 
         gamePane.getChildren().add(resourceBar);
 
         sceneRoot = new StackPane();
@@ -219,7 +219,21 @@ public class WarAreaScreen {
         
         try { Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12); } catch (Exception e) {}
         this.player.setBurger(5000);
-        
+        //========================================================
+        HBox itemBank = new HBox(10);
+        itemBank.setPadding(new Insets(10));
+        itemBank.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 10;");
+        itemBank.setMaxHeight(110);
+        itemBank.setMaxWidth(400);
+        itemBank.setPickOnBounds(false);
+        ImageView grenadeCard = createCard("/assets/grenadeCard.png", Item.BOMB);
+//        ImageView ClothCard = createCard("/assets/medkit-card.png", Item.);
+        ImageView medkitCard = createCard("/assets/medkit-card.png", Item.POTION);
+        itemBank.getChildren().addAll(grenadeCard, medkitCard);
+        StackPane.setAlignment(itemBank, Pos.TOP_RIGHT);
+        StackPane.setMargin(itemBank, new Insets(20, 0, 0, 20));
+        gamePane.getChildren().add(itemBank);
+
         spawnZombie(0);
         spawnZombie(2);
         spawnZombie(4);
