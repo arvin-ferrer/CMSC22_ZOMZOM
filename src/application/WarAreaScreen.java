@@ -473,7 +473,9 @@ public class WarAreaScreen {
                 cardView.setEffect(glow);
             }
         });
+        
         return cardView;
+        
     }
 
     private void spawnZombie(int lane) {
@@ -491,16 +493,20 @@ public class WarAreaScreen {
         }
     }
     
+
     private void addSoldier(String soldierType, int col, int lane) {
         
+        // ====================================================================
+        // BARRIER LOGIC (Uses Inventory, NOT Burgers)
+        // ====================================================================
         if (soldierType.equals(Soldier.BARRIER)) {
-            // 1. Check bounds (must have 3 vertical spaces)
+            // 1. Check Map Bounds
             if (lane + 2 >= GameMap.MAP_HEIGHT_TILES) {
                 System.out.println("Cannot place barrier: Not enough vertical space!");
                 return;
             }
 
-            // 2. Check if all 3 slots are empty
+            // 2. Check Map Availability
             if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY ||
                 gameMap.getSlot(col, lane + 1) != GameMap.SLOT_EMPTY ||
                 gameMap.getSlot(col, lane + 2) != GameMap.SLOT_EMPTY) {
@@ -508,57 +514,84 @@ public class WarAreaScreen {
                 return;
             }
 
-            int barrierCost = 70; 
+            // --- 3. CHECK INVENTORY FOR "Barrier" ---
+            InventoryItem barrierItem = findItem("Barrier");
             
-            if (player.getBurger() >= barrierCost) {
-                // 3. Create MAIN barrier (Visible) at top slot
-                // Note: We cast to Barrier so we can pass it to the dummies
-                Barrier mainBarrier = new Barrier(col, lane, barrierCost); 
+            if (barrierItem != null && barrierItem.getQuantity() > 0) {
+                // A. Create VISIBLE Barrier at the top slot
+                // (Cost is 0 here because we consume the item instead)
+                Soldier mainBarrier = new Soldiers.Barrier(col, lane, 0); 
                 soldiers.add(mainBarrier);
+                
+                // Align to TOP_LEFT is removed based on your previous request to use Soldier.java math
                 gamePane.getChildren().add(mainBarrier.getImageView());
                 gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
 
-                // 4. Create DUMMY 1 (Invisible) - pass 'mainBarrier' as reference
-                Barrier dummy1 = new Barrier(col, lane + 1, barrierCost, mainBarrier);
+                // B. Create INVISIBLE Dummy at middle slot
+                Soldier dummy1 = new Soldiers.Barrier(col, lane + 1, 0);
+                dummy1.getImageView().setVisible(false);
                 soldiers.add(dummy1); 
                 gameMap.setSlot(col, lane + 1, GameMap.SLOT_SOLDIER);
 
-                // 5. Create DUMMY 2 (Invisible) - pass 'mainBarrier' as reference
-                Barrier dummy2 = new Barrier(col, lane + 2, barrierCost, mainBarrier);
+                // C. Create INVISIBLE Dummy at bottom slot
+                Soldier dummy2 = new Soldiers.Barrier(col, lane + 2, 0);
+                dummy2.getImageView().setVisible(false);
                 soldiers.add(dummy2); 
                 gameMap.setSlot(col, lane + 2, GameMap.SLOT_SOLDIER);
 
-                player.deductBurger(barrierCost);
-                System.out.println("Barrier placed.");
+                // --- 4. CONSUME THE ITEM ---
+                barrierItem.addQuantity(-1); // Subtract 1 from inventory
+                System.out.println("Barrier placed! Remaining: " + barrierItem.getQuantity());
+                
             } else {
-                System.out.println("Not enough burgers!");
+                System.out.println("You don't have any Barriers! Craft them at the Safe House.");
             }
             return; 
         }
 
+        // prevent planting over main character
+        if (mainCharacter != null && mainCharacter.getCol() == col && mainCharacter.getLane() == lane) {
+             System.out.println("Cannot plant on top of Zom!");
+             return;
+        }
 
         if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
              System.out.println("Slot Occupied!");
              return;
         }
         
-        Soldier newSoldier = null;
-        switch (soldierType) {
-            case Soldier.ARCHER: newSoldier = new Archer(col, lane, 50); break;
-            case Soldier.SPEARMAN: newSoldier = new Spearman(col, lane, 70); break;
-        }
-
-        if (newSoldier != null) {
-            int cost = newSoldier.getSoldierCost();
-            if (player.getBurger() >= cost) {
-                soldiers.add(newSoldier);
-                soldierAttackTimers.put(newSoldier, 0.0);
-                gamePane.getChildren().add(newSoldier.getImageView());
-                player.deductBurger(cost);
-                gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
-            } else {
-                System.out.println("Not enough burgers!");
-            }
-        }
+	    Soldier newSoldier = null;
+	    switch (soldierType) {
+	        case Soldier.ARCHER:
+	            newSoldier = new Archer(col, lane, 50);
+	            break;
+	        case Soldier.SPEARMAN:
+	            newSoldier = new Spearman(col, lane, 70);
+	            break;
+	    }
+	
+	    if (newSoldier != null) {
+	        int cost = newSoldier.getSoldierCost();
+	        if (player.getBurger() >= cost) {
+	            soldiers.add(newSoldier);
+	            soldierAttackTimers.put(newSoldier, 0.0);
+	            gamePane.getChildren().add(newSoldier.getImageView());
+	
+	            player.deductBurger(cost);
+	            System.out.println("Soldier placed. Burgers left: " + player.getBurger());
+	
+	            gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
+	        } else {
+	            System.out.println("Not enough burgers!");
+	        }
+	    }
     }
+	private InventoryItem findItem(String itemName) {
+	    for (InventoryItem item :  mainApp.getCurrentPlayer().getInventory()) {
+	        if (item.getName().equalsIgnoreCase(itemName)) {
+	            return item;
+	        }
+	    }
+	    return null;
+	}
 }
