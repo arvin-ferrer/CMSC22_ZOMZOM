@@ -45,7 +45,7 @@ public class Player implements Serializable {
         addItem(new InventoryItem("Burger", "/assets/burger-sprite.png", "Food for Soldiers"));
         addItem(new InventoryItem("Bandage", "/assets/bandage.png", "Heals 50 HP"));
     }
-    private void addItem(InventoryItem item) {
+    public void addItem(InventoryItem item) {
             if (this.inventory == null) {
                 this.inventory = new ArrayList<>();
             }
@@ -69,7 +69,10 @@ public class Player implements Serializable {
         return this.inventory;
 
     }
-    
+//    public void addItem1(InventoryItem item) {
+//        if (inventory == null) inventory = new ArrayList<>();
+//        inventory.add(item);
+//    }
 	public void addExperience(int amount) {
         this.experiencePoints += amount;
         while (this.experiencePoints >= this.experienceToNextLevel) {

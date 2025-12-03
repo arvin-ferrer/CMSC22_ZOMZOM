@@ -22,7 +22,20 @@ public class Home {
     public Home(Main mainApp) {
         this.mainApp = mainApp;
     }
+ // Simple class to define items sold in the shop
+    private class ShopItem {
+        String name;
+        int price;
+        String imagePath;
+        String description;
 
+        public ShopItem(String name, int price, String imagePath, String description) {
+            this.name = name;
+            this.price = price;
+            this.imagePath = imagePath;
+            this.description = description;
+        }
+    }
     public void showScreen() {
         // root pane with background
         rootPane = new StackPane();
@@ -239,9 +252,12 @@ public class Home {
         
         inventoryOverlay.getChildren().addAll(dimmer, inventoryContainer);
     }
+ // Field to track what the user is trying to buy
+    private ShopItem currentSelectedShopItem = null;
+
     private void createShopOverlay() {
         shopOverlay = new StackPane();
-        shopOverlay.setVisible(false); // start hidden
+        shopOverlay.setVisible(false);
         shopOverlay.setAlignment(Pos.CENTER);
         
         StackPane dimmer = new StackPane();
@@ -249,21 +265,100 @@ public class Home {
         dimmer.setOnMouseClicked(e -> shopOverlay.setVisible(false));
         
         StackPane shopContainer = new StackPane();
-        shopContainer.setId("shop-bg"); // CSS ID
+        shopContainer.setId("shop-bg");
         shopContainer.setMaxSize(480, 640);
         shopContainer.setPrefSize(480, 640);
+
+        // ====================================================================
+        // 1. DEFINE SHOP ITEMS
+        // ====================================================================
+        java.util.List<ShopItem> shopList = new java.util.ArrayList<>();
+        // Note: You can change the prices and paths here
+        shopList.add(new ShopItem("Wood", 50, "/assets/wood.png", "Construction material"));
+        shopList.add(new ShopItem("Cloth", 30, "/assets/whiteCloth.png", "For crafting bandages"));
+        shopList.add(new ShopItem("Gunpowder", 100, "/assets/gunpowder.png", "Explosive component"));
+        shopList.add(new ShopItem("Rock", 20, "/assets/stone.png", "Basic resource"));
+        shopList.add(new ShopItem("Mallet", 500, "/assets/mallet.png", "Melee weapon"));
+        shopList.add(new ShopItem("Katana", 1500, "/assets/katana.png", "Sharp blade"));
+        shopList.add(new ShopItem("Machine Gun", 5000, "/assets/machinegun.png", "Rapid fire"));
+
+        // ====================================================================
+        // 2. SELECTED ITEM DISPLAY (Top Area)
+        // ====================================================================
         
+        // Image of selected item
+        ImageView selectedItemView = new ImageView();
+        selectedItemView.setFitWidth(80);
+        selectedItemView.setFitHeight(80);
+        selectedItemView.setPreserveRatio(true);
         
-        Pane outputSlot = new Pane();
-        outputSlot.setPrefSize(20, 20);
-        outputSlot.setMaxSize(120, 120);
-        outputSlot.getStyleClass().add("inventory-slot");
+        StackPane.setAlignment(selectedItemView, Pos.TOP_RIGHT);
+
+        StackPane.setMargin(selectedItemView, new Insets(180, 70, 0, 20)); 
+        shopContainer.getChildren().add(selectedItemView);
+
+        // Info Text (Name & Price)
+        javafx.scene.layout.VBox infoBox = new javafx.scene.layout.VBox(5);
+        infoBox.setAlignment(Pos.TOP_RIGHT);
         
-        StackPane.setAlignment(outputSlot, Pos.TOP_RIGHT);
-        StackPane.setMargin(outputSlot, new Insets(180, 70, 0, 20));
-        shopContainer.getChildren().add(outputSlot);
+        javafx.scene.control.Label nameLabel = new javafx.scene.control.Label("SELECT ITEM");
+        nameLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 20px; -fx-text-fill: #3e2723;");
         
-        // shop grid
+        javafx.scene.control.Label priceLabel = new javafx.scene.control.Label("");
+        priceLabel.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 16px; -fx-text-fill: gold; -fx-font-weight: bold;");
+        
+        infoBox.getChildren().addAll(nameLabel, priceLabel);
+        
+        StackPane.setAlignment(infoBox, Pos.TOP_RIGHT);
+        StackPane.setMargin(infoBox, new Insets(350, 80, 0, 0)); // Adjust to fit right box
+        shopContainer.getChildren().add(infoBox);
+
+        // BUY BUTTON
+        Button buyButton = new Button("BUY");
+        buyButton.getStyleClass().add("dashboard-button"); // Reuse your button style
+        buyButton.setStyle("-fx-font-size: 14px; -fx-background-color: #2e7d32;"); // Green for buy
+        buyButton.setDisable(true); // Disabled until item selected
+//        buyButton.setPrefWidth(90);  // Example: Smaller width (default was 250 in CSS)
+//        buyButton.setPrefHeight(40);
+        buyButton.setMaxHeight(40);
+        buyButton.setMaxWidth(90);
+        buyButton.setViewOrder(-1.0); 
+        // --- BUY LOGIC ---
+        buyButton.setOnAction(e -> {
+            if (currentSelectedShopItem != null) {
+                Player player = mainApp.getCurrentPlayer();
+                
+                // Check if player has enough GOLD (Currency)
+                if (player.getCurrency() >= currentSelectedShopItem.price) {
+                    // 1. Pay Money
+                    player.deductCurrency(currentSelectedShopItem.price);
+                    
+                    // 2. Add to Inventory
+                    // We create a new InventoryItem based on the ShopItem
+                    InventoryItem newItem = new InventoryItem(
+                        currentSelectedShopItem.name, 
+                        currentSelectedShopItem.imagePath, 
+                        currentSelectedShopItem.description
+                    );
+                    player.addItem(newItem);
+                    
+                    System.out.println("Bought " + currentSelectedShopItem.name + ". Remaining Gold: " + player.getCurrency());
+                    nameLabel.setText("PURCHASED!");
+                } else {
+                    System.out.println("Not enough gold!");
+                    nameLabel.setText("NO FUNDS!");
+                }
+            }
+        });
+
+        StackPane.setAlignment(buyButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(buyButton, new Insets(420, 70, 0, 0)); // Position below text
+        shopContainer.getChildren().add(buyButton);
+
+
+        // ====================================================================
+        // 3. SHOP GRID (The Items)
+        // ====================================================================
         GridPane shopGrid = new GridPane();
         shopGrid.setId("shop-grid"); 
         
@@ -275,13 +370,48 @@ public class Home {
             for (int x = 0; x < cols; x++) {
                 Pane slot = new Pane();
                 slot.setPrefSize(slotSize, slotSize);
-                slot.getStyleClass().add("inventory-slot"); // reuse the inventory slot style
-                // click logic
-                final int finalX = x;
-                final int finalY = y;
+                slot.getStyleClass().add("inventory-slot"); 
+                
+                final int index = (y * cols) + x;
+                
+                // If we have an item for this slot, render it
+                if (index < shopList.size()) {
+                    ShopItem item = shopList.get(index);
+                    try {
+                        ImageView itemIcon = new ImageView(new Image(getClass().getResourceAsStream(item.imagePath)));
+                        itemIcon.setFitWidth(40);
+                        itemIcon.setFitHeight(40);
+                        itemIcon.setPreserveRatio(true);
+                        itemIcon.setLayoutX(6);
+                        itemIcon.setLayoutY(6);
+                        slot.getChildren().add(itemIcon);
+                    } catch (Exception e) {
+                        // System.out.println("Image not found: " + item.imagePath);
+                    }
+                }
+
+                // Click Logic
                 slot.setOnMouseClicked(e -> {
-                    System.out.println("Clicked Shop Slot: " + finalX + "," + finalY);
-                    // add logic to buy item here
+                    if (index < shopList.size()) {
+                        currentSelectedShopItem = shopList.get(index);
+                        
+                        // Update UI
+                        nameLabel.setText(currentSelectedShopItem.name);
+                        priceLabel.setText("COST: " + currentSelectedShopItem.price);
+                        buyButton.setDisable(false); // Enable buy button
+                        
+                        try {
+                            selectedItemView.setImage(new Image(getClass().getResourceAsStream(currentSelectedShopItem.imagePath)));
+                        } catch (Exception ex) {}
+                        
+                        System.out.println("Selected Shop Item: " + currentSelectedShopItem.name);
+                    } else {
+                        currentSelectedShopItem = null;
+                        nameLabel.setText("");
+                        priceLabel.setText("");
+                        selectedItemView.setImage(null);
+                        buyButton.setDisable(true);
+                    }
                 });
                 
                 shopGrid.add(slot, x, y);
@@ -289,22 +419,20 @@ public class Home {
         }
 
         StackPane.setAlignment(shopGrid, Pos.BOTTOM_CENTER);
-        // Top, Right, Bottom, Left
         StackPane.setMargin(shopGrid, new Insets(220, 0, 85, 54)); 
 
         shopContainer.getChildren().add(shopGrid);
         
+        // Close Button
         Button closeButton = new Button("X");
         closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold;");
         closeButton.setOnAction(e -> shopOverlay.setVisible(false));
-        
         StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
         StackPane.setMargin(closeButton, new Insets(145, 40, 0, 0));
 
         shopContainer.getChildren().add(closeButton);
         shopOverlay.getChildren().addAll(dimmer, shopContainer);
     }
-    
     private void createCraftingOverlay() {
         craftingOverlay = new StackPane();
         craftingOverlay.setVisible(false);
