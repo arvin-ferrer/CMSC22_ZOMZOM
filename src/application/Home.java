@@ -138,6 +138,14 @@ public class Home {
 //            playerItems.add(new InventoryItem("Grenade", "/assets/grenade-sprite.png", "Boom"));
     
         }
+        Pane outputSlot = new Pane();
+        outputSlot.setPrefSize(20, 20);
+        outputSlot.setMaxSize(220, 220);
+        outputSlot.getStyleClass().add("inventory-slot");
+        
+        StackPane.setAlignment(outputSlot, Pos.TOP_LEFT);
+        StackPane.setMargin(outputSlot, new Insets(40, 38, 0, 40));
+        inventoryContainer.getChildren().add(outputSlot);
         
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
@@ -204,7 +212,17 @@ public class Home {
         shopContainer.setId("shop-bg"); // CSS ID
         shopContainer.setMaxSize(480, 640);
         shopContainer.setPrefSize(480, 640);
-
+        
+        
+        Pane outputSlot = new Pane();
+        outputSlot.setPrefSize(20, 20);
+        outputSlot.setMaxSize(120, 120);
+        outputSlot.getStyleClass().add("inventory-slot");
+        
+        StackPane.setAlignment(outputSlot, Pos.TOP_RIGHT);
+        StackPane.setMargin(outputSlot, new Insets(160, 50, 0, 20));
+        shopContainer.getChildren().add(outputSlot);
+        
         // shop grid
         GridPane shopGrid = new GridPane();
         shopGrid.setId("shop-grid"); 
