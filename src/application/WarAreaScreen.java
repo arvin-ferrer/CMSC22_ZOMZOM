@@ -106,6 +106,10 @@ public class WarAreaScreen {
 //        inventory = new Inventory(mainApp, player);
         inventory.add(new InventoryItem("Medkit", "/assets/medkit.png", "Heals 50 HP"));
         inventory.add(new InventoryItem("Grenade", "/assets/grenade-sprite.png", "Boom"));
+        inventory.add(new InventoryItem("Stone", "/assets/stone.png", "Rock on"));
+        inventory.add(new InventoryItem("White Cloth", "/assets/whiteCloth.png", "Clothing"));
+
+        
         player.setInventory(inventory);
         
         // Grid
