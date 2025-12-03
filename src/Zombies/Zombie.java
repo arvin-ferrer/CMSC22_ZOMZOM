@@ -22,6 +22,7 @@ public abstract class Zombie {
     protected String specialAbility; 
     protected int attackRange; 
     protected double spawnRate; 
+    protected int expValue;
     
     // position and rendering attributes
     protected String imagePath; 
@@ -105,7 +106,7 @@ public abstract class Zombie {
     
     public double getSpawnRate() { return spawnRate; }
 
-    
+    public int getExpvalue() {return this.expValue;}
     // position and rendering getters ----------------------------------------------------------------
     public ImageView getImageView() {return this.imageView;}
     
@@ -148,6 +149,8 @@ public abstract class Zombie {
     public void setBurgerPoints(int burger) {
     	this.burgerPoints = burger;
     }
+    
+    public void setExpValue(int exp) { this.expValue = exp;}
 
 
 }
