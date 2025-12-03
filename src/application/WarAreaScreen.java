@@ -285,35 +285,40 @@ public class WarAreaScreen {
         gameMap.setSlot(targetCol, targetLane, GameMap.SLOT_SOLDIER);
     }
 
-    // --- EXPLOSION LOGIC ---
+ // Inside WarAreaScreen.java
+
     private void updateGrenades(double deltaTime) {
         for (Soldier s : soldiers) {
+            // Check if this soldier is a Grenade
             if (s instanceof Soldiers.Grenade) {
                 Soldiers.Grenade g = (Soldiers.Grenade) s;
                 
-                // Only deal damage if it exploded AND hasn't dealt damage yet
+                // Only apply damage if it just exploded and hasn't hurt anyone yet
                 if (g.hasExploded() && !g.isDamageDealt()) {
                     
-                    double gX = g.getImageView().getTranslateX();
-                    double gY = g.getImageView().getTranslateY();
-                    double explosionRadius = 150; // AOE Radius
+                    System.out.println("BOOM! Grenade exploded at Lane: " + g.getLane());
 
                     for (Zombie z : zombies) {
                         if (z.isAlive()) {
-                            double zX = z.getImageView().getTranslateX();
-                            double zY = z.getImageView().getTranslateY();
+                            // 1. CHECK Y-AXIS (Lanes)
+                            // A 3x3 explosion hits: Lane Above, Current Lane, Lane Below
+                            // So the difference between Grenade Lane and Zombie Lane must be <= 1
+                            boolean isLaneHit = Math.abs(g.getLane() - z.getLane()) <= 1;
 
-                            // Distance check
-                            double dist = Math.sqrt(Math.pow(gX - zX, 2) + Math.pow(gY - zY, 2));
-                            
-                            if (dist < explosionRadius) {
-                                System.out.println("BOOM! Zombie hit.");
-                                z.takeDamage(500); 
+                            // 2. CHECK X-AXIS (Distance)
+                            // 1.5 tiles is approx 144 pixels. 
+                            // We check if the Zombie is close to the grenade horizontally.
+                            double dist = Math.abs(g.getImageView().getTranslateX() - z.getImageView().getTranslateX());
+                            boolean isXHit = dist < 160; // 160px covers the 3x3 width generously
+
+                            if (isLaneHit && isXHit) {
+                                System.out.println("Zombie hit in lane " + z.getLane());
+                                z.takeDamage(10000); // Instant Kill
                             }
                         }
                     }
                     
-                    // Mark as dealt so we don't kill them again next frame
+                    // Mark damage as dealt so we don't apply it again next frame
                     g.setDamageDealt(true);
                 }
             }
@@ -458,7 +463,8 @@ public class WarAreaScreen {
             if(!s.isAlive()) {
                 gamePane.getChildren().remove(s.getImageView());
                 int[] pos = s.getPosition();
-                gameMap.setSlot(pos[0], pos[1], GameMap.SLOT_EMPTY);
+                // This line allows you to plant here again:
+                gameMap.setSlot(pos[0], pos[1], GameMap.SLOT_EMPTY); 
                 it.remove();
             }
         }

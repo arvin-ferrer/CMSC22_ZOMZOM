@@ -75,6 +75,7 @@ public abstract class Zombie {
 
     public void takeDamage(int amount) { // Damage amount is int
         this.health -= amount;
+        System.out.println(this.health);
         if (this.health <= 0) {
             this.isAlive = false;
             this.imageView.setVisible(false);
