@@ -128,6 +128,18 @@ public class Player implements Serializable {
     public void deductCurrency(int amount) {
     	this.currency -= amount;
     }
+    
+    public void setNextLevel() {
+    	this.experienceToNextLevel = this.experienceToNextLevel + (this.experienceToNextLevel / 2);
+    }
+    
+    public void resetLevel() {
+    	this.experienceToNextLevel = 50;
+    }
+    
+    public void resetExp() {
+    	this.experiencePoints = 0;
+    }
  
     
 //     public Inventory getInventory() {

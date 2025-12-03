@@ -352,6 +352,11 @@ public class WarAreaScreen {
                 iterator.remove();
                 this.player.addCurrency(zombie.getRewardPoints()); 
                 this.player.addBurger(zombie.getBurgerPoints());
+                this.player.addExperience(zombie.getExpvalue());
+                if(this.player.getExperiencePoints() >= this.player.getExperienceToNextLevel()) {
+                	this.player.setNextLevel();
+                	player.resetExp();
+                }
             }
         }
     }
