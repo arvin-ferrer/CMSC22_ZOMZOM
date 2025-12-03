@@ -104,12 +104,12 @@ public class WarAreaScreen {
         gamePane.getChildren().add(mainCharacter.getImageView());
         
 //        inventory = new Inventory(mainApp, player);
-        inventory.add(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
-        inventory.add(new InventoryItem(InventoryItem.GRENADE, InventoryItem.GRENADE_IMAGE,"Boom"));
-        inventory.add(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Required for building barriers"));
-        inventory.add(new InventoryItem(InventoryItem.CLOTH, InventoryItem.CLOTH_IMAGE,"Required for bandages"));
-        inventory.add(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Heals 80 HP"));
-        inventory.add(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Required for building barriers"));
+//        inventory.add(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
+//        inventory.add(new InventoryItem(InventoryItem.GRENADE, InventoryItem.GRENADE_IMAGE,"Boom"));
+//        inventory.add(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Required for building barriers"));
+//        inventory.add(new InventoryItem(InventoryItem.CLOTH, InventoryItem.CLOTH_IMAGE,"Required for bandages"));
+//        inventory.add(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Heals 80 HP"));
+//        inventory.add(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Required for building barriers"));
 
        
         

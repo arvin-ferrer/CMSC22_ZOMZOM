@@ -22,13 +22,18 @@ public class InventoryItem implements Serializable {
     private String name;
     private String imagePath;
     private String description;
+    private int quantity;
 
     public InventoryItem(String name, String imagePath, String description) {
         this.name = name;
         this.imagePath = imagePath;
         this.description = description;
     }
-
+    public void incrementQuantity() { this.quantity++; }
+    public void addQuantity(int amount) {
+        this.quantity += amount;
+    }
+    public int getQuantity() { return this.quantity; }
     public String getName() { return name; }
     public String getImagePath() { return imagePath; }
     public String getDescription() { return description; }

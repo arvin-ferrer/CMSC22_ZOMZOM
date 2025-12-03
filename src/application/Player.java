@@ -45,13 +45,29 @@ public class Player implements Serializable {
         addItem(new InventoryItem("Burger", "/assets/burger-sprite.png", "Food for Soldiers"));
         addItem(new InventoryItem("Bandage", "/assets/bandage.png", "Heals 50 HP"));
     }
-    public void addItem(InventoryItem item) {
-            if (this.inventory == null) {
-                this.inventory = new ArrayList<>();
+ 
+
+    public void addItem(InventoryItem newItem) {
+        if (inventory == null) inventory = new ArrayList<>();
+        
+        // Check if item already exists to stack it
+        for (InventoryItem existingItem : inventory) {
+            if (existingItem.getName().equals(newItem.getName())) {
+                // Found it! Increase quantity
+                existingItem.addQuantity(1); // Add 1 (or newItem.getQuantity())
+                System.out.println("Stacked " + newItem.getName() + ". New Qty: " + existingItem.getQuantity());
+                return; // Stop here
             }
-            inventory.add(item);
         }
-    
+        
+        // If not found, add as new item
+        // IMPORTANT: Ensure the new item starts with quantity 1 if not set
+        if (newItem.getQuantity() < 1) {
+            newItem.addQuantity(1);
+        }
+        inventory.add(newItem);
+        System.out.println("Added new item: " + newItem.getName());
+    }
     
     
 	public void setInventory(List<InventoryItem> inventory) {
