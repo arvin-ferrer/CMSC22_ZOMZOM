@@ -219,7 +219,7 @@ public class WarAreaScreen {
         
         try { Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12); } catch (Exception e) {}
         this.player.setBurger(5000);
-        
+        this.player.setCurrency(2000);
         //========================================================
         HBox itemBank = new HBox(10);
         itemBank.setPadding(new Insets(10));
@@ -277,6 +277,7 @@ public class WarAreaScreen {
                 updateSoldiers(deltaTime);
                 updateProjectiles(deltaTime);
                 updateZombies(deltaTime);
+                updateGrenades(deltaTime); // <--- ADD THIS
                 removeDeadSoldiers();
             }
         };
@@ -365,6 +366,8 @@ public class WarAreaScreen {
     private void updateSoldiers(double deltaTime) {
         for (Soldier soldier : soldiers) {
             if (!soldier.isAlive()) continue;
+            soldier.update(deltaTime);
+
             double currentCooldown = soldierAttackTimers.getOrDefault(soldier, 0.0);
             if (currentCooldown > 0) {
                 soldierAttackTimers.put(soldier, currentCooldown - deltaTime);
@@ -495,7 +498,41 @@ public class WarAreaScreen {
     
 
     private void addSoldier(String soldierType, int col, int lane) {
-        
+        if (soldierType.equals(Item.BOMB) || soldierType.equals("Grenade")) {
+            
+            // 1. Check if the single slot is empty
+            if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
+                System.out.println("Slot Occupied! Cannot throw grenade here.");
+                return;
+            }
+
+            // 2. Check Inventory for "Grenade"
+            // (Make sure this string matches exactly what you named the item in Player.java)
+            InventoryItem grenadeItem = findItem("Grenade");
+
+            if (grenadeItem != null && grenadeItem.getQuantity() > 0) {
+                
+                // 3. Create the Grenade
+                // Ensure you have the Grenade.java class created in Soldiers package!
+                Soldiers.Grenade grenade = new Soldiers.Grenade(col, lane);
+                
+                // 4. Add to lists and screen
+                soldiers.add(grenade);
+                gamePane.getChildren().add(grenade.getImageView());
+                
+                // 5. Mark slot as occupied
+                // (It will become empty again automatically when removeDeadSoldiers() removes the exploded grenade)
+                gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
+
+                // 6. Deduct from Inventory
+                grenadeItem.addQuantity(-1);
+                System.out.println("Grenade thrown! Quantity left: " + grenadeItem.getQuantity());
+                
+            } else {
+                System.out.println("No Grenades in inventory! Buy or craft some.");
+            }
+            return; // Stop here, don't run standard soldier logic
+        }
         // ====================================================================
         // BARRIER LOGIC (Uses Inventory, NOT Burgers)
         // ====================================================================
@@ -585,6 +622,47 @@ public class WarAreaScreen {
 	            System.out.println("Not enough burgers!");
 	        }
 	    }
+    }
+ // --- FIX 2: ADD THIS METHOD ---
+    private void updateGrenades(double deltaTime) {
+        for (Soldier s : soldiers) {
+            // Check if this soldier is a Grenade
+            if (s instanceof Soldiers.Grenade) {
+                Soldiers.Grenade g = (Soldiers.Grenade) s;
+                
+                // Check if it finished exploding this frame
+                // (The Grenade class sets isAlive=false right after exploding, so we check that too)
+                if (g.hasExploded()) {
+                    
+                    // --- AOE DAMAGE LOGIC ---
+                    double gX = g.getImageView().getTranslateX();
+                    double gY = g.getImageView().getTranslateY();
+                    
+                    // Radius 150px covers about a 3x3 tile area
+                    double explosionRadius = 150; 
+
+                    for (Zombie z : zombies) {
+                        if (z.isAlive()) {
+                            double zX = z.getImageView().getTranslateX();
+                            double zY = z.getImageView().getTranslateY();
+
+                            // Calculate distance between grenade and zombie
+                            double dist = Math.sqrt(Math.pow(gX - zX, 2) + Math.pow(gY - zY, 2));
+                            
+                            // If inside radius, KILL IT
+                            if (dist < explosionRadius) {
+                                System.out.println("BOOM! Zombie hit.");
+                                z.takeDamage(500); // 500 damage kills almost anything
+                            }
+                        }
+                    }
+                    
+                    // The grenade has done its job. 
+                    // We ensure it is dead so removeDeadSoldiers() clears it from the map.
+                    // (Grenade.java likely sets isAlive=false inside explode(), but this is a safety check)
+                }
+            }
+        }
     }
 	private InventoryItem findItem(String itemName) {
 	    for (InventoryItem item :  mainApp.getCurrentPlayer().getInventory()) {

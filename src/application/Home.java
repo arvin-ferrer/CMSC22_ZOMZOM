@@ -569,7 +569,7 @@ public class Home {
         }
         // 5x gunpowder + 3x rock = grenade
         else if (gunpowderCount == 5 && rockCount == 3 && woodCount == 0 && clothCount == 0 && bandageCount == 0) {
-            setResult("Grenade", "/assets/grenade.png");
+            setResult("Grenade", "/assets/grenade-sprite.png");
         }
         // 1x bandage + 3x cloth = medkit
         else if (bandageCount == 1 && clothCount == 3 && woodCount == 0 && gunpowderCount == 0 && rockCount == 0) {
