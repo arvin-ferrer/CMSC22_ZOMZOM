@@ -104,11 +104,14 @@ public class WarAreaScreen {
         gamePane.getChildren().add(mainCharacter.getImageView());
         
 //        inventory = new Inventory(mainApp, player);
-        inventory.add(new InventoryItem("Medkit", "/assets/medkit.png", "Heals 50 HP"));
-        inventory.add(new InventoryItem("Grenade", "/assets/grenade-sprite.png", "Boom"));
-        inventory.add(new InventoryItem("Stone", "/assets/stone.png", "Rock on"));
-        inventory.add(new InventoryItem("White Cloth", "/assets/whiteCloth.png", "Clothing"));
+        inventory.add(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
+        inventory.add(new InventoryItem(InventoryItem.GRENADE, InventoryItem.GRENADE_IMAGE,"Boom"));
+        inventory.add(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Rock on"));
+        inventory.add(new InventoryItem(InventoryItem.CLOTH, InventoryItem.CLOTH_IMAGE,"Rock on"));
+        inventory.add(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Rock on"));
+        inventory.add(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Rock on"));
 
+       
         
         player.setInventory(inventory);
         
