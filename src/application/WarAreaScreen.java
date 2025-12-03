@@ -106,10 +106,10 @@ public class WarAreaScreen {
 //        inventory = new Inventory(mainApp, player);
         inventory.add(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
         inventory.add(new InventoryItem(InventoryItem.GRENADE, InventoryItem.GRENADE_IMAGE,"Boom"));
-        inventory.add(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Rock on"));
-        inventory.add(new InventoryItem(InventoryItem.CLOTH, InventoryItem.CLOTH_IMAGE,"Rock on"));
-        inventory.add(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Rock on"));
-        inventory.add(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Rock on"));
+        inventory.add(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Required for building barriers"));
+        inventory.add(new InventoryItem(InventoryItem.CLOTH, InventoryItem.CLOTH_IMAGE,"Required for bandages"));
+        inventory.add(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Heals 80 HP"));
+        inventory.add(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Required for building barriers"));
 
        
         
@@ -172,8 +172,8 @@ public class WarAreaScreen {
         seedBank.setPickOnBounds(false);
         ImageView archerCard = createCard("/assets/archer-card.png", Soldier.ARCHER);
         ImageView spearmanCard = createCard("/assets/spearman-card.png", Soldier.SPEARMAN);
-        ImageView barrierCard = createCard("/assets/barrier-card.png", Soldier.BARRIER);
-        seedBank.getChildren().addAll(archerCard, spearmanCard, barrierCard);
+//        ImageView barrierCard = createCard("/assets/barrier-card.png", Soldier.BARRIER);
+        seedBank.getChildren().addAll(archerCard, spearmanCard);
         StackPane.setAlignment(seedBank, Pos.TOP_LEFT);
         StackPane.setMargin(seedBank, new Insets(20, 0, 0, 20));
         gamePane.getChildren().add(seedBank);
@@ -219,6 +219,7 @@ public class WarAreaScreen {
         
         try { Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12); } catch (Exception e) {}
         this.player.setBurger(5000);
+        
         //========================================================
         HBox itemBank = new HBox(10);
         itemBank.setPadding(new Insets(10));
@@ -226,12 +227,14 @@ public class WarAreaScreen {
         itemBank.setMaxHeight(110);
         itemBank.setMaxWidth(400);
         itemBank.setPickOnBounds(false);
-        ImageView grenadeCard = createCard("/assets/grenadeCard.png", Item.BOMB);
-//        ImageView ClothCard = createCard("/assets/medkit-card.png", Item.);
+        ImageView grenadeCard = createCard("/assets/grenade-card.png", Item.BOMB);
+        ImageView bandageCard = createCard("/assets/bandage-card.png", Item.BANDAGE);
         ImageView medkitCard = createCard("/assets/medkit-card.png", Item.POTION);
-        itemBank.getChildren().addAll(grenadeCard, medkitCard);
+        ImageView barrierCard = createCard("/assets/barrier-card.png", Soldier.BARRIER);
+
+        itemBank.getChildren().addAll(grenadeCard, medkitCard, bandageCard, barrierCard);
         StackPane.setAlignment(itemBank, Pos.TOP_RIGHT);
-        StackPane.setMargin(itemBank, new Insets(20, 0, 0, 20));
+        StackPane.setMargin(itemBank, new Insets(20, 50, 0, 20));
         gamePane.getChildren().add(itemBank);
 
         spawnZombie(0);
@@ -291,7 +294,7 @@ public class WarAreaScreen {
         if (currentPos[0] == targetCol && currentPos[1] == targetLane) {
             return;
         }
-
+        
         // 3. Check if target is empty
         if (gameMap.getSlot(targetCol, targetLane) != GameMap.SLOT_EMPTY) {
              System.out.println("Slot Occupied! Cannot move there.");
@@ -482,7 +485,7 @@ public class WarAreaScreen {
         }
     }
     
-private void addSoldier(String soldierType, int col, int lane) {
+    private void addSoldier(String soldierType, int col, int lane) {
         
         if (soldierType.equals(Soldier.BARRIER)) {
             // 1. Check bounds (must have 3 vertical spaces)

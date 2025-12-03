@@ -9,6 +9,9 @@ public abstract class Item {
     public static final String BOMB = "Bomb";
     public static final String POTION = "Health Potion";
     public static final String COIN = "Coin";
+    public static final String BANDAGE = "Bandage";
+    public static final String FENCE = "FENCE";
+
     
     // Game attributes
     protected int health;

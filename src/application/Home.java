@@ -117,49 +117,65 @@ public class Home {
         StackPane dimmer = new StackPane();
         dimmer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
         dimmer.setOnMouseClicked(e -> inventoryOverlay.setVisible(false));
-        	
+        
         StackPane inventoryContainer = new StackPane();
         inventoryContainer.setId("inventory-bg");
         inventoryContainer.setMaxSize(480, 640);
         inventoryContainer.setPrefSize(480, 640);
 
+        // this is for displaying selected item info
+        Pane displaySlot = new Pane();
+        displaySlot.setPrefSize(180, 180); // Size of the big box area
+        displaySlot.setMaxSize(180, 180);
+        // displaySlot.setStyle("-fx-background-color: rgba(255,0,0,0.3);"); // Debug red box
+        ImageView selectedItemView = new ImageView();
+        selectedItemView.setFitWidth(120); // Make it big
+        selectedItemView.setFitHeight(120);
+        selectedItemView.setPreserveRatio(true);
+        selectedItemView.setLayoutX(30); // Center it in the 180 pane
+        selectedItemView.setLayoutY(30);
+        
+        displaySlot.getChildren().add(selectedItemView);
+
+        // Position Top-Left
+        StackPane.setAlignment(displaySlot, Pos.TOP_LEFT);
+        StackPane.setMargin(displaySlot, new Insets(60, 0, 0, 30));
+        inventoryContainer.getChildren().add(displaySlot);
+
+      
+        javafx.scene.layout.VBox infoBox = new javafx.scene.layout.VBox(10); // 10px spacing
+        infoBox.setMaxSize(200, 180);
+        infoBox.setAlignment(Pos.TOP_LEFT);
+        // infoBox.setStyle("-fx-background-color: rgba(0,0,255,0.3);"); // Debug blue box
+        
+        // Label for Item Name
+        javafx.scene.control.Label nameLabel = new javafx.scene.control.Label("SELECT ITEM");
+        nameLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 24px; -fx-text-fill: #3e2723; -fx-font-weight: bold;");
+        nameLabel.setWrapText(true);
+
+        // Label for Description
+        javafx.scene.control.Label descLabel = new javafx.scene.control.Label("Click an item to see details.");
+        descLabel.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 14px; -fx-text-fill: #5d4037; -fx-font-weight: bold;");
+        descLabel.setWrapText(true);
+        descLabel.setMaxWidth(200);
+
+        infoBox.getChildren().addAll(nameLabel, descLabel);
+
+        // Position Top-Right (next to the big box)
+        StackPane.setAlignment(infoBox, Pos.TOP_RIGHT);
+        StackPane.setMargin(infoBox, new Insets(65, 0, 0, 32));
+        inventoryContainer.getChildren().add(infoBox);
+
         GridPane inventoryGrid = new GridPane();
         inventoryGrid.setId("inventory-grid"); 
-        
-        
-        // for 1x1 grid
-//        Pane outputSlot = new Pane();
-//        outputSlot.setPrefSize(20, 20);
-//        outputSlot.setMaxSize(70, 70);
-//        outputSlot.getStyleClass().add("inventory-slot");
-//        
-//        StackPane.setAlignment(outputSlot, Pos.TOP_RIGHT);
-//        StackPane.setMargin(outputSlot, new Insets(108, 38, 0, 0));
-//        
-//        inventoryContainer.getChildren().add(outputSlot);
-
         
         int cols = 7;
         int rows = 5;
         int slotSize = 52; 
 
         List<InventoryItem> playerItems = mainApp.getCurrentPlayer().getInventory();
-        
-        if (playerItems == null || playerItems.isEmpty()) {
-            System.out.println("Inventory empty (Old Save File detected). Adding starter pack...");
-//            playerItems.add(new InventoryItem("Medkit", "/assets/medkit.png", "Heals 50 HP"));
-//            playerItems.add(new InventoryItem("Grenade", "/assets/grenade-sprite.png", "Boom"));
-    
-        }
-        Pane outputSlot = new Pane();
-        outputSlot.setPrefSize(20, 20);
-        outputSlot.setMaxSize(220, 220);
-        outputSlot.getStyleClass().add("inventory-slot");
-        
-        StackPane.setAlignment(outputSlot, Pos.TOP_LEFT);
-        StackPane.setMargin(outputSlot, new Insets(40, 38, 0, 40));
-        inventoryContainer.getChildren().add(outputSlot);
-        
+        if (playerItems == null) playerItems = new java.util.ArrayList<>();
+
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
                 Pane slot = new Pane();
@@ -168,11 +184,10 @@ public class Home {
                 
                 final int index = (y * cols) + x; 
 
+                // Render Item Icon in Slot
                 if (index < playerItems.size()) {
                     InventoryItem item = playerItems.get(index);
                     try {
-                        System.out.println("Loading item: " + item.getName());
-                        
                         ImageView itemIcon = new ImageView(new Image(getClass().getResourceAsStream(item.getImagePath())));
                         itemIcon.setFitWidth(40); 
                         itemIcon.setFitHeight(40);
@@ -180,17 +195,29 @@ public class Home {
                         itemIcon.setLayoutX(6);
                         itemIcon.setLayoutY(6);
                         slot.getChildren().add(itemIcon);
-                    } catch (Exception e) {
-                        System.err.println("ERROR: Could not load image: " + item.getImagePath());
-                    }
+                    } catch (Exception e) {}
                 }
 
-                // Click Logic
+                // --- CLICK LOGIC TO UPDATE DISPLAY ---
                 final List<InventoryItem> finalItemsList = playerItems;
+                
                 slot.setOnMouseClicked(e -> {
                     if (index < finalItemsList.size()) {
                         InventoryItem clickedItem = finalItemsList.get(index);
-                        System.out.println("Selected: " + clickedItem.getName());
+                        
+                        nameLabel.setText(clickedItem.getName().toUpperCase());
+                        
+                        descLabel.setText(clickedItem.getDescription());
+                        
+                        try {
+                            selectedItemView.setImage(new Image(getClass().getResourceAsStream(clickedItem.getImagePath())));
+                        } catch (Exception ex) {
+                            System.out.println("Error loading display image");
+                        }
+                    } else {
+                        nameLabel.setText("");
+                        descLabel.setText("");
+                        selectedItemView.setImage(null);
                     }
                 });
                 
@@ -233,7 +260,7 @@ public class Home {
         outputSlot.getStyleClass().add("inventory-slot");
         
         StackPane.setAlignment(outputSlot, Pos.TOP_RIGHT);
-        StackPane.setMargin(outputSlot, new Insets(160, 50, 0, 20));
+        StackPane.setMargin(outputSlot, new Insets(180, 70, 0, 20));
         shopContainer.getChildren().add(outputSlot);
         
         // shop grid
@@ -288,52 +315,80 @@ public class Home {
         dimmer.setOnMouseClicked(e -> craftingOverlay.setVisible(false));
         
         StackPane craftingContainer = new StackPane();
-        craftingContainer.setId("crafting-bg"); // CSS ID 
-        craftingContainer.setMaxSize(480, 640); // 480x640
+        craftingContainer.setId("crafting-bg"); 
+        craftingContainer.setMaxSize(480, 640); 
         craftingContainer.setPrefSize(480, 640);
 
-        // Crafting Input Grid (3x3) 
+        // --- 1. Crafting Input Grid (3x3) ---
         GridPane inputGrid = new GridPane();
-        // inputGrid.setGridLinesVisible(true);
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
                 Pane slot = new Pane();
-                slot.setPrefSize(70, 70); // Slots for 3x3
+                slot.setPrefSize(70, 70); 
                 slot.getStyleClass().add("inventory-slot");
+                // TODO: Add drag-and-drop logic here later to accept items
                 inputGrid.add(slot, x, y);
             }
         }
-        
         StackPane.setAlignment(inputGrid, Pos.TOP_LEFT);
         StackPane.setMargin(inputGrid, new Insets(37, 0, 0, 40)); 
-       
         craftingContainer.getChildren().add(inputGrid);
 
-        // Output Slot (1x1) 
+        // --- 2. Output Slot (1x1) ---
         Pane outputSlot = new Pane();
-        outputSlot.setPrefSize(20, 20);
+        outputSlot.setPrefSize(70, 70);
         outputSlot.setMaxSize(70, 70);
         outputSlot.getStyleClass().add("inventory-slot");
-        
         StackPane.setAlignment(outputSlot, Pos.TOP_RIGHT);
         StackPane.setMargin(outputSlot, new Insets(108, 38, 0, 0));
-        
         craftingContainer.getChildren().add(outputSlot);
         
-        // the inventory
+        // --- 3. Inventory Grid (Bottom half) - NOW WITH ITEMS ---
         GridPane inventoryGrid = new GridPane();
         int cols = 7;
         int rows = 5;
+        int slotSize = 52; // slightly smaller to fit width? or 55 as you had
+
+        // --- ADDED: Get Items ---
+        List<InventoryItem> playerItems = mainApp.getCurrentPlayer().getInventory();
+        if (playerItems == null) playerItems = new java.util.ArrayList<>();
+
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
                 Pane slot = new Pane();
                 slot.setPrefSize(55, 55);
                 slot.getStyleClass().add("inventory-slot");
+                
+                // --- ADDED: Render Items ---
+                final int index = (y * cols) + x;
+                if (index < playerItems.size()) {
+                    InventoryItem item = playerItems.get(index);
+                    try {
+                        ImageView itemIcon = new ImageView(new Image(getClass().getResourceAsStream(item.getImagePath())));
+                        itemIcon.setFitWidth(40); 
+                        itemIcon.setFitHeight(40);
+                        itemIcon.setPreserveRatio(true);
+                        itemIcon.setLayoutX(7); // Center manually
+                        itemIcon.setLayoutY(7);
+                        slot.getChildren().add(itemIcon);
+                    } catch (Exception e) {}
+                }
+                
+                // Click Logic
+                final List<InventoryItem> finalItemsList = playerItems;
+                slot.setOnMouseClicked(e -> {
+                    if (index < finalItemsList.size()) {
+                        System.out.println("Crafting Select: " + finalItemsList.get(index).getName());
+                        // Future: Move this item to the inputGrid
+                    }
+                });
+
                 inventoryGrid.add(slot, x, y);
             }
         }
         StackPane.setAlignment(inventoryGrid, Pos.BOTTOM_CENTER);
-        StackPane.setMargin(inventoryGrid, new Insets(310, 0, 35, 50));
+        // I adjusted your margin slightly to align better, tweak if needed
+        StackPane.setMargin(inventoryGrid, new Insets(310, 0, 35, 50)); 
         craftingContainer.getChildren().add(inventoryGrid);
 
 
