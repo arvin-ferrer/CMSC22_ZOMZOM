@@ -50,23 +50,20 @@ public class Player implements Serializable {
     public void addItem(InventoryItem newItem) {
         if (inventory == null) inventory = new ArrayList<>();
         
-        // Check if item already exists to stack it
+        // Check if we already have this item
         for (InventoryItem existingItem : inventory) {
-            if (existingItem.getName().equals(newItem.getName())) {
-                // Found it! Increase quantity
-                existingItem.addQuantity(1); // Add 1 (or newItem.getQuantity())
-                System.out.println("Stacked " + newItem.getName() + ". New Qty: " + existingItem.getQuantity());
-                return; // Stop here
+            if (existingItem.getName().equalsIgnoreCase(newItem.getName())) {
+                // Found it! Add the quantity from the new item to the existing one
+                // Since we fixed InventoryItem to default to 1, this now adds 1 (or more).
+                existingItem.addQuantity(newItem.getQuantity()); 
+                System.out.println("Stacked " + newItem.getName() + ". Total: " + existingItem.getQuantity());
+                return; 
             }
         }
         
-        // If not found, add as new item
-        // IMPORTANT: Ensure the new item starts with quantity 1 if not set
-        if (newItem.getQuantity() < 1) {
-            newItem.addQuantity(1);
-        }
+        // If not found, add it as a new slot
         inventory.add(newItem);
-        System.out.println("Added new item: " + newItem.getName());
+        System.out.println("Added new item: " + newItem.getName() + " (Qty: " + newItem.getQuantity() + ")");
     }
     
     

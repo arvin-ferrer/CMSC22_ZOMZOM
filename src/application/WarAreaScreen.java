@@ -62,9 +62,9 @@ public class WarAreaScreen {
     private String selectedSoldierType = null;
     private ImageView selectedCardView = null;
   
-    // this is for zom
     private MainCharacter mainCharacter;
     List<InventoryItem> inventory = new ArrayList<>(); 
+    
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
         this.gameMap = new GameMap();
@@ -75,7 +75,7 @@ public class WarAreaScreen {
         // --- 1. SETUP MAIN CHARACTER ---
         this.mainCharacter = new MainCharacter(0, 2);
         this.soldiers.add(this.mainCharacter); 
-        this.gameMap.setSlot(0, 2, GameMap.SLOT_SOLDIER); // Occupy start tile
+        this.gameMap.setSlot(0, 2, GameMap.SLOT_SOLDIER); 
         // -------------------------------
 
         this.player = mainApp.getCurrentPlayer(); 
@@ -103,15 +103,13 @@ public class WarAreaScreen {
         // Add Main Character Image
         gamePane.getChildren().add(mainCharacter.getImageView());
         
-//        inventory = new Inventory(mainApp, player);
-//        inventory.add(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
-//        inventory.add(new InventoryItem(InventoryItem.GRENADE, InventoryItem.GRENADE_IMAGE,"Boom"));
-//        inventory.add(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Required for building barriers"));
-//        inventory.add(new InventoryItem(InventoryItem.CLOTH, InventoryItem.CLOTH_IMAGE,"Required for bandages"));
-//        inventory.add(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Heals 80 HP"));
-//        inventory.add(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Required for building barriers"));
-
-       
+        // Set up inventory (Ensure names match what you check in addSoldier)
+        inventory.add(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
+        inventory.add(new InventoryItem("Grenade", InventoryItem.GRENADE_IMAGE,"Boom")); // Manually added Grenade for test
+        inventory.add(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Required for building barriers"));
+        inventory.add(new InventoryItem(InventoryItem.CLOTH, InventoryItem.CLOTH_IMAGE,"Required for bandages"));
+        inventory.add(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Heals 80 HP"));
+        inventory.add(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Required for building barriers"));
         
         player.setInventory(inventory);
         
@@ -127,32 +125,20 @@ public class WarAreaScreen {
                 final int finalX = x;
                 final int finalY = y;
                 
-                // --- FIX: Logic for selecting Zom or Moving ---
                 slot.setOnMouseClicked(event -> {
-                    // Case 1: We have a card selected (e.g. Archer), try to plant
                     if (selectedSoldierType != null && !selectedSoldierType.equals(Soldier.MAIN_CHARACTER)) {
                         addSoldier(selectedSoldierType, finalX, finalY);
                     }
                     else {
-                        // Case 2: No card selected OR Zom is selected
-                        
-                        // Check if we clicked on Zom's current position
                         if (mainCharacter.getCol() == finalX && mainCharacter.getLane() == finalY) {
-                            // Select Zom!
-                            System.out.println("Main Character Selected!");
                             selectedSoldierType = Soldier.MAIN_CHARACTER;
-                            
-                            // Visual feedback (optional: deselect cards)
                             if (selectedCardView != null) {
                                 selectedCardView.setEffect(null);
                                 selectedCardView = null;
                             }
                         } 
-                        // Case 3: Zom is already selected, and we clicked a different tile -> MOVE
                         else if (Soldier.MAIN_CHARACTER.equals(selectedSoldierType)) {
                             updateZom(finalX, finalY);
-                            // Optional: Deselect after moving? 
-                            // selectedSoldierType = null; 
                         }
                     }
                 });
@@ -172,13 +158,12 @@ public class WarAreaScreen {
         seedBank.setPickOnBounds(false);
         ImageView archerCard = createCard("/assets/archer-card.png", Soldier.ARCHER);
         ImageView spearmanCard = createCard("/assets/spearman-card.png", Soldier.SPEARMAN);
-//        ImageView barrierCard = createCard("/assets/barrier-card.png", Soldier.BARRIER);
         seedBank.getChildren().addAll(archerCard, spearmanCard);
         StackPane.setAlignment(seedBank, Pos.TOP_LEFT);
         StackPane.setMargin(seedBank, new Insets(20, 0, 0, 20));
         gamePane.getChildren().add(seedBank);
 
-        // Resources
+        // Resources UI
         HBox resourceBar = new HBox(20); 
         resourceBar.setAlignment(Pos.CENTER_LEFT);
         resourceBar.setPadding(new Insets(5, 15, 5, 15));
@@ -220,14 +205,16 @@ public class WarAreaScreen {
         try { Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12); } catch (Exception e) {}
         this.player.setBurger(5000);
         this.player.setCurrency(2000);
-        //========================================================
+        
+        // Item Bank (Inventory Quick Use)
         HBox itemBank = new HBox(10);
         itemBank.setPadding(new Insets(10));
         itemBank.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 10;");
         itemBank.setMaxHeight(110);
         itemBank.setMaxWidth(400);
         itemBank.setPickOnBounds(false);
-        ImageView grenadeCard = createCard("/assets/grenade-card.png", Item.BOMB);
+        // Ensure "Grenade" string here matches what is in inventory and addSoldier check
+        ImageView grenadeCard = createCard("/assets/grenade-card.png", "Grenade"); 
         ImageView bandageCard = createCard("/assets/bandage-card.png", Item.BANDAGE);
         ImageView medkitCard = createCard("/assets/medkit-card.png", Item.POTION);
         ImageView barrierCard = createCard("/assets/barrier-card.png", Soldier.BARRIER);
@@ -269,50 +256,68 @@ public class WarAreaScreen {
                 if (spawnTimer >= 5.0) {
                     int randomLane = random.nextInt(6);
                     spawnZombie(randomLane);
-                    spawnZombie(randomLane); // triple spawn for difficulty?
-                    spawnZombie(randomLane);
                     spawnTimer = 0;
                 }
 
                 updateSoldiers(deltaTime);
                 updateProjectiles(deltaTime);
                 updateZombies(deltaTime);
-                updateGrenades(deltaTime); // <--- ADD THIS
+                updateGrenades(deltaTime); // <--- IMPORTANT: This handles explosion logic
                 removeDeadSoldiers();
             }
         };
         gameLoop.start();
     }
 
-    // --- 3. MOVEMENT LOGIC FIX ---
     private void updateZom(int targetCol, int targetLane) {
         if (!mainCharacter.isAlive()) return;
 
-        // 1. Get current position
         int[] currentPos = mainCharacter.getPosition();
+        if (currentPos[0] == targetCol && currentPos[1] == targetLane) return;
         
-        // 2. If clicking the same tile, do nothing
-        if (currentPos[0] == targetCol && currentPos[1] == targetLane) {
-            return;
-        }
-        
-        // 3. Check if target is empty
         if (gameMap.getSlot(targetCol, targetLane) != GameMap.SLOT_EMPTY) {
              System.out.println("Slot Occupied! Cannot move there.");
              return;
         }
 
-        // 4. Clear OLD slot
         gameMap.setSlot(currentPos[0], currentPos[1], GameMap.SLOT_EMPTY);
-        
-        // 5. Update coordinates in object
         mainCharacter.moveTo(targetCol, targetLane);
-        
-        // 6. Occupy NEW slot
         gameMap.setSlot(targetCol, targetLane, GameMap.SLOT_SOLDIER);
-        
-        // 7. Optional: Deselect character after move?
-        // selectedSoldierType = null; 
+    }
+
+    // --- EXPLOSION LOGIC ---
+    private void updateGrenades(double deltaTime) {
+        for (Soldier s : soldiers) {
+            if (s instanceof Soldiers.Grenade) {
+                Soldiers.Grenade g = (Soldiers.Grenade) s;
+                
+                // Only deal damage if it exploded AND hasn't dealt damage yet
+                if (g.hasExploded() && !g.isDamageDealt()) {
+                    
+                    double gX = g.getImageView().getTranslateX();
+                    double gY = g.getImageView().getTranslateY();
+                    double explosionRadius = 150; // AOE Radius
+
+                    for (Zombie z : zombies) {
+                        if (z.isAlive()) {
+                            double zX = z.getImageView().getTranslateX();
+                            double zY = z.getImageView().getTranslateY();
+
+                            // Distance check
+                            double dist = Math.sqrt(Math.pow(gX - zX, 2) + Math.pow(gY - zY, 2));
+                            
+                            if (dist < explosionRadius) {
+                                System.out.println("BOOM! Zombie hit.");
+                                z.takeDamage(500); 
+                            }
+                        }
+                    }
+                    
+                    // Mark as dealt so we don't kill them again next frame
+                    g.setDamageDealt(true);
+                }
+            }
+        }
     }
 
     private void updateZombies(double deltaTime) {
@@ -366,6 +371,7 @@ public class WarAreaScreen {
     private void updateSoldiers(double deltaTime) {
         for (Soldier soldier : soldiers) {
             if (!soldier.isAlive()) continue;
+            // IMPORTANT: Call update so grenades count down their fuse
             soldier.update(deltaTime);
 
             double currentCooldown = soldierAttackTimers.getOrDefault(soldier, 0.0);
@@ -476,9 +482,7 @@ public class WarAreaScreen {
                 cardView.setEffect(glow);
             }
         });
-        
         return cardView;
-        
     }
 
     private void spawnZombie(int lane) {
@@ -496,54 +500,44 @@ public class WarAreaScreen {
         }
     }
     
-
     private void addSoldier(String soldierType, int col, int lane) {
+        
+        // --- GRENADE LOGIC ---
         if (soldierType.equals(Item.BOMB) || soldierType.equals("Grenade")) {
             
-            // 1. Check if the single slot is empty
             if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
                 System.out.println("Slot Occupied! Cannot throw grenade here.");
                 return;
             }
 
-            // 2. Check Inventory for "Grenade"
-            // (Make sure this string matches exactly what you named the item in Player.java)
+            // Check Inventory for "Grenade"
             InventoryItem grenadeItem = findItem("Grenade");
 
             if (grenadeItem != null && grenadeItem.getQuantity() > 0) {
                 
-                // 3. Create the Grenade
-                // Ensure you have the Grenade.java class created in Soldiers package!
                 Soldiers.Grenade grenade = new Soldiers.Grenade(col, lane);
-                
-                // 4. Add to lists and screen
                 soldiers.add(grenade);
                 gamePane.getChildren().add(grenade.getImageView());
                 
-                // 5. Mark slot as occupied
-                // (It will become empty again automatically when removeDeadSoldiers() removes the exploded grenade)
+                // Mark slot momentarily (it clears after explosion)
                 gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
 
-                // 6. Deduct from Inventory
+                // Deduct from Inventory
                 grenadeItem.addQuantity(-1);
                 System.out.println("Grenade thrown! Quantity left: " + grenadeItem.getQuantity());
                 
             } else {
-                System.out.println("No Grenades in inventory! Buy or craft some.");
+                System.out.println("No Grenades in inventory!");
             }
-            return; // Stop here, don't run standard soldier logic
+            return; 
         }
-        // ====================================================================
-        // BARRIER LOGIC (Uses Inventory, NOT Burgers)
-        // ====================================================================
+
+        // --- BARRIER LOGIC ---
         if (soldierType.equals(Soldier.BARRIER)) {
-            // 1. Check Map Bounds
             if (lane + 2 >= GameMap.MAP_HEIGHT_TILES) {
                 System.out.println("Cannot place barrier: Not enough vertical space!");
                 return;
             }
-
-            // 2. Check Map Availability
             if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY ||
                 gameMap.getSlot(col, lane + 1) != GameMap.SLOT_EMPTY ||
                 gameMap.getSlot(col, lane + 2) != GameMap.SLOT_EMPTY) {
@@ -551,42 +545,36 @@ public class WarAreaScreen {
                 return;
             }
 
-            // --- 3. CHECK INVENTORY FOR "Barrier" ---
             InventoryItem barrierItem = findItem("Barrier");
             
             if (barrierItem != null && barrierItem.getQuantity() > 0) {
-                // A. Create VISIBLE Barrier at the top slot
-                // (Cost is 0 here because we consume the item instead)
+                // Main Barrier
                 Soldier mainBarrier = new Soldiers.Barrier(col, lane, 0); 
                 soldiers.add(mainBarrier);
-                
-                // Align to TOP_LEFT is removed based on your previous request to use Soldier.java math
                 gamePane.getChildren().add(mainBarrier.getImageView());
                 gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
 
-                // B. Create INVISIBLE Dummy at middle slot
+                // Dummy 1
                 Soldier dummy1 = new Soldiers.Barrier(col, lane + 1, 0);
                 dummy1.getImageView().setVisible(false);
                 soldiers.add(dummy1); 
                 gameMap.setSlot(col, lane + 1, GameMap.SLOT_SOLDIER);
 
-                // C. Create INVISIBLE Dummy at bottom slot
+                // Dummy 2
                 Soldier dummy2 = new Soldiers.Barrier(col, lane + 2, 0);
                 dummy2.getImageView().setVisible(false);
                 soldiers.add(dummy2); 
                 gameMap.setSlot(col, lane + 2, GameMap.SLOT_SOLDIER);
 
-                // --- 4. CONSUME THE ITEM ---
-                barrierItem.addQuantity(-1); // Subtract 1 from inventory
+                barrierItem.addQuantity(-1); 
                 System.out.println("Barrier placed! Remaining: " + barrierItem.getQuantity());
                 
             } else {
-                System.out.println("You don't have any Barriers! Craft them at the Safe House.");
+                System.out.println("No Barriers in inventory!");
             }
             return; 
         }
 
-        // prevent planting over main character
         if (mainCharacter != null && mainCharacter.getCol() == col && mainCharacter.getLane() == lane) {
              System.out.println("Cannot plant on top of Zom!");
              return;
@@ -599,12 +587,8 @@ public class WarAreaScreen {
         
 	    Soldier newSoldier = null;
 	    switch (soldierType) {
-	        case Soldier.ARCHER:
-	            newSoldier = new Archer(col, lane, 50);
-	            break;
-	        case Soldier.SPEARMAN:
-	            newSoldier = new Spearman(col, lane, 70);
-	            break;
+	        case Soldier.ARCHER: newSoldier = new Archer(col, lane, 50); break;
+	        case Soldier.SPEARMAN: newSoldier = new Spearman(col, lane, 70); break;
 	    }
 	
 	    if (newSoldier != null) {
@@ -613,58 +597,15 @@ public class WarAreaScreen {
 	            soldiers.add(newSoldier);
 	            soldierAttackTimers.put(newSoldier, 0.0);
 	            gamePane.getChildren().add(newSoldier.getImageView());
-	
 	            player.deductBurger(cost);
-	            System.out.println("Soldier placed. Burgers left: " + player.getBurger());
-	
 	            gameMap.setSlot(col, lane, GameMap.SLOT_SOLDIER);
 	        } else {
 	            System.out.println("Not enough burgers!");
 	        }
 	    }
     }
- // --- FIX 2: ADD THIS METHOD ---
-    private void updateGrenades(double deltaTime) {
-        for (Soldier s : soldiers) {
-            // Check if this soldier is a Grenade
-            if (s instanceof Soldiers.Grenade) {
-                Soldiers.Grenade g = (Soldiers.Grenade) s;
-                
-                // Check if it finished exploding this frame
-                // (The Grenade class sets isAlive=false right after exploding, so we check that too)
-                if (g.hasExploded()) {
-                    
-                    // --- AOE DAMAGE LOGIC ---
-                    double gX = g.getImageView().getTranslateX();
-                    double gY = g.getImageView().getTranslateY();
-                    
-                    // Radius 150px covers about a 3x3 tile area
-                    double explosionRadius = 150; 
-
-                    for (Zombie z : zombies) {
-                        if (z.isAlive()) {
-                            double zX = z.getImageView().getTranslateX();
-                            double zY = z.getImageView().getTranslateY();
-
-                            // Calculate distance between grenade and zombie
-                            double dist = Math.sqrt(Math.pow(gX - zX, 2) + Math.pow(gY - zY, 2));
-                            
-                            // If inside radius, KILL IT
-                            if (dist < explosionRadius) {
-                                System.out.println("BOOM! Zombie hit.");
-                                z.takeDamage(500); // 500 damage kills almost anything
-                            }
-                        }
-                    }
-                    
-                    // The grenade has done its job. 
-                    // We ensure it is dead so removeDeadSoldiers() clears it from the map.
-                    // (Grenade.java likely sets isAlive=false inside explode(), but this is a safety check)
-                }
-            }
-        }
-    }
-	private InventoryItem findItem(String itemName) {
+    
+    private InventoryItem findItem(String itemName) {
 	    for (InventoryItem item :  mainApp.getCurrentPlayer().getInventory()) {
 	        if (item.getName().equalsIgnoreCase(itemName)) {
 	            return item;
