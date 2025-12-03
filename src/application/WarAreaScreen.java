@@ -347,6 +347,7 @@ public class WarAreaScreen {
                     gamePane.getChildren().remove(zombie.getImageView());
                     iterator.remove();
                 }
+                
             } else {
                 gamePane.getChildren().remove(zombie.getImageView());
                 iterator.remove();

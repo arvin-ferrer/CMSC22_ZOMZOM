@@ -53,6 +53,7 @@ public class Player implements Serializable {
         }
     
     
+    
 	public void setInventory(List<InventoryItem> inventory) {
     this.inventory = inventory;
     if (this.inventory == null) {

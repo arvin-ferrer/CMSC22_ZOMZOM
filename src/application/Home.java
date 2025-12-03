@@ -348,6 +348,7 @@ public class Home {
                     System.out.println("Not enough gold!");
                     nameLabel.setText("NO FUNDS!");
                 }
+                
             }
         });
 
