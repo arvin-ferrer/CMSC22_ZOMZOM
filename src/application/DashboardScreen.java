@@ -86,13 +86,13 @@ public class DashboardScreen {
             50, // Cloth (Common)
             25, // Burger (Uncommon)
             25, // Gunpowder (Uncommon)
-            10, // Grenade (Rare)
+            1, // Grenade (Legendary)
             10, // Medkit (Rare)
-            1   // Gold (Legendary)
+            10   // Gold (Rare)
         };
 
         String[] rarityTags = {
-            "COMMON", "COMMON", "UNCOMMON", "UNCOMMON", "RARE", "RARE", "LEGENDARY"
+            "COMMON", "COMMON", "UNCOMMON", "UNCOMMON", "LEGENDARY", "RARE", "RARE"
         };
 
         int calculatedItemIndex = 0; 
