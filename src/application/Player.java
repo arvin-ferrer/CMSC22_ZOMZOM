@@ -48,17 +48,12 @@ public class Player implements Serializable {
         return this.password.equals(inputPassword);
     }
 
-    // --- NEW WEAPON MANAGEMENT METHODS ---
-
-    /**
-     * Returns the list of currently equipped weapons.
-     */
+    
     public List<String> getEquippedWeapons() {
         if (equippedWeapons == null) equippedWeapons = new ArrayList<>();
         return equippedWeapons;
     }
     
-    // Helper for backward compatibility if logic calls getEquippedWeapon (singular)
     public String getEquippedWeapon() {
         if (equippedWeapons != null && !equippedWeapons.isEmpty()) {
             return equippedWeapons.get(0); // Return first weapon
@@ -66,11 +61,8 @@ public class Player implements Serializable {
         return InventoryItem.HAND;
     }
     
-    // Helper to set singular (clears list and adds one), good for simple resets
     public void setEquippedWeapon(String weapon) {
         if (weapon.equals(InventoryItem.HAND)) {
-            // If setting to hand, we essentially clear the equipped list
-            // But usually, we just don't store "Hand" in the list.
             equippedWeapons.clear();
         } else {
             // If legacy code calls this, we treat it as the primary weapon
