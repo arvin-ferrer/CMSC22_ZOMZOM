@@ -93,9 +93,19 @@ public class DashboardScreen {
         );
         
         logoutButton.setOnAction(e -> {
+            // --- FIX: SAVE DATA BEFORE LOGGING OUT ---
+            // We convert the ObservableList to an ArrayList because your Login class expects an ArrayList
+            // This writes the current state (inventory, gold, burger) of ALL players to the file.
+            Login.saveUsers(new java.util.ArrayList<>(mainApp.getData()), mainApp.getSavePath());
+            
+            System.out.println("Game saved successfully.");
+
+            // Clear the current player session
             mainApp.setCurrentPlayer(null); 
-//            mainApp.showLoginScreen();    
-            Platform.exit(); 
+            
+            // Return to Login Screen (Instead of closing the app completely)
+            // This is a proper "Logout". Use Platform.exit() only for a "Quit" button.
+            mainApp.showLoginScreen();    
         });
         playButton.setOnAction(e -> {
             mainApp.showWarAreaScreen(); // 

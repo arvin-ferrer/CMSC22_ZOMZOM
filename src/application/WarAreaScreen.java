@@ -22,6 +22,7 @@ import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
@@ -154,7 +155,7 @@ public class WarAreaScreen {
         seedBank.setPadding(new Insets(10));
         seedBank.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 10;");
         seedBank.setMaxHeight(110);
-        seedBank.setMaxWidth(400);
+        seedBank.setMaxWidth(230);
         seedBank.setPickOnBounds(false);
         ImageView archerCard = createCard("/assets/archer-card.png", Soldier.ARCHER);
         ImageView spearmanCard = createCard("/assets/spearman-card.png", Soldier.SPEARMAN);
@@ -170,7 +171,31 @@ public class WarAreaScreen {
         resourceBar.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6); -fx-background-radius: 15;");
         resourceBar.setMaxHeight(50);
         resourceBar.setMaxWidth(550); // Increased width to fit Level info
+        //=== back to main menu
+        Button menuButton = new Button("MAIN MENU");
+        menuButton.getStyleClass().add("dashboard-button"); 
+        
+        // Optional: Make it red to indicate "Exit/Back"
+        menuButton.setStyle("-fx-background-color: #8B0000; -fx-text-fill: white; -fx-font-family: 'Zombies Brainless'; -fx-font-size: 16px;");
 
+        menuButton.setOnAction(e -> {
+            System.out.println("Returning to Main Menu...");
+            
+            // 1. Stop the game loop so zombies freeze
+            if (gameLoop != null) {
+                gameLoop.stop();
+            }
+            
+            // 2. Go back to Dashboard
+            // (From there, you can click 'Logout' to save your file)
+            mainApp.showDashboardScreen(); 
+        });
+
+        // Position: Bottom Right
+        StackPane.setAlignment(menuButton, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(menuButton, new Insets(0, 30, 30, 0)); 
+        
+        gamePane.getChildren().add(menuButton);
         // Burger
         HBox burgerBox = new HBox(10);
         burgerBox.setAlignment(Pos.CENTER_LEFT);
@@ -234,6 +259,8 @@ public class WarAreaScreen {
         StackPane.setMargin(itemBank, new Insets(20, 50, 0, 20));
         gamePane.getChildren().add(itemBank);
 
+        
+        
         spawnZombie(0);
         spawnZombie(2);
         spawnZombie(4);

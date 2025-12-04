@@ -16,6 +16,7 @@ public class Player implements Serializable {
     private int experienceToNextLevel; 
     private int currency;
     private int burger;
+//    private int 
     private List<InventoryItem> inventory; 
 
     public Player(String username, String password) {
