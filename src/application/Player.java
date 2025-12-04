@@ -7,7 +7,7 @@ import java.util.List;
 import Items.Item;
 
 public class Player implements Serializable {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
     private String username;
     private String password;
 
@@ -26,10 +26,10 @@ public class Player implements Serializable {
         this.currency = 500; 
         this.burger = 300;
         this.experienceToNextLevel = 100;
-        
         this.inventory = new ArrayList<>();
     }
 
+    // Constructor for loading existing player
     public Player(String username, String password, int level, int xp, int currency, int burger) {
         this.username = username;
         this.password = password;
@@ -38,129 +38,70 @@ public class Player implements Serializable {
         this.experiencePoints = xp;
         this.currency = currency;
         this.experienceToNextLevel = 100 * level; 
-        
         this.inventory = new ArrayList<>();
-        
-        addItem(new InventoryItem("Medkit", "/assets/medkit.png", "Heals 50 HP"));
-        addItem(new InventoryItem("Burger", "/assets/burger-sprite.png", "Food for Soldiers"));
-        addItem(new InventoryItem("Bandage", "/assets/bandage.png", "Heals 50 HP"));
     }
  
+    /**
+     * Adds XP and handles Level Up logic automatically.
+     * Preserves overflow XP (e.g., if you have 90/100 and gain 20, you become level 2 with 10/150).
+     */
+    public void addExperience(int amount) {
+        this.experiencePoints += amount;
+        
+        // Loop in case they gain enough XP to level up multiple times
+        while (this.experiencePoints >= this.experienceToNextLevel) {
+            this.experiencePoints -= this.experienceToNextLevel; // Keep the overflow!
+            this.level++;
+            
+            // Reward
+            this.currency += 200; 
+            
+            // Increase difficulty for next level (e.g., * 1.2 or +100)
+            this.experienceToNextLevel = (int)(this.experienceToNextLevel * 1.2); 
+            
+            System.out.println("LEVEL UP! " + this.username + " is now level " + this.level);
+        }
+    }
 
     public void addItem(InventoryItem newItem) {
         if (inventory == null) inventory = new ArrayList<>();
         
-        // Check if we already have this item
         for (InventoryItem existingItem : inventory) {
             if (existingItem.getName().equalsIgnoreCase(newItem.getName())) {
-                // Found it! Add the quantity from the new item to the existing one
-                // Since we fixed InventoryItem to default to 1, this now adds 1 (or more).
                 existingItem.addQuantity(newItem.getQuantity()); 
                 System.out.println("Stacked " + newItem.getName() + ". Total: " + existingItem.getQuantity());
                 return; 
             }
         }
-        
-        // If not found, add it as a new slot
         inventory.add(newItem);
-        System.out.println("Added new item: " + newItem.getName() + " (Qty: " + newItem.getQuantity() + ")");
+        System.out.println("Added new item: " + newItem.getName());
     }
     
-    
-	public void setInventory(List<InventoryItem> inventory) {
-    this.inventory = inventory;
-    if (this.inventory == null) {
-        this.inventory = new ArrayList<>();
-    	}
-	}
+    public void setInventory(List<InventoryItem> inventory) {
+        this.inventory = inventory;
+        if (this.inventory == null) this.inventory = new ArrayList<>();
+    }
+
     public List<InventoryItem> getInventory() {
-        if (this.inventory == null) {
-            this.inventory = new ArrayList<>();
-        }
-        for(int i = 0; i < inventory.size(); i++) {
-			System.out.println("Item " + i + ": " + inventory.get(i).getName());
-		}
+        if (this.inventory == null) this.inventory = new ArrayList<>();
         return this.inventory;
-
-    }
-//    public void addItem1(InventoryItem item) {
-//        if (inventory == null) inventory = new ArrayList<>();
-//        inventory.add(item);
-//    }
-	public void addExperience(int amount) {
-        this.experiencePoints += amount;
-        while (this.experiencePoints >= this.experienceToNextLevel) {
-            this.level++;
-            // subtract the XP required for the level-up
-            this.experiencePoints -= this.experienceToNextLevel;
-            this.currency += 100; // example reward
-            this.experienceToNextLevel = 100 * this.level; 
-            System.out.println("Congratulations, " + this.username + "! You are now level " + this.level);
-        }
     }
 
+    // --- GETTERS AND SETTERS ---
+    public String getUsername() { return username; }
+    public boolean checkPassword(String attempt) { return this.password.equals(attempt); }
 
-    public String getUsername() {
-        return username;
-    }
+    public int getLevel() { return level; }
+    public int getExperiencePoints() { return experiencePoints; }
+    public int getExperienceToNextLevel() { return experienceToNextLevel; }
 
-    public void addBurger(int amount) {
-		this.burger += amount;
-	}
-    public int getBurger() { 
-    	return burger; 
-    }
-    public void deductBurger(int amount) {
-		this.burger -= amount;
-	}
-    public void setBurger(int burger) {
-    	this.burger = burger;
-    }
-    public boolean checkPassword(String attempt) {
-        return this.password.equals(attempt);
-    }
+    public int getCurrency() { return currency; }
+    public void setCurrency(int currency) { this.currency = currency; }
+    public void addCurrency(int amount) { this.currency += amount; }
+    public void deductCurrency(int amount) { this.currency -= amount; }
 
-    public int getLevel() {
-        return level;
-    }
-
-    public int getExperiencePoints() {
-        return experiencePoints;
-    }
-
-    public int getExperienceToNextLevel() {
-        return experienceToNextLevel;
-    }
-
-    public int getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(int currency) {
-        this.currency = currency;
-    }
-    public void addCurrency(int amount) {
-		this.currency += amount;
-	}
-    public void deductCurrency(int amount) {
-    	this.currency -= amount;
-    }
-    
-    public void setNextLevel() {
-    	this.experienceToNextLevel = this.experienceToNextLevel + (this.experienceToNextLevel / 2);
-    }
-    
-    public void resetLevel() {
-    	this.experienceToNextLevel = 50;
-    }
-    
-    public void resetExp() {
-    	this.experiencePoints = 0;
-    }
- 
-    
-//     public Inventory getInventory() {
-//         return inventory;
-//     }
-
+    public int getBurger() { return burger; }
+    public void setBurger(int burger) { this.burger = burger; }
+    public void addBurger(int amount) { this.burger += amount; }
+    public void deductBurger(int amount) { this.burger -= amount; }
 }

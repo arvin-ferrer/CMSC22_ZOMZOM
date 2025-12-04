@@ -58,6 +58,7 @@ public class WarAreaScreen {
     // Labels for the UI
     private Label burgerLabel;
     private Label coinLabel;
+    private Label levelLabel; // <--- NEW LABEL
     
     private String selectedSoldierType = null;
     private ImageView selectedCardView = null;
@@ -103,9 +104,9 @@ public class WarAreaScreen {
         // Add Main Character Image
         gamePane.getChildren().add(mainCharacter.getImageView());
         
-        // Set up inventory (Ensure names match what you check in addSoldier)
+        // Set up inventory
         inventory.add(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
-        inventory.add(new InventoryItem("Grenade", InventoryItem.GRENADE_IMAGE,"Boom")); // Manually added Grenade for test
+        inventory.add(new InventoryItem("Grenade", InventoryItem.GRENADE_IMAGE,"Boom")); 
         inventory.add(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Required for building barriers"));
         inventory.add(new InventoryItem(InventoryItem.CLOTH, InventoryItem.CLOTH_IMAGE,"Required for bandages"));
         inventory.add(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Heals 80 HP"));
@@ -163,14 +164,15 @@ public class WarAreaScreen {
         StackPane.setMargin(seedBank, new Insets(20, 0, 0, 20));
         gamePane.getChildren().add(seedBank);
 
-        // Resources UI
+        // --- UPDATED RESOURCES UI ---
         HBox resourceBar = new HBox(20); 
         resourceBar.setAlignment(Pos.CENTER_LEFT);
         resourceBar.setPadding(new Insets(5, 15, 5, 15));
         resourceBar.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6); -fx-background-radius: 15;");
         resourceBar.setMaxHeight(50);
-        resourceBar.setMaxWidth(300);
+        resourceBar.setMaxWidth(550); // Increased width to fit Level info
 
+        // Burger
         HBox burgerBox = new HBox(10);
         burgerBox.setAlignment(Pos.CENTER_LEFT);
         ImageView burgerIcon = new ImageView();
@@ -180,6 +182,7 @@ public class WarAreaScreen {
         burgerLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 20; -fx-text-fill: white;");
         burgerBox.getChildren().addAll(burgerIcon, burgerLabel);
 
+        // Coin
         HBox coinBox = new HBox(10);
         coinBox.setAlignment(Pos.CENTER_LEFT);
         ImageView coinIcon = new ImageView();
@@ -189,10 +192,20 @@ public class WarAreaScreen {
         coinLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 20; -fx-text-fill: gold;");
         coinBox.getChildren().addAll(coinIcon, coinLabel);
 
-        resourceBar.getChildren().addAll(burgerBox, coinBox);
+        // NEW: Level Box
+        HBox levelBox = new HBox(10);
+        levelBox.setAlignment(Pos.CENTER_LEFT);
+        Label lvlTitle = new Label("LVL");
+        lvlTitle.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 20; -fx-text-fill: #39ff14;"); // Green
+        levelLabel = new Label("1 [0/100]");
+        levelLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 20; -fx-text-fill: white;");
+        levelBox.getChildren().addAll(lvlTitle, levelLabel);
+
+        resourceBar.getChildren().addAll(burgerBox, coinBox, levelBox);
         StackPane.setAlignment(resourceBar, Pos.BOTTOM_CENTER);
         StackPane.setMargin(resourceBar, new Insets(30, 100, 0, 0)); 
         gamePane.getChildren().add(resourceBar);
+        // ---------------------------
 
         sceneRoot = new StackPane();
         sceneRoot.setId("scene-root");
@@ -203,8 +216,6 @@ public class WarAreaScreen {
         this.scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         
         try { Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12); } catch (Exception e) {}
-        this.player.setBurger(5000);
-        this.player.setCurrency(2000);
         
         // Item Bank (Inventory Quick Use)
         HBox itemBank = new HBox(10);
@@ -213,7 +224,7 @@ public class WarAreaScreen {
         itemBank.setMaxHeight(110);
         itemBank.setMaxWidth(400);
         itemBank.setPickOnBounds(false);
-        // Ensure "Grenade" string here matches what is in inventory and addSoldier check
+        
         ImageView grenadeCard = createCard("/assets/grenade-card.png", "Grenade"); 
         ImageView bandageCard = createCard("/assets/bandage-card.png", Item.BANDAGE);
         ImageView medkitCard = createCard("/assets/medkit-card.png", Item.POTION);
@@ -230,7 +241,7 @@ public class WarAreaScreen {
     }
 
     public void showScreen() {
-    	mainApp.getPrimaryStage().setResizable(false);
+        mainApp.getPrimaryStage().setResizable(false);
         mainApp.getPrimaryStage().setScene(this.scene);
         mainApp.getPrimaryStage().setTitle("ZOMZOM 2.0 - War Area");
         mainApp.getPrimaryStage().show();
@@ -249,8 +260,14 @@ public class WarAreaScreen {
                 double deltaTime = (now - lastUpdateTime) / 1_000_000_000.0;
                 lastUpdateTime = now;
                 
+                // Update UI Labels
                 if (burgerLabel != null) burgerLabel.setText(String.valueOf(player.getBurger())); 
                 if (coinLabel != null) coinLabel.setText(String.valueOf(player.getCurrency())); 
+                
+                // NEW: Update Level Label
+                if (levelLabel != null) {
+                    levelLabel.setText(player.getLevel() + " [" + player.getExperiencePoints() + "/" + player.getExperienceToNextLevel() + "]");
+                }
        
                 spawnTimer += deltaTime;
                 if (spawnTimer >= 5.0) {
@@ -262,68 +279,18 @@ public class WarAreaScreen {
                 updateSoldiers(deltaTime);
                 updateProjectiles(deltaTime);
                 updateZombies(deltaTime);
-                updateGrenades(deltaTime); // <--- IMPORTANT: This handles explosion logic
+                updateGrenades(deltaTime); 
                 removeDeadSoldiers();
             }
         };
         gameLoop.start();
     }
 
-    private void updateZom(int targetCol, int targetLane) {
-        if (!mainCharacter.isAlive()) return;
-
-        int[] currentPos = mainCharacter.getPosition();
-        if (currentPos[0] == targetCol && currentPos[1] == targetLane) return;
-        
-        if (gameMap.getSlot(targetCol, targetLane) != GameMap.SLOT_EMPTY) {
-             System.out.println("Slot Occupied! Cannot move there.");
-             return;
-        }
-
-        gameMap.setSlot(currentPos[0], currentPos[1], GameMap.SLOT_EMPTY);
-        mainCharacter.moveTo(targetCol, targetLane);
-        gameMap.setSlot(targetCol, targetLane, GameMap.SLOT_SOLDIER);
-    }
-
- // Inside WarAreaScreen.java
-
-    private void updateGrenades(double deltaTime) {
-        for (Soldier s : soldiers) {
-            // Check if this soldier is a Grenade
-            if (s instanceof Soldiers.Grenade) {
-                Soldiers.Grenade g = (Soldiers.Grenade) s;
-                
-                // Only apply damage if it just exploded and hasn't hurt anyone yet
-                if (g.hasExploded() && !g.isDamageDealt()) {
-                    
-                    System.out.println("BOOM! Grenade exploded at Lane: " + g.getLane());
-
-                    for (Zombie z : zombies) {
-                        if (z.isAlive()) {
-                            // 1. CHECK Y-AXIS (Lanes)
-                            // A 3x3 explosion hits: Lane Above, Current Lane, Lane Below
-                            // So the difference between Grenade Lane and Zombie Lane must be <= 1
-                            boolean isLaneHit = Math.abs(g.getLane() - z.getLane()) <= 1;
-
-                            // 2. CHECK X-AXIS (Distance)
-                            // 1.5 tiles is approx 144 pixels. 
-                            // We check if the Zombie is close to the grenade horizontally.
-                            double dist = Math.abs(g.getImageView().getTranslateX() - z.getImageView().getTranslateX());
-                            boolean isXHit = dist < 160; // 160px covers the 3x3 width generously
-
-                            if (isLaneHit && isXHit) {
-                                System.out.println("Zombie hit in lane " + z.getLane());
-                                z.takeDamage(10000); // Instant Kill
-                            }
-                        }
-                    }
-                    
-                    // Mark damage as dealt so we don't apply it again next frame
-                    g.setDamageDealt(true);
-                }
-            }
-        }
-    }
+    // ... (updateZom, updateGrenades, updateSoldiers, shootProjectile, updateProjectiles, removeDeadSoldiers, createCard, spawnZombie, addSoldier, findItem are unchanged from your latest working version) ...
+    // Note: I will only paste updateZombies here because it had the leveling logic that needed fixing.
+    
+    // Paste these methods back in or ensure the ones you have match the previous grenade fix.
+    // Here is the FIXED updateZombies method:
 
     private void updateZombies(double deltaTime) {
         Iterator<Zombie> iterator = zombies.iterator();
@@ -360,23 +327,47 @@ public class WarAreaScreen {
                 }
                 
             } else {
+                // ZOMBIE DIED
                 gamePane.getChildren().remove(zombie.getImageView());
                 iterator.remove();
+                
                 this.player.addCurrency(zombie.getRewardPoints()); 
                 this.player.addBurger(zombie.getBurgerPoints());
+                
+                // CORRECTED LEVEL LOGIC:
+                // Just add XP. The Player class handles calculations and overflow.
                 this.player.addExperience(zombie.getExpvalue());
-                if(this.player.getExperiencePoints() >= this.player.getExperienceToNextLevel()) {
-                	this.player.setNextLevel();
-                	player.resetExp();
+            }
+        }
+    }
+    
+    // --- Rest of your helper methods (updateGrenades, etc) remain exactly as you had them in the fixed version ---
+    private void updateGrenades(double deltaTime) {
+        for (Soldier s : soldiers) {
+            if (s instanceof Soldiers.Grenade) {
+                Soldiers.Grenade g = (Soldiers.Grenade) s;
+                if (g.hasExploded() && !g.isDamageDealt()) {
+                    System.out.println("BOOM! Grenade exploded at Lane: " + g.getLane());
+                    for (Zombie z : zombies) {
+                        if (z.isAlive()) {
+                            boolean isLaneHit = Math.abs(g.getLane() - z.getLane()) <= 1;
+                            double dist = Math.abs(g.getImageView().getTranslateX() - z.getImageView().getTranslateX());
+                            boolean isXHit = dist < 160; 
+
+                            if (isLaneHit && isXHit) {
+                                z.takeDamage(10000); 
+                            }
+                        }
+                    }
+                    g.setDamageDealt(true);
                 }
             }
         }
     }
-
+    
     private void updateSoldiers(double deltaTime) {
         for (Soldier soldier : soldiers) {
             if (!soldier.isAlive()) continue;
-            // IMPORTANT: Call update so grenades count down their fuse
             soldier.update(deltaTime);
 
             double currentCooldown = soldierAttackTimers.getOrDefault(soldier, 0.0);
@@ -609,6 +600,22 @@ public class WarAreaScreen {
 	            System.out.println("Not enough burgers!");
 	        }
 	    }
+    }
+    
+    private void updateZom(int targetCol, int targetLane) {
+        if (!mainCharacter.isAlive()) return;
+
+        int[] currentPos = mainCharacter.getPosition();
+        if (currentPos[0] == targetCol && currentPos[1] == targetLane) return;
+        
+        if (gameMap.getSlot(targetCol, targetLane) != GameMap.SLOT_EMPTY) {
+             System.out.println("Slot Occupied! Cannot move there.");
+             return;
+        }
+
+        gameMap.setSlot(currentPos[0], currentPos[1], GameMap.SLOT_EMPTY);
+        mainCharacter.moveTo(targetCol, targetLane);
+        gameMap.setSlot(targetCol, targetLane, GameMap.SLOT_SOLDIER);
     }
     
     private InventoryItem findItem(String itemName) {
