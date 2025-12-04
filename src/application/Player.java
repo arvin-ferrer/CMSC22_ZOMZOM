@@ -18,6 +18,7 @@ public class Player implements Serializable {
     private int burger;
 //    private int 
     private List<InventoryItem> inventory; 
+    private String equippedWeapon; // NEW FIELD
 
     public Player(String username, String password) {
         this.username = username;
@@ -28,6 +29,7 @@ public class Player implements Serializable {
         this.burger = 300;
         this.experienceToNextLevel = 100;
         this.inventory = new ArrayList<>();
+        this.equippedWeapon = InventoryItem.HAND; // Default weapon
     }
 
     // Constructor for loading existing player
@@ -89,6 +91,14 @@ public class Player implements Serializable {
     }
 
     // --- GETTERS AND SETTERS ---
+    public String getEquippedWeapon() {
+        return equippedWeapon;
+    }
+
+    public void setEquippedWeapon(String weaponName) {
+        this.equippedWeapon = weaponName;
+        System.out.println("Player equipped: " + weaponName);
+    }
     public String getUsername() { return username; }
     public boolean checkPassword(String attempt) { return this.password.equals(attempt); }
 
