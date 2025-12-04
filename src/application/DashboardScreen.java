@@ -6,31 +6,178 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane; 
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import java.util.Random;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.animation.RotateTransition;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
+import javafx.scene.transform.Rotate;
+import javafx.scene.image.Image;
 
 public class DashboardScreen {
 
     private Main mainApp;
+    
+    // These are the class fields we need to assign to!
+    private Label levelLabel;
+    private Label xpLabel;
+    private Label currencyLabel; // Coins
+    private Label burgerLabel;   // Burgers
+    
+    private Random random = new Random();
+    private long lastClaimTime = 0;
+    private static final long COOLDOWN_MS = 5000; 
 
-    // constructor to get the main application
     public DashboardScreen(Main mainWindow) {
         this.mainApp = mainWindow;
     }
+    private ImageView animationIcon;
+    private void claimReward() {
+        //cooldown
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastClaimTime < COOLDOWN_MS) {
+            long secondsLeft = (COOLDOWN_MS - (currentTime - lastClaimTime)) / 1000;
+            showAlert("Please Wait", "Reward is on cooldown! Wait " + (secondsLeft + 1) + " more seconds.");
+            return;
+        }
+
+        // RNG
+        int roll = random.nextInt(100);
+        
+        // items to get
+        String[] names = {
+        	    "Medkit", 
+        	    "Grenade", 
+        	    "Gold",       // Moved Gold here to match coin-sprite
+        	    "Burger",     // Moved Burger here to match burger-sprite
+        	    "Stone",      // Moved Stone here to match stone.png
+        	    "Gunpowder",  // Moved Gunpowder here to match gunpowder.png
+        	    "Cloth"       // Moved Cloth here to match whiteCloth.png
+        	};
+
+        	String[] paths = {
+        	    "/assets/medkit.png", 
+        	    "/assets/grenade-sprite.png", 
+        	    "/assets/coin-sprite.gif", 
+        	    "/assets/burger-sprite.png", 
+        	    "/assets/stone.png", 
+        	    "/assets/gunpowder.png", 
+        	    "/assets/whiteCloth.png"
+        	};
+
+        	String[] descs = {
+        	    "Heals 50 HP", 
+        	    "Explosive Damage", 
+        	    "Currency", 
+        	    "Heals", 
+        	    "Building Material", 
+        	    "Crafting Material", 
+        	    "Crafting Material"
+        	};
+        int calculatedItemIndex = random.nextInt(names.length); 
+
+        String imagePathToLoad = "/assets/medkit.png"; // Default fallback
+
+        if (roll < 40) {
+            imagePathToLoad = "/assets/coin-sprite.gif"; 
+        } 
+        else if (roll < 80) {
+            imagePathToLoad = "/assets/burger-sprite.png"; 
+        } 
+        else {
+        	// rare items
+            imagePathToLoad = paths[calculatedItemIndex % paths.length];
+        }
+
+        if (animationIcon == null) {
+            animationIcon = new ImageView();
+            animationIcon.setFitWidth(100);
+            animationIcon.setFitHeight(100);
+        }
+
+        try {
+            animationIcon.setImage(new Image(getClass().getResourceAsStream(imagePathToLoad)));
+        } catch (Exception e) {
+            System.out.println("Could not load image: " + imagePathToLoad);
+            try { animationIcon.setImage(new Image(getClass().getResourceAsStream("/assets/medkit.png"))); } catch (Exception ex) {}
+        }
+
+        StackPane root = (StackPane) mainApp.getPrimaryStage().getScene().getRoot();
+        if (!root.getChildren().contains(animationIcon)) {
+            root.getChildren().add(animationIcon);
+        }
+        animationIcon.setVisible(true);
+        
+        RotateTransition rotate = new RotateTransition(Duration.seconds(1.5), animationIcon);
+        rotate.setByAngle(720); 
+        rotate.setCycleCount(1);
+        rotate.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
+
+        final int finalRoll = roll;
+        final int finalItemIndex = calculatedItemIndex;
+
+        rotate.setOnFinished(e -> {
+            animationIcon.setVisible(false);
+            root.getChildren().remove(animationIcon); 
+            
+            Platform.runLater(() -> {
+                lastClaimTime = System.currentTimeMillis();
+                Player player = mainApp.getCurrentPlayer();
+                String message = "";
+                
+        
+                
+                if (finalRoll < 40) {
+                    int amount = 50 + random.nextInt(101); 
+                    player.addCurrency(amount);
+                    message = "You found " + amount + " Coins!";
+                } 
+                else if (finalRoll < 80) {
+                    int amount = 20 + random.nextInt(81); 
+                    player.addBurger(amount);
+                    message = "You gathered " + amount + " Burgers!";
+                } 
+                else {
+                    int idx = finalItemIndex % names.length;
+                    
+                    InventoryItem newItem = new InventoryItem(names[idx], paths[idx % paths.length], descs[idx % descs.length]);
+                    player.addItem(newItem);
+                    message = "LUCKY! You found a " + names[idx] + "!";
+                }
+                
+                updateLabels();
+                showAlert("Reward Claimed", message);
+            });
+        });
+
+        rotate.play();
+    }
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("ZOMZOM Reward");
+        alert.setHeaderText(title);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
 
     public void showScreen() {
-    	Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12);
+        try {
+            Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12);
+        } catch (Exception e) {}
+        
         Player currentPlayer = mainApp.getCurrentPlayer();
 
-       
-        // create the borderpane and apply the style
+        // BorderPane setup
         BorderPane topBar = new BorderPane();
         topBar.setId("dashboard-top-bar");
-        // Padding: top, right, bottom, left
         topBar.setPadding(new Insets(15, 30, 15, 30)); 
 
         Text scenetitle = new Text("ZOMZOM");
@@ -38,37 +185,45 @@ public class DashboardScreen {
         topBar.setLeft(scenetitle);
         BorderPane.setAlignment(scenetitle, Pos.CENTER_LEFT); 
         
-        //Player Info in the Center
         Label playerInfo = new Label("SURVIVOR: " + currentPlayer.getUsername());
         playerInfo.setId("player-info-label"); 
         topBar.setCenter(playerInfo);
         BorderPane.setAlignment(playerInfo, Pos.CENTER);
 
-        
-        HBox statsBox = new HBox(30); // 30px spacing between stats
+        HBox statsBox = new HBox(30); 
         statsBox.setAlignment(Pos.CENTER_RIGHT);
         
-        Label levelLabel = new Label("LEVEL: " + currentPlayer.getLevel());
-        Label xpLabel = new Label("XP: " + currentPlayer.getExperiencePoints() + "/" + currentPlayer.getExperienceToNextLevel());
-        Label currencyLabel = new Label("COINS: " + currentPlayer.getCurrency());
+        // --- FIX: ASSIGN TO CLASS FIELDS (Removed 'Label' type declaration) ---
         
+        levelLabel = new Label("LEVEL: " + currentPlayer.getLevel());
+        xpLabel = new Label("XP: " + currentPlayer.getExperiencePoints() + "/" + currentPlayer.getExperienceToNextLevel());
+        currencyLabel = new Label("COINS: " + currentPlayer.getCurrency());
+        
+        // --- ADDED BURGER LABEL ---
+        burgerLabel = new Label("BURGERS: " + currentPlayer.getBurger());
+
+        // Styling
         levelLabel.getStyleClass().add("stat-label");
         xpLabel.getStyleClass().add("stat-label");
         currencyLabel.getStyleClass().add("stat-label");
+        burgerLabel.getStyleClass().add("stat-label"); // Style the burger label too
         
-        statsBox.getChildren().addAll(levelLabel, xpLabel, currencyLabel);
+        // Add ALL labels to the box
+        statsBox.getChildren().addAll(levelLabel, xpLabel, burgerLabel, currencyLabel);
+        
         topBar.setRight(statsBox);
         BorderPane.setAlignment(statsBox, Pos.CENTER_RIGHT);
 
-
+        // Menu Buttons
         VBox buttonMenu = new VBox(25); 
         buttonMenu.setAlignment(Pos.CENTER_LEFT);
         buttonMenu.setId("dashboard-vbox"); 
 
         Text menuTitle = new Text("MAIN MENU");
-        menuTitle.setId("dashboard-menu-title"); // ID for styling
+        menuTitle.setId("dashboard-menu-title"); 
         VBox.setMargin(menuTitle, new Insets(0, 0, 10, 0)); 
         buttonMenu.getChildren().add(menuTitle);
+        
         Button playButton = new Button("Play");
         playButton.getStyleClass().add("dashboard-button"); 
         
@@ -92,42 +247,52 @@ public class DashboardScreen {
                 logoutButton
         );
         
+        inventoryButton.setOnAction(e -> {
+            mainApp.showHomeScreenInventory();
+        });
+        
         logoutButton.setOnAction(e -> {
-            // --- FIX: SAVE DATA BEFORE LOGGING OUT ---
-            // We convert the ObservableList to an ArrayList because your Login class expects an ArrayList
-            // This writes the current state (inventory, gold, burger) of ALL players to the file.
             Login.saveUsers(new java.util.ArrayList<>(mainApp.getData()), mainApp.getSavePath());
-            
             System.out.println("Game saved successfully.");
-
-            // Clear the current player session
             mainApp.setCurrentPlayer(null); 
-            
-            // Return to Login Screen (Instead of closing the app completely)
-            // This is a proper "Logout". Use Platform.exit() only for a "Quit" button.
             mainApp.showLoginScreen();    
         });
+        
         playButton.setOnAction(e -> {
-            mainApp.showWarAreaScreen(); // 
+            mainApp.showWarAreaScreen(); 
+        });
+        
+        claimRewardButton.setOnAction(e -> {
+            claimReward();
+            updateLabels(); // This will now work because fields are initialized!
         });
 
         StackPane rootPane = new StackPane();
         rootPane.setId("dashboard-background-panel"); 
        
         rootPane.getChildren().addAll(topBar, buttonMenu); 
-
         
         StackPane.setAlignment(topBar, Pos.TOP_CENTER); 
         
         StackPane.setAlignment(buttonMenu, Pos.CENTER_LEFT);
         StackPane.setMargin(buttonMenu, new Insets(100, 0, 0, 50)); 
 
-
-        Scene scene = new Scene(rootPane, 800, 600);
+        Scene scene = new Scene(rootPane, 1280, 720); 
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         
         mainApp.getPrimaryStage().setScene(scene);
         mainApp.getPrimaryStage().setTitle("ZOMZOM - Dashboard");
         mainApp.getPrimaryStage().show();
+    }
+    
+    // This method updates the CLASS FIELDS text
+    public void updateLabels() {
+        Player p = mainApp.getCurrentPlayer();
+        if (p != null) {
+            if (levelLabel != null) levelLabel.setText("LEVEL: " + p.getLevel());
+            if (xpLabel != null) xpLabel.setText("XP: " + p.getExperiencePoints() + "/" + p.getExperienceToNextLevel());
+            if (burgerLabel != null) burgerLabel.setText("BURGERS: " + p.getBurger());
+            if (currencyLabel != null) currencyLabel.setText("COINS: " + p.getCurrency());
+        }
     }
 }

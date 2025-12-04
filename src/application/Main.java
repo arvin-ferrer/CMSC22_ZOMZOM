@@ -40,7 +40,13 @@ public class Main extends Application {
     		LoginScreen loginScreen = new LoginScreen(this);
     		loginScreen.showLoginScreen(); // Make sure this method exists in LoginScreen
     	}
-    	
+    	// In Main.java
+        
+        public void showHomeScreenInventory() {
+            Home home = new Home(this);
+            home.showScreen();       // 1. Load the Home Screen
+            home.showInventory();    // 2. Open the Inventory Overlay immediately
+        }
     	// creates and shows the dashboard Screen
     	public void showDashboardScreen() {
     		DashboardScreen dashboard = new DashboardScreen(this);
