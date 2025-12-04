@@ -102,8 +102,7 @@ public class WarAreaScreen {
         gamePane.getChildren().add(houseClickArea);
         
         // Add Main Character Image
-        gamePane.getChildren().add(mainCharacter.getImageView());
-        
+        gamePane.getChildren().addAll(mainCharacter.getImageView(), mainCharacter.getHealthLabel());        
         // Set up inventory
         inventory.add(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
         inventory.add(new InventoryItem("Grenade", InventoryItem.GRENADE_IMAGE,"Boom")); 
@@ -227,7 +226,7 @@ public class WarAreaScreen {
         
         ImageView grenadeCard = createCard("/assets/grenade-card.png", "Grenade"); 
         ImageView bandageCard = createCard("/assets/bandage-card.png", Item.BANDAGE);
-        ImageView medkitCard = createCard("/assets/medkit-card.png", Item.POTION);
+        ImageView medkitCard = createCard("/assets/medkit-card.png", Item.MEDKIT);
         ImageView barrierCard = createCard("/assets/barrier-card.png", Soldier.BARRIER);
 
         itemBank.getChildren().addAll(grenadeCard, medkitCard, bandageCard, barrierCard);
@@ -528,7 +527,24 @@ public class WarAreaScreen {
             }
             return; 
         }
+     // interaction with zom
+        if (mainCharacter != null && mainCharacter.getCol() == col && mainCharacter.getLane() == lane) {
+             // check if we are holding a healing item
+            System.out.println("Used " + soldierType + " on Zom.");
 
+             if (soldierType.equals("Medkit") || soldierType.equals("Bandage")) {
+                 useHealingItem(soldierType);
+             } else {
+                 System.out.println("Cannot plant on top of Zom!");
+             }
+             return; 
+        }
+        // ----------------------------------
+
+        if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
+             System.out.println("Slot Occupied!");
+             return;
+        }
         // --- BARRIER LOGIC ---
         if (soldierType.equals(Soldier.BARRIER)) {
             if (lane + 2 >= GameMap.MAP_HEIGHT_TILES) {
@@ -617,7 +633,31 @@ public class WarAreaScreen {
         mainCharacter.moveTo(targetCol, targetLane);
         gameMap.setSlot(targetCol, targetLane, GameMap.SLOT_SOLDIER);
     }
-    
+    private void useHealingItem(String itemType) {
+        // find item
+        InventoryItem item = findItem(itemType);
+        
+        if (item != null && item.getQuantity() > 0) {
+            // heal amount based on item type
+            int healAmount = 0;
+            if (itemType.equals("Medkit")) healAmount = 100;
+            else if (itemType.equals("Bandage")) healAmount = 50;
+            
+            // check if healing is needed
+            if (mainCharacter.getHealth() < 200) { // check max health
+                // heal zom
+                mainCharacter.heal(healAmount);
+                
+                // Consume Item
+                item.addQuantity(-1);
+                System.out.println("Used " + itemType + ". Quantity remaining: " + item.getQuantity());
+            } else {
+                System.out.println("Zom is already at full health!");
+            }
+        } else {
+            System.out.println("You don't have any " + itemType + "s!");
+        }
+    }
     private InventoryItem findItem(String itemName) {
 	    for (InventoryItem item :  mainApp.getCurrentPlayer().getInventory()) {
 	        if (item.getName().equalsIgnoreCase(itemName)) {
