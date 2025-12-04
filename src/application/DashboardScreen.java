@@ -277,6 +277,7 @@ public class DashboardScreen {
         StackPane.setAlignment(buttonMenu, Pos.CENTER_LEFT);
         StackPane.setMargin(buttonMenu, new Insets(100, 0, 0, 50)); 
 
+        
         Scene scene = new Scene(rootPane, 1280, 720); 
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         
@@ -284,6 +285,7 @@ public class DashboardScreen {
         mainApp.getPrimaryStage().setTitle("ZOMZOM - Dashboard");
         mainApp.getPrimaryStage().show();
     }
+     
     
     // This method updates the CLASS FIELDS text
     public void updateLabels() {
