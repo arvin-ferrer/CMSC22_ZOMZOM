@@ -5,20 +5,25 @@ import java.io.Serializable;
 public class InventoryItem implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    // Constants
-    public static final String WOOD = "WOOD";
-    public static final String CLOTH = "CLOTH";
-    public static final String BANDAGE = "BANDAGE";
-    public static final String MEDKIT = "MEDKIT";
-    public static final String STONE = "STONE";
-    public static final String GRENADE = "GRENADE";
+    // Item Name Constants
+    public static final String WOOD = "Wood";
+    public static final String CLOTH = "Cloth";
+    public static final String BANDAGE = "Bandage";
+    public static final String MEDKIT = "Medkit";
+    public static final String STONE = "Rock"; // Matches Shop name
+    public static final String GUNPOWDER = "Gunpowder";
+    public static final String GRENADE = "Grenade";
+    public static final String BARRIER = "Barrier";
     
+    // Image Paths
     public static final String WOOD_IMAGE = "/assets/wood.png";
     public static final String CLOTH_IMAGE = "/assets/whiteCloth.png";
-    public static final String BANDAGE_IMAGE = "/assets/bandage.png";
+    public static final String BANDAGE_IMAGE = "/assets/bandage.png"; // Fixed extension
     public static final String MEDKIT_IMAGE = "/assets/medkit.png";
     public static final String STONE_IMAGE = "/assets/stone.png";
+    public static final String GUNPOWDER_IMAGE = "/assets/gunpowder.png";
     public static final String GRENADE_IMAGE = "/assets/grenade-sprite.png";
+    public static final String BARRIER_IMAGE = "/assets/barrier-card.png";
 
     private String name;
     private String imagePath;
@@ -29,13 +34,9 @@ public class InventoryItem implements Serializable {
         this.name = name;
         this.imagePath = imagePath;
         this.description = description;
-        
-        // FIX: Default quantity to 1. 
-        // If this is 0, crafting/buying adds nothing to your inventory.
         this.quantity = 1; 
     }
 
-    // Constructor that allows specifying quantity (Optional but useful)
     public InventoryItem(String name, String imagePath, String description, int quantity) {
         this.name = name;
         this.imagePath = imagePath;
@@ -43,16 +44,8 @@ public class InventoryItem implements Serializable {
         this.quantity = quantity;
     }
 
-    public void incrementQuantity() { 
-        this.quantity++; 
-    }
-    
     public void addQuantity(int amount) {
         this.quantity += amount;
-    }
-    
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
     }
     
     public int getQuantity() { return this.quantity; }

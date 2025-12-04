@@ -20,13 +20,16 @@ public class Home {
     private StackPane inventoryOverlay; 
     private StackPane shopOverlay;
     private StackPane craftingOverlay;
+    
+    // Crafting Logic Variables
     private InventoryItem[][] craftingMatrix = new InventoryItem[3][3];
     private InventoryItem currentCraftingResult = null;
-    private InventoryItem selectedInventoryItem = null; // For moving items
+    private InventoryItem selectedInventoryItem = null; // The item currently selected to place
+    
+    // UI References
     private GridPane inputGridUI;
     private Pane outputSlotUI;
-    private ImageView outputIconView; // To show result
-    
+    private ImageView outputIconView; 
     private GridPane inventoryGrid; 
     private GridPane craftingInventoryGrid;
     private Label nameLabel;
@@ -66,6 +69,7 @@ public class Home {
         StackPane.setMargin(returnButton, new Insets(0, 50, 300, 0));
         rootPane.getChildren().add(returnButton);
 
+        // Chest/Inventory Click Area
         Pane chestClickArea = new Pane();
         chestClickArea.setMaxSize(320, 250); 
         chestClickArea.setMinSize(320, 250); 
@@ -79,19 +83,12 @@ public class Home {
         createInventoryOverlay(); 
         rootPane.getChildren().add(inventoryOverlay); 
 
-        Pane shopClickArea = new Pane();
-        shopClickArea.setPrefSize(20, 20);
-        shopClickArea.setMaxSize(320, 250); 
-        shopClickArea.setMinSize(320, 250); 
-        shopClickArea.setStyle("-fx-background-color: transparent;"); 
-        shopClickArea.setCursor(javafx.scene.Cursor.HAND);
-        
+        // Crafting Click Area
         Pane craftingClickArea = new Pane();
         craftingClickArea.setMaxSize(400, 150); 
         craftingClickArea.setMinSize(400, 150);
         craftingClickArea.setStyle("-fx-background-color: transparent;");
         craftingClickArea.setCursor(javafx.scene.Cursor.HAND);
-
         craftingClickArea.setOnMouseClicked(e -> showCrafting());
 
         StackPane.setAlignment(craftingClickArea, Pos.BOTTOM_CENTER);
@@ -101,12 +98,20 @@ public class Home {
         createCraftingOverlay();
         rootPane.getChildren().add(craftingOverlay);
         
+        // Shop Click Area
+        Pane shopClickArea = new Pane();
+        shopClickArea.setPrefSize(320, 250);
+        shopClickArea.setMaxSize(320, 250); 
+        shopClickArea.setStyle("-fx-background-color: transparent;"); 
+        shopClickArea.setCursor(javafx.scene.Cursor.HAND);
+        shopClickArea.setOnMouseClicked(e -> showShop());
+        
         StackPane.setAlignment(shopClickArea, Pos.TOP_LEFT);
         StackPane.setMargin(shopClickArea, new Insets(50, 0, 0, 50)); 
         rootPane.getChildren().add(shopClickArea);
+        
         createShopOverlay();
         rootPane.getChildren().add(shopOverlay);
-        shopClickArea.setOnMouseClicked(e -> showShop());
         
         Scene scene = new Scene(rootPane, 1280, 720);
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
@@ -116,15 +121,12 @@ public class Home {
         mainApp.getPrimaryStage().show();
     }
        
+    // --- INVENTORY LOGIC ---
     private void refreshInventoryGrid() {
         if (inventoryGrid == null) return;
-
-        // 1. Clear everything currently in the grid
         inventoryGrid.getChildren().clear();
 
-        int cols = 7;
-        int rows = 5;
-        int slotSize = 52; 
+        int cols = 7; int rows = 5; int slotSize = 52; 
 
         List<InventoryItem> playerItems = mainApp.getCurrentPlayer().getInventory();
         if (playerItems == null) playerItems = new java.util.ArrayList<>();
@@ -137,49 +139,38 @@ public class Home {
                 
                 final int index = (y * cols) + x; 
 
-                // Render Item Icon in Slot
                 if (index < playerItems.size()) {
                     InventoryItem item = playerItems.get(index);
                     try {
                         ImageView itemIcon = new ImageView(new Image(getClass().getResourceAsStream(item.getImagePath())));
-                        itemIcon.setFitWidth(40); 
-                        itemIcon.setFitHeight(40);
-                        itemIcon.setPreserveRatio(true);
-                        itemIcon.setLayoutX(6);
-                        itemIcon.setLayoutY(6);
+                        itemIcon.setFitWidth(40); itemIcon.setFitHeight(40); itemIcon.setPreserveRatio(true);
+                        itemIcon.setLayoutX(6); itemIcon.setLayoutY(6);
                         slot.getChildren().add(itemIcon);
                         
                         if (item.getQuantity() >= 1) {
-                            javafx.scene.control.Label qtyLabel = new javafx.scene.control.Label("x" + item.getQuantity());
+                            Label qtyLabel = new Label("x" + item.getQuantity());
                             qtyLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, black, 2, 1, 0, 0);");
-                            qtyLabel.setLayoutX(28); 
-                            qtyLabel.setLayoutY(35); 
+                            qtyLabel.setLayoutX(28); qtyLabel.setLayoutY(35); 
                             slot.getChildren().add(qtyLabel);
                         }
                     } catch (Exception e) {}
                 }
 
-                // Click Logic
+                // Click to view details
                 final List<InventoryItem> finalItemsList = playerItems;
                 slot.setOnMouseClicked(e -> {
                     if (index < finalItemsList.size()) {
                         InventoryItem clickedItem = finalItemsList.get(index);
-                        
                         nameLabel.setText(clickedItem.getName().toUpperCase());
-                        
                         String qtyText = "\n\nQuantity Owned: " + clickedItem.getQuantity();
                         descLabel.setText(clickedItem.getDescription() + qtyText);
-                        
                         try {
                             selectedItemView.setImage(new Image(getClass().getResourceAsStream(clickedItem.getImagePath())));
                         } catch (Exception ex) {}
                     } else {
-                        nameLabel.setText("");
-                        descLabel.setText("");
-                        selectedItemView.setImage(null);
+                        nameLabel.setText(""); descLabel.setText(""); selectedItemView.setImage(null);
                     }
                 });
-                
                 inventoryGrid.add(slot, x, y);
             }
         }
@@ -203,13 +194,9 @@ public class Home {
         Pane displaySlot = new Pane();
         displaySlot.setPrefSize(180, 180);
         displaySlot.setMaxSize(180, 180);
-        this.selectedItemView = new ImageView(); // Initialize class field
-        selectedItemView.setFitWidth(120); 
-        selectedItemView.setFitHeight(120);
-        selectedItemView.setPreserveRatio(true);
-        selectedItemView.setLayoutX(30); 
-        selectedItemView.setLayoutY(30);
-        
+        this.selectedItemView = new ImageView();
+        selectedItemView.setFitWidth(120); selectedItemView.setFitHeight(120); selectedItemView.setPreserveRatio(true);
+        selectedItemView.setLayoutX(30); selectedItemView.setLayoutY(30);
         displaySlot.getChildren().add(selectedItemView);
         StackPane.setAlignment(displaySlot, Pos.TOP_LEFT);
         StackPane.setMargin(displaySlot, new Insets(60, 0, 0, 30));
@@ -220,11 +207,11 @@ public class Home {
         infoBox.setMaxSize(200, 180);
         infoBox.setAlignment(Pos.TOP_LEFT);
         
-        this.nameLabel = new Label("SELECT ITEM"); // Initialize class field
+        this.nameLabel = new Label("SELECT ITEM");
         nameLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 24px; -fx-text-fill: #3e2723; -fx-font-weight: bold;");
         nameLabel.setWrapText(true);
         
-        this.descLabel = new Label("Click an item to see details."); // Initialize class field
+        this.descLabel = new Label("Click an item to see details.");
         descLabel.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 14px; -fx-text-fill: #5d4037; -fx-font-weight: bold;");
         descLabel.setWrapText(true);
         descLabel.setMaxWidth(200);
@@ -236,25 +223,22 @@ public class Home {
 
         this.inventoryGrid = new GridPane();
         this.inventoryGrid.setId("inventory-grid"); 
-        
-        // Initial population of the grid
         refreshInventoryGrid();
 
         StackPane.setAlignment(inventoryGrid, Pos.BOTTOM_CENTER);
         StackPane.setMargin(inventoryGrid, new Insets(250, 0, 0, 0)); 
         inventoryContainer.getChildren().add(inventoryGrid);
-        // ----------------------------------------
         
         Button closeButton = new Button("X");
         closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold;");
         closeButton.setOnAction(e -> inventoryOverlay.setVisible(false));
         StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
-        StackPane.setMargin(closeButton, new Insets(0, 0, 0, 0));
         inventoryContainer.getChildren().add(closeButton);
         
         inventoryOverlay.getChildren().addAll(dimmer, inventoryContainer);
     }
 
+    // --- SHOP LOGIC ---
     private ShopItem currentSelectedShopItem = null;
 
     private void createShopOverlay() {
@@ -272,27 +256,26 @@ public class Home {
         shopContainer.setPrefSize(480, 640);
 
         java.util.List<ShopItem> shopList = new java.util.ArrayList<>();
-        shopList.add(new ShopItem("Wood", 50, "/assets/wood.png", "Construction material"));
-        shopList.add(new ShopItem("Cloth", 30, "/assets/whiteCloth.png", "For crafting bandages"));
-        shopList.add(new ShopItem("Gunpowder", 100, "/assets/gunpowder.png", "Explosive component"));
-        shopList.add(new ShopItem("Rock", 20, "/assets/stone.png", "Basic resource"));
+        // Ensure these names match InventoryItem constants exactly
+        shopList.add(new ShopItem(InventoryItem.WOOD, 50, InventoryItem.WOOD_IMAGE, "Construction material"));
+        shopList.add(new ShopItem(InventoryItem.CLOTH, 30, InventoryItem.CLOTH_IMAGE, "For crafting bandages"));
+        shopList.add(new ShopItem(InventoryItem.GUNPOWDER, 100, InventoryItem.GUNPOWDER_IMAGE, "Explosive component"));
+        shopList.add(new ShopItem(InventoryItem.STONE, 20, InventoryItem.STONE_IMAGE, "Basic resource"));
         shopList.add(new ShopItem("Mallet", 500, "/assets/mallet.png", "Melee weapon"));
         shopList.add(new ShopItem("Katana", 1500, "/assets/katana.png", "Sharp blade"));
         shopList.add(new ShopItem("Machine Gun", 5000, "/assets/machinegun.png", "Rapid fire"));
 
         ImageView selectedItemView = new ImageView();
-        selectedItemView.setFitWidth(80);
-        selectedItemView.setFitHeight(80);
-        selectedItemView.setPreserveRatio(true);
+        selectedItemView.setFitWidth(80); selectedItemView.setFitHeight(80); selectedItemView.setPreserveRatio(true);
         StackPane.setAlignment(selectedItemView, Pos.TOP_RIGHT);
         StackPane.setMargin(selectedItemView, new Insets(180, 70, 0, 20)); 
         shopContainer.getChildren().add(selectedItemView);
 
-        javafx.scene.layout.VBox infoBox = new javafx.scene.layout.VBox(5);
+        VBox infoBox = new VBox(5);
         infoBox.setAlignment(Pos.TOP_RIGHT);
-        javafx.scene.control.Label nameLabel = new javafx.scene.control.Label("SELECT ITEM");
+        Label nameLabel = new Label("SELECT ITEM");
         nameLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 20px; -fx-text-fill: #3e2723;");
-        javafx.scene.control.Label priceLabel = new javafx.scene.control.Label("");
+        Label priceLabel = new Label("");
         priceLabel.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 16px; -fx-text-fill: gold; -fx-font-weight: bold;");
         infoBox.getChildren().addAll(nameLabel, priceLabel);
         StackPane.setAlignment(infoBox, Pos.TOP_RIGHT);
@@ -303,9 +286,7 @@ public class Home {
         buyButton.getStyleClass().add("dashboard-button"); 
         buyButton.setStyle("-fx-font-size: 14px; -fx-background-color: #2e7d32;"); 
         buyButton.setDisable(true); 
-        buyButton.setMaxHeight(40);
-        buyButton.setMaxWidth(90);
-        buyButton.setViewOrder(-1.0); 
+        buyButton.setMaxHeight(40); buyButton.setMaxWidth(90); buyButton.setViewOrder(-1.0); 
         
         buyButton.setOnAction(e -> {
             if (currentSelectedShopItem != null) {
@@ -320,14 +301,10 @@ public class Home {
                     );
                     player.addItem(newItem);
                     
-                    System.out.println("Bought " + currentSelectedShopItem.name + ". Remaining Gold: " + player.getCurrency());
                     nameLabel.setText("PURCHASED!");
-                    
-                  
                     refreshInventoryGrid();
-                    
+                    refreshCraftingGrid();
                 } else {
-                    System.out.println("Not enough gold!");
                     nameLabel.setText("NO FUNDS!");
                 }
             }
@@ -339,9 +316,7 @@ public class Home {
 
         GridPane shopGrid = new GridPane();
         shopGrid.setId("shop-grid"); 
-        int cols = 4;
-        int rows = 5;
-        int slotSize = 52; 
+        int cols = 4; int rows = 5; int slotSize = 52; 
 
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
@@ -353,11 +328,8 @@ public class Home {
                     ShopItem item = shopList.get(index);
                     try {
                         ImageView itemIcon = new ImageView(new Image(getClass().getResourceAsStream(item.imagePath)));
-                        itemIcon.setFitWidth(40);
-                        itemIcon.setFitHeight(40);
-                        itemIcon.setPreserveRatio(true);
-                        itemIcon.setLayoutX(6);
-                        itemIcon.setLayoutY(6);
+                        itemIcon.setFitWidth(40); itemIcon.setFitHeight(40); itemIcon.setPreserveRatio(true);
+                        itemIcon.setLayoutX(6); itemIcon.setLayoutY(6);
                         slot.getChildren().add(itemIcon);
                     } catch (Exception e) {}
                 }
@@ -372,9 +344,7 @@ public class Home {
                         } catch (Exception ex) {}
                     } else {
                         currentSelectedShopItem = null;
-                        nameLabel.setText("");
-                        priceLabel.setText("");
-                        selectedItemView.setImage(null);
+                        nameLabel.setText(""); priceLabel.setText(""); selectedItemView.setImage(null);
                         buyButton.setDisable(true);
                     }
                 });
@@ -396,7 +366,8 @@ public class Home {
         shopOverlay.getChildren().addAll(dimmer, shopContainer);
     }
 
-   
+    // --- CRAFTING LOGIC ---
+
     private void createCraftingOverlay() {
         craftingOverlay = new StackPane();
         craftingOverlay.setVisible(false);
@@ -411,7 +382,7 @@ public class Home {
         craftingContainer.setMaxSize(480, 640); 
         craftingContainer.setPrefSize(480, 640);
 
-        //3x3 grid
+        // 3x3 Input Grid
         this.inputGridUI = new GridPane();
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
@@ -422,13 +393,11 @@ public class Home {
                 final int finalX = x;
                 final int finalY = y;
                 
-                // click to place item
+                // Click Logic: Place if item selected, Remove if empty handed
                 slot.setOnMouseClicked(e -> {
                     if (selectedInventoryItem != null) {
-                        // Place item logic
                         placeItemInCraftingGrid(finalX, finalY);
                     } else {
-                        // Remove item logic (if clicked empty hand)
                         removeItemFromCraftingGrid(finalX, finalY);
                     }
                 });
@@ -440,38 +409,33 @@ public class Home {
         StackPane.setMargin(inputGridUI, new Insets(37, 0, 0, 40)); 
         craftingContainer.getChildren().add(inputGridUI);
 
-        // output slot
+        // Output Slot
         this.outputSlotUI = new Pane();
         outputSlotUI.setPrefSize(70, 70);
         outputSlotUI.setMaxSize(70, 70);
         outputSlotUI.getStyleClass().add("inventory-slot");
         
         this.outputIconView = new ImageView();
-        outputIconView.setFitWidth(50);
-        outputIconView.setFitHeight(50);
-        outputIconView.setLayoutX(10);
-        outputIconView.setLayoutY(10);
+        outputIconView.setFitWidth(50); outputIconView.setFitHeight(50);
+        outputIconView.setLayoutX(10); outputIconView.setLayoutY(10);
         outputSlotUI.getChildren().add(outputIconView);
 
-        // click to craft
-        outputSlotUI.setOnMouseClicked(e -> {
-            craftItem();
-        });
+        // Click to Craft
+        outputSlotUI.setOnMouseClicked(e -> craftItem());
 
         StackPane.setAlignment(outputSlotUI, Pos.TOP_RIGHT);
         StackPane.setMargin(outputSlotUI, new Insets(108, 38, 0, 0));
         craftingContainer.getChildren().add(outputSlotUI);
         
-        // Inventory Grid ---
+        // Player Inventory at Bottom
         this.craftingInventoryGrid = new GridPane(); 
         this.craftingInventoryGrid.setId("inventory-grid");
-        refreshCraftingGrid(); // This method needs a small update to handle selection
+        refreshCraftingGrid(); 
 
         StackPane.setAlignment(craftingInventoryGrid, Pos.BOTTOM_CENTER);
         StackPane.setMargin(craftingInventoryGrid, new Insets(290, 0, 35, 0));
         craftingContainer.getChildren().add(craftingInventoryGrid);
 
-        // close Button
         Button closeButton = new Button("X");
         closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold;");
         closeButton.setOnAction(e -> craftingOverlay.setVisible(false));
@@ -481,39 +445,46 @@ public class Home {
         
         craftingOverlay.getChildren().addAll(dimmer, craftingContainer);
     }
+
     private void placeItemInCraftingGrid(int x, int y) {
         if (selectedInventoryItem == null) return;
         
-        // decrement from player inventory
-        if (selectedInventoryItem.getQuantity() > 0) {
-            selectedInventoryItem.addQuantity(-1);
-            
-            // create a single item for the grid
-            InventoryItem singleItem = new InventoryItem(selectedInventoryItem.getName(), selectedInventoryItem.getImagePath(), "");
-            // singleItem.setQuantity(1); // default is 1, uncomment this line if needed
-            
-            // add to matrix
-            craftingMatrix[x][y] = singleItem;
-            
-            // Refresh UIs
-            refreshCraftingGrid(); // Update inventory counts
-            refreshInventoryGrid(); // Update inventory UI
-            updateCraftingGridUI(); // Show item in crafting table
-            checkRecipes(); // See if we made something
+        // Only place if slot is empty (prevents overwriting)
+        if (craftingMatrix[x][y] == null) {
+            if (selectedInventoryItem.getQuantity() > 0) {
+                // Decrement from player
+                selectedInventoryItem.addQuantity(-1);
+                
+                // Create single copy for grid
+                InventoryItem singleItem = new InventoryItem(selectedInventoryItem.getName(), selectedInventoryItem.getImagePath(), "");
+                craftingMatrix[x][y] = singleItem;
+                
+                // Refresh UIs
+                refreshCraftingGrid(); 
+                refreshInventoryGrid(); 
+                updateCraftingGridUI(); 
+                checkRecipes(); 
+            }
         }
     }
+
     private void removeItemFromCraftingGrid(int x, int y) {
         if (craftingMatrix[x][y] != null) {
-            // return item to player
+            // Return item to player
             mainApp.getCurrentPlayer().addItem(craftingMatrix[x][y]);
+            
+            // Remove from grid
             craftingMatrix[x][y] = null;
             
             refreshCraftingGrid();
+            refreshInventoryGrid();
             updateCraftingGridUI();
             checkRecipes();
         }
     }
+
     private void updateCraftingGridUI() {
+        // Redraws the 3x3 input grid based on the matrix
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
                 int index = (y * 3) + x;
@@ -523,10 +494,7 @@ public class Home {
                 if (craftingMatrix[x][y] != null) {
                     try {
                         ImageView icon = new ImageView(new Image(getClass().getResourceAsStream(craftingMatrix[x][y].getImagePath())));
-                        icon.setFitWidth(50);
-                        icon.setFitHeight(50);
-                        icon.setLayoutX(10);
-                        icon.setLayoutY(10);
+                        icon.setFitWidth(50); icon.setFitHeight(50); icon.setLayoutX(10); icon.setLayoutY(10);
                         slot.getChildren().add(icon);
                     } catch (Exception e) {}
                 }
@@ -535,50 +503,102 @@ public class Home {
     }
 
     private void checkRecipes() {
-        // count items in grid
-        int woodCount = 0;
-        int clothCount = 0;
-        int gunpowderCount = 0;
-        int rockCount = 0;
-        int bandageCount = 0;
-
-        for (int y = 0; y < 3; y++) {
-            for (int x = 0; x < 3; x++) {
-                if (craftingMatrix[x][y] != null) {
-                    String name = craftingMatrix[x][y].getName();
-                    if (name.equals("Wood")) woodCount++;
-                    if (name.equals("Cloth")) clothCount++;
-                    if (name.equals("Gunpowder")) gunpowderCount++;
-                    if (name.equals("Rock")) rockCount++;
-                    if (name.equals("Bandage")) bandageCount++;
-                }
-            }
-        }
-
-        // crafting logic
+        // Reset output
         currentCraftingResult = null;
         outputIconView.setImage(null);
 
-        // 3x wood = barrier
-        if (woodCount == 3 && clothCount == 0 && gunpowderCount == 0 && rockCount == 0 && bandageCount == 0) {
-            setResult("Barrier", "/assets/barrier-card.png");
+        // 1. RECIPE: BARRIER 
+        // Pattern: 3 Wood in the bottom row (Like a fence)
+        // [ ] [ ] [ ]
+        // [ ] [ ] [ ]
+        // [W] [W] [W]
+        if (checkPattern(
+            null, null, null,
+            null, null, null,
+            InventoryItem.WOOD, InventoryItem.WOOD, InventoryItem.WOOD
+        )) {
+            setResult(InventoryItem.BARRIER, InventoryItem.BARRIER_IMAGE);
+            return;
         }
-        // 3x cloth = bandage
-        else if (clothCount == 3 && woodCount == 0 && gunpowderCount == 0 && rockCount == 0 && bandageCount == 0) {
-            setResult("Bandage", "/assets/bandage.png");
+
+        // 2. RECIPE: BANDAGE
+        // Pattern: 3 Cloth in the middle row
+        // [ ] [ ] [ ]
+        // [C] [C] [C]
+        // [ ] [ ] [ ]
+        if (checkPattern(
+            null, null, null,
+            InventoryItem.CLOTH, InventoryItem.CLOTH, InventoryItem.CLOTH,
+            null, null, null
+        )) {
+            setResult(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE);
+            return;
         }
-        // 5x gunpowder + 3x rock = grenade
-        else if (gunpowderCount == 5 && rockCount == 3 && woodCount == 0 && clothCount == 0 && bandageCount == 0) {
-            setResult("Grenade", "/assets/grenade-sprite.png");
+
+        // 3. RECIPE: MEDKIT
+        // Pattern: Bandage in center, surrounded by 3 Cloth (Top, Left, Right)
+        // [ ] [C] [ ]
+        // [C] [B] [C]
+        // [ ] [ ] [ ]
+        if (checkPattern(
+            null, InventoryItem.CLOTH, null,
+            InventoryItem.CLOTH, InventoryItem.BANDAGE, InventoryItem.CLOTH,
+            null, null, null
+        )) {
+            setResult(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE);
+            return;
         }
-        // 1x bandage + 3x cloth = medkit
-        else if (bandageCount == 1 && clothCount == 3 && woodCount == 0 && gunpowderCount == 0 && rockCount == 0) {
-            setResult("Medkit", "/assets/medkit.png");
+
+        // 4. RECIPE: GRENADE
+        // Pattern: 5 Gunpowder (X Shape), 3 Rocks (Filling gaps)
+        // [G] [R] [G]
+        // [R] [G] [R]
+        // [G] [G] [G]
+        // Note: This matches your count of 5 Gunpowder + 3 Rocks
+        if (checkPattern(
+            InventoryItem.GUNPOWDER, InventoryItem.STONE,     InventoryItem.GUNPOWDER,
+            InventoryItem.STONE,     InventoryItem.GUNPOWDER, InventoryItem.STONE,
+            InventoryItem.GUNPOWDER, InventoryItem.GUNPOWDER, InventoryItem.GUNPOWDER
+        )) {
+            setResult(InventoryItem.GRENADE, InventoryItem.GRENADE_IMAGE);
+            return;
         }
     }
 
+    /**
+     * Helper method to compare the crafting matrix against a specific 3x3 pattern.
+     * Arguments represent slots: 00, 10, 20 (Row 1), 01, 11, 21 (Row 2), etc.
+     * Pass 'null' to demand an empty slot.
+     */
+    private boolean checkPattern(
+            String r0c0, String r1c0, String r2c0,  // Row 1 (y=0)
+            String r0c1, String r1c1, String r2c1,  // Row 2 (y=1)
+            String r0c2, String r1c2, String r2c2   // Row 3 (y=2)
+    ) {
+        return 
+            matchSlot(0, 0, r0c0) && matchSlot(1, 0, r1c0) && matchSlot(2, 0, r2c0) &&
+            matchSlot(0, 1, r0c1) && matchSlot(1, 1, r1c1) && matchSlot(2, 1, r2c1) &&
+            matchSlot(0, 2, r0c2) && matchSlot(1, 2, r1c2) && matchSlot(2, 2, r2c2);
+    }
+
+    private boolean matchSlot(int x, int y, String expectedName) {
+        InventoryItem itemInSlot = craftingMatrix[x][y];
+
+        // 1. If recipe expects Empty, slot must be null
+        if (expectedName == null) {
+            return itemInSlot == null;
+        }
+
+        // 2. If recipe expects Item, slot must NOT be null AND name must match
+        if (itemInSlot != null) {
+            return itemInSlot.getName().equals(expectedName);
+        }
+
+        // 3. Expected item but slot was empty
+        return false;
+    }
+
     private void setResult(String name, String path) {
-        // Create the result item
         currentCraftingResult = new InventoryItem(name, path, "Crafted Item");
         try {
             outputIconView.setImage(new Image(getClass().getResourceAsStream(path)));
@@ -587,17 +607,17 @@ public class Home {
 
     private void craftItem() {
         if (currentCraftingResult != null) {
-        	// add result to inventory
+            // Add result to inventory
             mainApp.getCurrentPlayer().addItem(currentCraftingResult);
             
-            // clear crafting grid
+            // Clear entire grid (consumed)
             for (int y = 0; y < 3; y++) {
                 for (int x = 0; x < 3; x++) {
                     craftingMatrix[x][y] = null;
                 }
             }
             
-            // reset UI
+            // Reset logic
             updateCraftingGridUI();
             outputIconView.setImage(null);
             currentCraftingResult = null;
@@ -606,8 +626,8 @@ public class Home {
             System.out.println("Crafting Successful!");
         }
     }
-    private void refreshCraftingGrid() {
 
+    private void refreshCraftingGrid() {
         if (craftingInventoryGrid == null) return;
         craftingInventoryGrid.getChildren().clear();
         
@@ -622,14 +642,13 @@ public class Home {
                 
                 final int index = (y * cols) + x;
                 
-                // render icon
                 if (index < playerItems.size()) {
                     InventoryItem item = playerItems.get(index);
                     try {
                         ImageView itemIcon = new ImageView(new Image(getClass().getResourceAsStream(item.getImagePath())));
                         itemIcon.setFitWidth(40); itemIcon.setFitHeight(40); itemIcon.setLayoutX(6); itemIcon.setLayoutY(6);
                         slot.getChildren().add(itemIcon);
-                        if (item.getQuantity() > 1) {
+                        if (item.getQuantity() >= 1) {
                             Label qtyLabel = new Label("x" + item.getQuantity());
                             qtyLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, black, 2, 1, 0, 0);");
                             qtyLabel.setLayoutX(28); qtyLabel.setLayoutY(35);
@@ -638,40 +657,36 @@ public class Home {
                     } catch (Exception e) {}
                 }
 
-                // click logic for selection
+                // Selection Logic
                 slot.setOnMouseClicked(e -> {
                     if (index < playerItems.size()) {
                         selectedInventoryItem = playerItems.get(index);
-                        System.out.println("Selected for crafting: " + selectedInventoryItem.getName());
-//                        refreshInventoryGrid(); // to clear previous selection
-                        // add a visual border to show selected
-                         slot.setStyle("-fx-border-color: yellow; -fx-border-width: 2px;");
+                        // Refresh grid to clear old selection borders
+                        refreshCraftingGrid(); 
+                        // Apply yellow border to THIS slot
+                        slot.setStyle("-fx-border-color: yellow; -fx-border-width: 3px; -fx-border-radius: 5px;");
                     } else {
                         selectedInventoryItem = null;
+                        refreshCraftingGrid();
                     }
                 });
 
                 craftingInventoryGrid.add(slot, x, y);
             }
         }
+        
+        // Re-apply selection style if an item is already selected
+        if (selectedInventoryItem != null) {
+            // This loop just ensures the highlight persists if we refresh logic elsewhere,
+            // but the click handler above does the heavy lifting.
+        }
     }
- 
     
-    private void showInventory() {
-        System.out.println("Opening Inventory...");
-        inventoryOverlay.setVisible(true);
-    }
-    
-    private void showShop() {
-		System.out.println("Opening Shop...");
-		shopOverlay.setVisible(true);
-	}
+    private void showInventory() { inventoryOverlay.setVisible(true); }
+    private void showShop() { shopOverlay.setVisible(true); }
     private void showCrafting() {
-        System.out.println("Opening Crafting Table...");
-        
+        selectedInventoryItem = null;
         refreshCraftingGrid(); 
-        
         craftingOverlay.setVisible(true);
     }
-    
 }
