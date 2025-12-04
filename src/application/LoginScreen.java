@@ -222,7 +222,19 @@ public class LoginScreen {
         Slider sfxSlider = new Slider(0, 100, 90);
         sfxSlider.setShowTickLabels(true);
         sfxSlider.setShowTickMarks(true);
-        
+	     musicSlider.setValue(SoundManager.getInstance().getMusicVolume() * 100);
+	     sfxSlider.setValue(SoundManager.getInstance().getSFXVolume() * 100);
+	
+	     // Add Listeners to update volume in real-time
+	     musicSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+	         double volume = newVal.doubleValue() / 100.0; // Convert 0-100 to 0.0-1.0
+	         SoundManager.getInstance().setMusicVolume(volume);
+	     });
+	
+	     sfxSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+	         double volume = newVal.doubleValue() / 100.0; // Convert 0-100 to 0.0-1.0
+	         SoundManager.getInstance().setSFXVolume(volume);
+	     });
         // Close Button
         Button closeButton = new Button("CLOSE");
         closeButton.getStyleClass().add("dashboard-button"); 

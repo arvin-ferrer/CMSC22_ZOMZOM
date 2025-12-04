@@ -37,7 +37,7 @@ public class Projectile {
             bullet.setStrokeWidth(1);
             
             this.view = bullet;
-            this.speed = 900; // Bullets fly faster than arrows
+            this.speed = 1000; // Bullets fly faster than arrows
         } else {
             // Load Image (e.g., Arrow)
             try {

@@ -195,6 +195,8 @@ public class Home {
                                 equipButton.setText("UNEQUIP");
                                 equipButton.setStyle("-fx-background-color: #555; -fx-text-fill: white; -fx-font-weight: bold;");
                                 equipButton.setOnAction(ev -> {
+                                	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
                                     player.unequipWeapon(clickedItem.getName());
                                     refreshInventoryGrid(); 
                                     slot.getOnMouseClicked().handle(e); // Refresh detail view
@@ -211,6 +213,8 @@ public class Home {
                                     equipButton.setText("EQUIP");
                                     equipButton.setStyle("-fx-background-color: #39ff14; -fx-text-fill: black; -fx-font-weight: bold;");
                                     equipButton.setOnAction(ev -> {
+                                    	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
                                         player.equipWeapon(clickedItem.getName());
                                         refreshInventoryGrid();
                                         slot.getOnMouseClicked().handle(e); 
@@ -352,6 +356,8 @@ public class Home {
         buyButton.setOnAction(e -> {
             if (currentSelectedShopItem != null) {
                 Player player = mainApp.getCurrentPlayer();
+            	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
                 if (player.getCurrency() >= currentSelectedShopItem.price) {
                     player.deductCurrency(currentSelectedShopItem.price);
                     
@@ -396,6 +402,8 @@ public class Home {
                 }
                 slot.setOnMouseClicked(e -> {
                     if (index < shopList.size()) {
+                    	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
                         currentSelectedShopItem = shopList.get(index);
                         nameLabel.setText(currentSelectedShopItem.name);
                         priceLabel.setText("COST: " + currentSelectedShopItem.price);
@@ -457,8 +465,12 @@ public class Home {
                 // Click Logic: Place if item selected, Remove if empty handed
                 slot.setOnMouseClicked(e -> {
                     if (selectedInventoryItem != null) {
+                    	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
                         placeItemInCraftingGrid(finalX, finalY);
                     } else {
+                    	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
                         removeItemFromCraftingGrid(finalX, finalY);
                     }
                 });

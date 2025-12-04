@@ -69,7 +69,7 @@ public class WarAreaScreen {
     private MainCharacter mainCharacter;
     private int trackedLevel;
     
-    // NEW: Class level reference to the seedBank container so we can clear/update it
+  
     private HBox seedBank; 
     
     private String currentActiveWeapon = InventoryItem.HAND; 
@@ -121,6 +121,7 @@ public class WarAreaScreen {
         houseClickArea.setStyle("-fx-background-color: transparent;");
         houseClickArea.setCursor(javafx.scene.Cursor.HAND);
         houseClickArea.setOnMouseClicked(event -> {
+        	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
             if (gameLoop != null) gameLoop.stop();
             mainApp.showHomeScreen();
         });
@@ -146,8 +147,11 @@ public class WarAreaScreen {
                 slot.setOnMouseClicked(event -> {
                     if (selectedSoldierType != null && !selectedSoldierType.equals(Soldier.MAIN_CHARACTER)) {
                         addSoldier(selectedSoldierType, finalX, finalY);
+                    	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
                     } else {
                         updateZom(finalX, finalY);
+//                    	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
                     }
                 });
                 gameGrid.add(slot, x, y);
@@ -182,6 +186,7 @@ public class WarAreaScreen {
         menuButton.setStyle("-fx-background-color: #8B0000; -fx-text-fill: white; -fx-font-family: 'Zombies Brainless'; -fx-font-size: 16px;");
         menuButton.setOnAction(e -> {
             if (gameLoop != null) gameLoop.stop();
+        	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
             mainApp.showDashboardScreen(); 
         });
         StackPane.setAlignment(menuButton, Pos.BOTTOM_RIGHT);
@@ -442,6 +447,7 @@ public class WarAreaScreen {
                 }
                 if (hasTarget) {
                     shootProjectile(soldier);
+                    
                     soldierAttackTimers.put(soldier, 1.5); 
                 }
             } 
@@ -510,6 +516,7 @@ public class WarAreaScreen {
         if (soldier instanceof MainCharacter) {
             if (InventoryItem.MACHINE_GUN.equals(this.currentActiveWeapon)) {
                 projectileType = "BULLET"; 
+                SoundManager.getInstance().playSFX("/assets/machinegun.mp3");
             }
         }
 
@@ -678,7 +685,8 @@ public class WarAreaScreen {
                 itemName.equals(InventoryItem.KATANA) || 
                 itemName.equals(InventoryItem.MACHINE_GUN) ||
                 itemName.equals(InventoryItem.HAND)) {
-                
+            	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
                 this.currentActiveWeapon = itemName;
                 mainCharacter.setWeaponSprite(itemName); 
                 
@@ -935,6 +943,7 @@ public class WarAreaScreen {
         returnButton.getStyleClass().add("dashboard-button");
         returnButton.setOnAction(e -> {
             resetBattleState(); 
+        	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
             gameOverOverlay.setVisible(false);
             mainApp.showDashboardScreen(); 
 
@@ -970,7 +979,6 @@ public class WarAreaScreen {
                 }
                 
                 
-               
                  InventoryItem itemToRemove = findItem(brokenWeapon);
                  if (itemToRemove != null) {
                      player.getInventory().remove(itemToRemove);

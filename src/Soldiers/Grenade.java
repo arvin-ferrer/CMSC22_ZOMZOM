@@ -51,13 +51,7 @@ public class Grenade extends Soldier {
              double explosionSize = 290; 
              this.imageView.setFitWidth(explosionSize);
              this.imageView.setFitHeight(explosionSize);
-             
-             // --- VISUAL MATH FIX ---
-             // We need to shift the image LEFT and UP to center it on the tile.
-             // Currently, it is shifted +16 (from constructor).
-             // To center a 290px image on a 96px tile, we need to shift roughly -97px.
-             // Combined calculation: We subtract roughly 112px from current position.
-             
+  
              this.imageView.setTranslateX(this.imageView.getTranslateX());
              this.imageView.setTranslateY(this.imageView.getTranslateY() );
              

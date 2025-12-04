@@ -17,20 +17,18 @@ import java.util.Random;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.animation.RotateTransition;
-import javafx.animation.PauseTransition;
 import javafx.util.Duration;
-import javafx.scene.transform.Rotate;
 import javafx.scene.image.Image;
 
 public class DashboardScreen {
 
     private Main mainApp;
     
-    // These are the class fields we need to assign to!
+    // Class fields for labels
     private Label levelLabel;
     private Label xpLabel;
-    private Label currencyLabel; // Coins
-    private Label burgerLabel;   // Burgers
+    private Label currencyLabel; 
+    private Label burgerLabel;   
     
     private Random random = new Random();
     private long lastClaimTime = 0;
@@ -39,7 +37,9 @@ public class DashboardScreen {
     public DashboardScreen(Main mainWindow) {
         this.mainApp = mainWindow;
     }
+    
     private ImageView animationIcon;
+    
     private void claimReward() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastClaimTime < COOLDOWN_MS) {
@@ -50,54 +50,26 @@ public class DashboardScreen {
 
         int roll = random.nextInt(100);
         
-        // --- ARRAYS REORDERED TO MATCH RARITY (Common -> Legendary) ---
         String[] names = {
-            "Stone",       // Index 0: Common
-            "Cloth",       // Index 1: Common
-            "Burger",      // Index 2: Uncommon (Item version)
-            "Gunpowder",   // Index 3: Uncommon
-            "Grenade",     // Index 4: Rare
-            "Medkit",      // Index 5: Rare
-            "Gold"         // Index 6: Legendary (Item version)
+            "Stone", "Cloth", "Burger", "Gunpowder", "Grenade", "Medkit", "Gold"
         };
 
         String[] paths = {
-            "/assets/stone.png", 
-            "/assets/whiteCloth.png", 
-            "/assets/burger-sprite.png", 
-            "/assets/gunpowder.png", 
-            "/assets/grenade-sprite.png", 
-            "/assets/medkit.png", 
+            "/assets/stone.png", "/assets/whiteCloth.png", "/assets/burger-sprite.png", 
+            "/assets/gunpowder.png", "/assets/grenade-sprite.png", "/assets/medkit.png", 
             "/assets/coin-sprite.gif"
         };
 
         String[] descs = {
-            "Building Material", 
-            "Crafting Material", 
-            "Restores Hunger", 
-            "Crafting Material", 
-            "Explosive Damage", 
-            "Heals 50 HP", 
-            "Currency"
+            "Building Material", "Crafting Material", "Restores Hunger", 
+            "Crafting Material", "Explosive Damage", "Heals 50 HP", "Currency"
         };
       
-        int[] weights = {
-            50, // Stone (Common)
-            50, // Cloth (Common)
-            25, // Burger (Uncommon)
-            25, // Gunpowder (Uncommon)
-            1, // Grenade (Legendary)
-            10, // Medkit (Rare)
-            10   // Gold (Rare)
-        };
-
-        String[] rarityTags = {
-            "COMMON", "COMMON", "UNCOMMON", "UNCOMMON", "LEGENDARY", "RARE", "RARE"
-        };
+        int[] weights = { 50, 50, 25, 25, 1, 10, 10 };
+        String[] rarityTags = { "COMMON", "COMMON", "UNCOMMON", "UNCOMMON", "LEGENDARY", "RARE", "RARE" };
 
         int calculatedItemIndex = 0; 
-
-        String imagePathToLoad = "/assets/medkit.png"; // Default fallback
+        String imagePathToLoad = "/assets/medkit.png"; // Default
 
         if (roll < 40) {
             imagePathToLoad = "/assets/coin-sprite.gif"; 
@@ -118,7 +90,6 @@ public class DashboardScreen {
                     break;
                 }
             }
-            
             imagePathToLoad = paths[calculatedItemIndex];
         }
 
@@ -131,7 +102,6 @@ public class DashboardScreen {
         try {
             animationIcon.setImage(new Image(getClass().getResourceAsStream(imagePathToLoad)));
         } catch (Exception e) {
-            System.out.println("Could not load image: " + imagePathToLoad);
             try { animationIcon.setImage(new Image(getClass().getResourceAsStream("/assets/medkit.png"))); } catch (Exception ex) {}
         }
 
@@ -169,31 +139,31 @@ public class DashboardScreen {
                     message = "You gathered " + amount + " Burgers!";
                 } 
                 else {
-                    // item Drop Logic
                     int idx = finalItemIndex;
-                    
                     InventoryItem newItem = new InventoryItem(names[idx], paths[idx], descs[idx]);
                     player.addItem(newItem);
                     
-                    // custom message based on rarity
                     String rarity = rarityTags[idx];
-                    
                     if (rarity.equals("LEGENDARY")) {
+                    	SoundManager.getInstance().playSFX("/assets/claim.mp3");
                         message = "OMG!! LEGENDARY DROP! You found " + names[idx] + "!";
                     } else if (rarity.equals("RARE")) {
+                    	SoundManager.getInstance().playSFX("/assets/claim.mp3");
+
                         message = "Great find! You got a Rare " + names[idx] + "!";
                     } else {
+                    	SoundManager.getInstance().playSFX("/assets/claim.mp3");
+
                         message = "You found " + names[idx] + " (" + rarity + ").";
                     }
                 }
-                
                 updateLabels();
                 showAlert("Reward Claimed", message);
             });
         });
-
         rotate.play();
     }
+
     private void showAlert(String title, String content) {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("ZOMZOM Reward");
@@ -202,13 +172,47 @@ public class DashboardScreen {
         alert.showAndWait();
     }
 
+    // --- NEW HELPER FOR ABOUT/CREDITS OVERLAY ---
+    private void showInfoOverlay(String imagePath) {
+        StackPane root = (StackPane) mainApp.getPrimaryStage().getScene().getRoot();
+
+        // 1. Create a dimmer background
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); // Dark background
+
+        // 2. Load the Image
+        ImageView imageView = new ImageView();
+        try {
+            // Tries to load from /assets/ folder
+            imageView.setImage(new Image(getClass().getResourceAsStream(imagePath)));
+        } catch (Exception e) {
+            System.out.println("Could not load overlay image: " + imagePath);
+        }
+        imageView.setPreserveRatio(true);
+        imageView.setFitHeight(600); // Adjust size as needed
+
+        // 3. Create Close Button
+        Button closeButton = new Button("CLOSE");
+        closeButton.getStyleClass().add("dashboard-button");
+        closeButton.setStyle("-fx-background-color: #8B0000; -fx-text-fill: white; -fx-font-size: 18px;");
+        closeButton.setOnAction(e -> root.getChildren().remove(overlay));
+
+        // 4. Arrange Layout
+        VBox contentBox = new VBox(20);
+        contentBox.setAlignment(Pos.CENTER);
+        contentBox.getChildren().addAll(imageView, closeButton);
+
+        overlay.getChildren().add(contentBox);
+        root.getChildren().add(overlay);
+    }
+
     public void showScreen() {
         try {
             Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12);
         } catch (Exception e) {}
         
         Player currentPlayer = mainApp.getCurrentPlayer();
-
+        SoundManager.getInstance().playMusic("/assets/bgmusic.mp3");
         // BorderPane setup
         BorderPane topBar = new BorderPane();
         topBar.setId("dashboard-top-bar");
@@ -227,22 +231,16 @@ public class DashboardScreen {
         HBox statsBox = new HBox(30); 
         statsBox.setAlignment(Pos.CENTER_RIGHT);
         
-        // --- FIX: ASSIGN TO CLASS FIELDS (Removed 'Label' type declaration) ---
-        
         levelLabel = new Label("LEVEL: " + currentPlayer.getLevel());
         xpLabel = new Label("XP: " + currentPlayer.getExperiencePoints() + "/" + currentPlayer.getExperienceToNextLevel());
         currencyLabel = new Label("COINS: " + currentPlayer.getCurrency());
-        
-        // --- ADDED BURGER LABEL ---
         burgerLabel = new Label("BURGERS: " + currentPlayer.getBurger());
 
-        // Styling
         levelLabel.getStyleClass().add("stat-label");
         xpLabel.getStyleClass().add("stat-label");
         currencyLabel.getStyleClass().add("stat-label");
-        burgerLabel.getStyleClass().add("stat-label"); // Style the burger label too
+        burgerLabel.getStyleClass().add("stat-label"); 
         
-        // Add ALL labels to the box
         statsBox.getChildren().addAll(levelLabel, xpLabel, burgerLabel, currencyLabel);
         
         topBar.setRight(statsBox);
@@ -267,8 +265,17 @@ public class DashboardScreen {
         Button claimRewardButton = new Button("Claim Reward");
         claimRewardButton.getStyleClass().add("dashboard-button"); 
 
-        Button statsButton = new Button("Stats");
-        statsButton.getStyleClass().add("dashboard-button"); 
+        // --- UPDATED BUTTONS START ---
+        
+        // Replaced "Stats" with "About"
+        Button aboutButton = new Button("About");
+        aboutButton.getStyleClass().add("dashboard-button"); 
+
+        // Added "Credits" Button
+        Button creditsButton = new Button("Credits");
+        creditsButton.getStyleClass().add("dashboard-button"); 
+
+        // --- UPDATED BUTTONS END ---
 
         Button logoutButton = new Button("Logout");
         logoutButton.getStyleClass().add("dashboard-button"); 
@@ -277,30 +284,49 @@ public class DashboardScreen {
                 playButton,
                 inventoryButton,
                 claimRewardButton,
-                statsButton,
+                aboutButton,    // Added
+                creditsButton,  // Added
                 logoutButton
         );
         
         inventoryButton.setOnAction(e -> {
+        	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
             mainApp.showHomeScreenInventory();
         });
         
         logoutButton.setOnAction(e -> {
             Login.saveUsers(new java.util.ArrayList<>(mainApp.getData()), mainApp.getSavePath());
+        	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
             System.out.println("Game saved successfully.");
             mainApp.setCurrentPlayer(null); 
             mainApp.showLoginScreen();    
         });
         
-        
         playButton.setOnAction(e -> {
+        	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
             mainApp.showWarAreaScreen(); 
         });
         
         claimRewardButton.setOnAction(e -> {
             claimReward();
-            updateLabels(); // This will now work because fields are initialized!
+        	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
+            updateLabels(); 
         });
+
+        aboutButton.setOnAction(e -> {
+        	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
+            showInfoOverlay("/assets/about.jpg");
+        });
+
+        creditsButton.setOnAction(e -> {
+        	SoundManager.getInstance().playSFX("/assets/click.mp3"); // Play Sound
+
+            showInfoOverlay("/assets/credits.jpg");
+        });
+        // ---------------------------------------
 
         StackPane rootPane = new StackPane();
         rootPane.setId("dashboard-background-panel"); 
@@ -308,11 +334,9 @@ public class DashboardScreen {
         rootPane.getChildren().addAll(topBar, buttonMenu); 
         
         StackPane.setAlignment(topBar, Pos.TOP_CENTER); 
-        
         StackPane.setAlignment(buttonMenu, Pos.CENTER_LEFT);
         StackPane.setMargin(buttonMenu, new Insets(100, 0, 0, 50)); 
 
-        
         Scene scene = new Scene(rootPane, 1280, 720); 
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
         
@@ -321,8 +345,6 @@ public class DashboardScreen {
         mainApp.getPrimaryStage().show();
     }
      
-    
-    // This method updates the CLASS FIELDS text
     public void updateLabels() {
         Player p = mainApp.getCurrentPlayer();
         if (p != null) {
