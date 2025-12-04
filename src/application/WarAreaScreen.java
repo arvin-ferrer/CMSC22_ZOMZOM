@@ -31,6 +31,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
@@ -72,6 +73,17 @@ public class WarAreaScreen {
     private HBox seedBank; 
     
     private String currentActiveWeapon = InventoryItem.HAND; 
+    private StackPane gameOverOverlay;
+    private int zombiesPassedCount;
+    private Label gameOverMessageLabel; // To display the reason for game over
+
+    private double weaponTimer = 0; 
+    private Label weaponTimerLabel; 
+    
+    // Duration in Seconds
+    private static final double DURATION_MACHINE_GUN = 5.0; 
+    private static final double DURATION_KATANA = 10.0;
+    private static final double DURATION_MALLET = 15.0;
     
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
@@ -88,7 +100,7 @@ public class WarAreaScreen {
         this.projectiles = new ArrayList<>();
         this.soldierAttackTimers = new HashMap<>();
         this.zombieAttackTimers = new HashMap<>();
-        
+        zombiesPassedCount = 0;
         // --- 1. INITIALIZE GAME PANE ---
         gamePane = new StackPane();
         gamePane.setId("war-area-background");
@@ -117,7 +129,8 @@ public class WarAreaScreen {
         
         gamePane.getChildren().add(mainCharacter.getImageView());
         gamePane.getChildren().add(mainCharacter.getHealthLabel()); 
-
+        player.addBurger(5000);
+        player.addCurrency(20000);
         // --- 3. GAME GRID ---
         GridPane gameGrid = new GridPane();
         gameGrid.setId("game-grid");
@@ -218,7 +231,7 @@ public class WarAreaScreen {
         
         try { Font.loadFont(getClass().getResourceAsStream("/application/fonts/Zombies Brainless.ttf"), 12); } catch (Exception e) {}
         
-        // --- 7. ITEM BANK (CONSUMABLES) ---
+       
         HBox itemBank = new HBox(10);
         itemBank.setPadding(new Insets(10));
         itemBank.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 10;");
@@ -232,13 +245,19 @@ public class WarAreaScreen {
         ImageView barrierCard = createCard("/assets/barrier-card.png", Soldier.BARRIER);
 
         itemBank.getChildren().addAll(grenadeCard, medkitCard, bandageCard, barrierCard);
-
+        weaponTimerLabel = new Label("");
+        weaponTimerLabel.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 24px; -fx-text-fill: red; -fx-effect: dropshadow(gaussian, black, 2, 1, 0, 0);");
+        weaponTimerLabel.setVisible(false); // Hidden until we equip a weapon
+        StackPane.setAlignment(weaponTimerLabel, Pos.TOP_CENTER);
+        StackPane.setMargin(weaponTimerLabel, new Insets(130, 0, 0, 0)); 
+        gamePane.getChildren().add(weaponTimerLabel);
+        createGameOverOverlay();
+        sceneRoot.getChildren().add(gameOverOverlay);
         StackPane.setAlignment(itemBank, Pos.TOP_RIGHT);
         StackPane.setMargin(itemBank, new Insets(20, 50, 0, 20));
         gamePane.getChildren().add(itemBank);
     }
 
-    // --- NEW METHOD TO REFRESH SEED BANK DYNAMICALLY ---
     private void updateSeedBank() {
         if (seedBank == null) return;
         
@@ -250,11 +269,12 @@ public class WarAreaScreen {
         
         // 2. Always add Hand
         ImageView handCard = createCard(InventoryItem.HAND_IMAGE, InventoryItem.HAND);
+        ImageView malletCard = createCard(InventoryItem.MALLET_IMAGE, InventoryItem.MALLET);
+        ImageView katanaCard = createCard(InventoryItem.KATANA_IMAGE, InventoryItem.KATANA);
+        ImageView machinegunCard = createCard(InventoryItem.MACHINE_GUN_IMAGE, InventoryItem.MACHINE_GUN);
 
         seedBank.getChildren().addAll(archerCard, spearmanCard, handCard);
 
-        // 3. Dynamic Weapons from Player List
-        // We fetch the player again just to be safe
         this.player = mainApp.getCurrentPlayer();
         
         if (this.player != null) {
@@ -328,6 +348,7 @@ public class WarAreaScreen {
                 updateSoldiers(deltaTime);
                 updateProjectiles(deltaTime);
                 updateZombies(deltaTime);
+                updateWeaponTimer(deltaTime);
                 updateGrenades(deltaTime); 
                 removeDeadSoldiers();
             }
@@ -564,6 +585,13 @@ public class WarAreaScreen {
                 if (zombie.getImageView().getTranslateX() < -400) {
                     gamePane.getChildren().remove(zombie.getImageView());
                     iterator.remove();
+                    zombiesPassedCount++;
+                    System.out.println("A zombie passed! Total: " + zombiesPassedCount);
+                    if (zombiesPassedCount >= 5) {
+                        triggerGameOver("The horde broke through your defenses!");
+                        return; 
+                    }
+
                 }
                 
             } else {
@@ -613,6 +641,7 @@ public class WarAreaScreen {
                 }
                 if (s instanceof MainCharacter) {
                      gamePane.getChildren().remove(((MainCharacter) s).getHealthLabel());
+                     triggerGameOver("You were eaten by the horde!"); // <--- TRIGGER HERE
                 }
                 
                 int[] pos = s.getPosition();
@@ -640,6 +669,10 @@ public class WarAreaScreen {
         try { cardView.setImage(new Image(getClass().getResourceAsStream(imageName))); } catch (Exception e) {}
         cardView.setFitWidth(96); cardView.setFitHeight(96); cardView.setPreserveRatio(true); cardView.setCursor(javafx.scene.Cursor.HAND); 
         
+        // --- NEW: TAG THE CARD SO WE CAN REMOVE IT LATER ---
+        cardView.setUserData(itemName); 
+        // --------------------------------------------------
+
         cardView.setOnMouseClicked(e -> {
             if (itemName.equals(InventoryItem.MALLET) || 
                 itemName.equals(InventoryItem.KATANA) || 
@@ -649,6 +682,20 @@ public class WarAreaScreen {
                 this.currentActiveWeapon = itemName;
                 mainCharacter.setWeaponSprite(itemName); 
                 
+                // --- NEW: SET TIMER WHEN EQUIPPED ---
+                if (itemName.equals(InventoryItem.HAND)) {
+                    weaponTimer = 0;
+                    weaponTimerLabel.setVisible(false);
+                } else {
+                    if (itemName.equals(InventoryItem.MACHINE_GUN)) weaponTimer = DURATION_MACHINE_GUN;
+                    else if (itemName.equals(InventoryItem.KATANA)) weaponTimer = DURATION_KATANA;
+                    else if (itemName.equals(InventoryItem.MALLET)) weaponTimer = DURATION_MALLET;
+                    
+                    weaponTimerLabel.setVisible(true);
+                    weaponTimerLabel.setText(String.format("%.1fs", weaponTimer));
+                }
+                // ------------------------------------
+
                 DropShadow equipGlow = new DropShadow();
                 equipGlow.setColor(Color.LIMEGREEN); equipGlow.setWidth(40); equipGlow.setHeight(40);
                 cardView.setEffect(equipGlow);
@@ -662,6 +709,7 @@ public class WarAreaScreen {
                 return;
             }
 
+            // Logic for selecting soldiers (Archer/Spearman/etc)
             if (this.selectedSoldierType != null && this.selectedSoldierType.equals(itemName)) {
                 this.selectedSoldierType = null;
                 if (selectedCardView != null) selectedCardView.setEffect(null);
@@ -677,7 +725,7 @@ public class WarAreaScreen {
         });
         return cardView;
     }
-
+    
     private void addSoldier(String soldierType, int col, int lane) {
         if (soldierType.equals(Item.BOMB) || soldierType.equals("Grenade")) {
             if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY) {
@@ -793,4 +841,155 @@ public class WarAreaScreen {
 	    }
 	    return null;
 	}
+    private void resetBattleState() {
+        // 1. Remove all entities from the screen and lists
+        Iterator<Soldier> soldierIt = soldiers.iterator();
+        while (soldierIt.hasNext()) {
+            Soldier s = soldierIt.next();
+            // We clear everyone, because we will manually re-add MainCharacter below
+            gamePane.getChildren().remove(s.getImageView());
+            if (healthLabels.containsKey(s)) {
+                gamePane.getChildren().remove(healthLabels.remove(s));
+            }
+            soldierIt.remove();
+        }
+
+        for (Zombie z : zombies) {
+            gamePane.getChildren().remove(z.getImageView());
+        }
+        zombies.clear();
+
+        for (Projectile p : projectiles) {
+            gamePane.getChildren().remove(p.getView());
+        }
+        projectiles.clear();
+
+        // 2. Clear timers and reset counters
+        soldierAttackTimers.clear();
+        zombieAttackTimers.clear();
+        zombiesPassedCount = 0;
+        spawnTimer = 0;
+        
+        // 3. Reset Item Bank (Visuals)
+        HBox itemBank = new HBox(10);
+        itemBank.setPadding(new Insets(10));
+        itemBank.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 10;");
+        itemBank.setMaxHeight(110);
+        itemBank.setMaxWidth(400);
+        itemBank.setPickOnBounds(false);
+
+        ImageView grenadeCard = createCard("/assets/grenade-card.png", "Grenade"); 
+        ImageView bandageCard = createCard("/assets/bandage-card.png", Item.BANDAGE);
+        ImageView medkitCard = createCard("/assets/medkit-card.png", Item.MEDKIT);
+        ImageView barrierCard = createCard("/assets/barrier-card.png", Soldier.BARRIER);
+        itemBank.getChildren().addAll(grenadeCard, medkitCard, bandageCard, barrierCard);
+
+        // 4. Reset Map and Main Character
+        gameMap.reset();
+        mainCharacter.reset(); 
+
+     // A. Reset Weapon to Hand (Reloads the image file)
+        this.currentActiveWeapon = InventoryItem.HAND;
+        player.setEquippedWeapon(InventoryItem.HAND);
+        mainCharacter.setWeaponSprite(InventoryItem.HAND);
+        
+        // B. Force Visibility and Opacity (In case death animation faded it out)
+        mainCharacter.getImageView().setVisible(true);
+        mainCharacter.getImageView().setOpacity(1.0);
+        
+        // C. Put him back in the list and map
+        if (!soldiers.contains(mainCharacter)) {
+            soldiers.add(mainCharacter);
+        }
+        mainCharacter.moveTo(0, 2); 
+        gameMap.setSlot(0, 2, GameMap.SLOT_SOLDIER);
+
+        // D. Add to Screen (Visuals)
+        if (!gamePane.getChildren().contains(mainCharacter.getImageView())) {
+            gamePane.getChildren().add(mainCharacter.getImageView());
+        }
+        // Ensure sprite is on top of the grid
+        mainCharacter.getImageView().toFront(); 
+
+        // E. Add Health Label
+        if (!gamePane.getChildren().contains(mainCharacter.getHealthLabel())) {
+            gamePane.getChildren().add(mainCharacter.getHealthLabel());
+        }
+        mainCharacter.getHealthLabel().toFront();
+
+        System.out.println("Battle State reset complete.");
+    }
+    private void createGameOverOverlay() {
+        gameOverOverlay = new StackPane();
+        gameOverOverlay.setVisible(false);
+        gameOverOverlay.setAlignment(Pos.CENTER);
+        StackPane dimmer = new StackPane();
+        dimmer.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+        VBox contentBox = new VBox(20);
+        contentBox.setAlignment(Pos.CENTER);
+        Label gameOverTitle = new Label("GAME OVER");
+        gameOverTitle.setStyle("-fx-font-family: 'Zombies Brainless'; -fx-font-size: 100px; -fx-text-fill: red; -fx-effect: dropshadow(gaussian, black, 5, 2, 0, 0);");
+        gameOverMessageLabel = new Label("The horde broke through!");
+        gameOverMessageLabel.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
+        Button returnButton = new Button("RETURN TO MENU");
+        returnButton.getStyleClass().add("dashboard-button");
+        returnButton.setOnAction(e -> {
+            resetBattleState(); 
+            gameOverOverlay.setVisible(false);
+            mainApp.showDashboardScreen(); 
+
+        });
+
+        contentBox.getChildren().addAll(gameOverTitle, gameOverMessageLabel, returnButton);
+        gameOverOverlay.getChildren().addAll(dimmer, contentBox);
+
+    }
+
+    private void updateWeaponTimer(double deltaTime) {
+        if (weaponTimer > 0 && !currentActiveWeapon.equals(InventoryItem.HAND)) {
+            
+            weaponTimer -= deltaTime;
+            weaponTimerLabel.setText(String.format("%.1fs", weaponTimer));
+
+            if (weaponTimer <= 0) {
+                System.out.println("Weapon Broken: " + currentActiveWeapon);
+                String brokenWeapon = currentActiveWeapon;
+
+                this.currentActiveWeapon = InventoryItem.HAND;
+                player.setEquippedWeapon(InventoryItem.HAND);
+                mainCharacter.setWeaponSprite(InventoryItem.HAND);
+                weaponTimerLabel.setVisible(false);
+
+                Iterator<javafx.scene.Node> it = seedBank.getChildren().iterator();
+                while (it.hasNext()) {
+                    javafx.scene.Node node = it.next();
+                    if (node.getUserData() != null && node.getUserData().equals(brokenWeapon)) {
+                        it.remove(); 
+                        break;
+                    }
+                }
+                
+               
+                 InventoryItem itemToRemove = findItem(brokenWeapon);
+                 if (itemToRemove != null) {
+                     player.getInventory().remove(itemToRemove);
+                     player.getEquippedWeapons().remove(brokenWeapon);
+                 }
+            }
+        }
+    }
+
+    private void triggerGameOver(String reason) {
+        if (gameLoop != null) {
+
+            gameLoop.stop();
+
+        }
+
+        gameOverMessageLabel.setText(reason);
+        gameOverOverlay.setVisible(true);
+
+    }
+
+
 }

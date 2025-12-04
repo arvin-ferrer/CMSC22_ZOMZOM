@@ -41,6 +41,21 @@ public class GameMap {
             tileData[x][y] = objectType;
         }
     }
+
+    public void reset() {
+
+        // Clear the entire map
+        for (int y = 0; y < MAP_HEIGHT_TILES; y++) {
+            for (int x = 0; x < MAP_WIDTH_TILES; x++) {
+
+                this.tileData[x][y] = SLOT_EMPTY; 
+
+            }
+
+        }
+
+        setSlot(0, 2, SLOT_SOLDIER);
+    }
     
     public int getMapWidthTiles() { return MAP_WIDTH_TILES; }
     public int getMapHeightTiles() { return MAP_HEIGHT_TILES; }

@@ -112,4 +112,16 @@ public class MainCharacter extends Soldier {
             System.err.println("Could not load weapon sprite: " + imagePath);
         }
     }
+    public void reset() {
+        this.health = this.maxHealth; // Restore to full health
+        this.isAlive = true;
+        moveTo(0, 2); // Move back to starting position
+        updateLabel();
+
+    }
+
+    public int getMaxHealth() {
+
+        return this.maxHealth;
+    }
 }
