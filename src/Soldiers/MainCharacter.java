@@ -1,13 +1,10 @@
 package Soldiers;
 
-<<<<<<< HEAD
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
-=======
 
 import application.InventoryItem;
 import javafx.scene.image.Image;
->>>>>>> 32463a791425c41ad8af15f7a329f1bffb38e4ff
 
 public class MainCharacter extends Soldier {
     

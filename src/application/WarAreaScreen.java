@@ -102,8 +102,8 @@ public class WarAreaScreen {
         this.gameMap.setSlot(0, 2, GameMap.SLOT_SOLDIER); 
         
         // Add Main Character Image & Label
-        gamePane.getChildren().add(mainCharacter.getImageView());
-        createHealthLabel(this.mainCharacter); 
+//        gamePane.getChildren().add(mainCharacter.getImageView());
+//        createHealthLabel(this.mainCharacter); 
         
         // Clickable House (Exit)
         Pane houseClickArea = new Pane();
@@ -116,8 +116,7 @@ public class WarAreaScreen {
         });
         StackPane.setAlignment(houseClickArea, Pos.CENTER_LEFT);
         gamePane.getChildren().add(houseClickArea);
-        
-<<<<<<< HEAD
+        List<InventoryItem> inventory = new ArrayList<>(); 
         // Add Main Character Image
         gamePane.getChildren().addAll(mainCharacter.getImageView(), mainCharacter.getHealthLabel());        
         // Set up inventory
@@ -129,7 +128,7 @@ public class WarAreaScreen {
         inventory.add(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Required for building barriers"));
         
         player.setInventory(inventory);
-=======
+
         // --- FIX: ADD ITEMS TO PLAYER INVENTORY (DO NOT REPLACE LIST) ---
         // This ensures weapons bought in the shop are kept, or adds them for testing.
         player.addItem(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
@@ -144,7 +143,6 @@ public class WarAreaScreen {
         player.addItem(new InventoryItem(InventoryItem.KATANA, InventoryItem.KATANA_IMAGE, "Slash"));
         player.addItem(new InventoryItem(InventoryItem.MACHINE_GUN, InventoryItem.MACHINE_GUN_IMAGE, "Pew Pew"));
         // ----------------------------------------------------------------------------------
->>>>>>> 32463a791425c41ad8af15f7a329f1bffb38e4ff
         
         // Grid
         GridPane gameGrid = new GridPane();
@@ -180,11 +178,9 @@ public class WarAreaScreen {
         seedBank.setPadding(new Insets(10));
         seedBank.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 10;");
         seedBank.setMaxHeight(110);
-<<<<<<< HEAD
+
         seedBank.setMaxWidth(230);
-=======
         seedBank.setMaxWidth(600); 
->>>>>>> 32463a791425c41ad8af15f7a329f1bffb38e4ff
         seedBank.setPickOnBounds(false);
         
         ImageView archerCard = createCard("/assets/archer-card.png", Soldier.ARCHER);
@@ -224,7 +220,7 @@ public class WarAreaScreen {
         resourceBar.setPadding(new Insets(5, 15, 5, 15));
         resourceBar.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6); -fx-background-radius: 15;");
         resourceBar.setMaxHeight(50);
-<<<<<<< HEAD
+
         resourceBar.setMaxWidth(550); // Increased width to fit Level info
         //=== back to main menu
         Button menuButton = new Button("MAIN MENU");
@@ -252,10 +248,9 @@ public class WarAreaScreen {
         
         gamePane.getChildren().add(menuButton);
         // Burger
-=======
+
         resourceBar.setMaxWidth(550);
 
->>>>>>> 32463a791425c41ad8af15f7a329f1bffb38e4ff
         HBox burgerBox = new HBox(10);
         burgerBox.setAlignment(Pos.CENTER_LEFT);
         ImageView burgerIcon = new ImageView();
@@ -692,7 +687,6 @@ public class WarAreaScreen {
             } 
             return; 
         }
-<<<<<<< HEAD
      // interaction with zom
         if (mainCharacter != null && mainCharacter.getCol() == col && mainCharacter.getLane() == lane) {
              // check if we are holding a healing item
@@ -712,10 +706,9 @@ public class WarAreaScreen {
              return;
         }
         // --- BARRIER LOGIC ---
-=======
+
         
         // BARRIER LOGIC
->>>>>>> 32463a791425c41ad8af15f7a329f1bffb38e4ff
         if (soldierType.equals(Soldier.BARRIER)) {
             if (lane + 2 >= GameMap.MAP_HEIGHT_TILES) { System.out.println("No vertical space!"); return; }
             if (gameMap.getSlot(col, lane) != GameMap.SLOT_EMPTY ||
