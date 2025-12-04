@@ -69,9 +69,6 @@ public class WarAreaScreen {
   
     private MainCharacter mainCharacter;
     
-    // REMOVED: List<InventoryItem> inventory = new ArrayList<>(); 
-    // We will use the player's existing inventory directly.
-    
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
         this.gameMap = new GameMap();
@@ -101,10 +98,6 @@ public class WarAreaScreen {
         this.soldiers.add(this.mainCharacter); 
         this.gameMap.setSlot(0, 2, GameMap.SLOT_SOLDIER); 
         
-        // Add Main Character Image & Label
-//        gamePane.getChildren().add(mainCharacter.getImageView());
-//        createHealthLabel(this.mainCharacter); 
-        
         // Clickable House (Exit)
         Pane houseClickArea = new Pane();
         houseClickArea.setMaxSize(200, 320);
@@ -116,21 +109,17 @@ public class WarAreaScreen {
         });
         StackPane.setAlignment(houseClickArea, Pos.CENTER_LEFT);
         gamePane.getChildren().add(houseClickArea);
-        List<InventoryItem> inventory = new ArrayList<>(); 
-        // Add Main Character Image
-        gamePane.getChildren().addAll(mainCharacter.getImageView(), mainCharacter.getHealthLabel());        
-        // Set up inventory
-        inventory.add(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
-        inventory.add(new InventoryItem("Grenade", InventoryItem.GRENADE_IMAGE,"Boom")); 
-        inventory.add(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Required for building barriers"));
-        inventory.add(new InventoryItem(InventoryItem.CLOTH, InventoryItem.CLOTH_IMAGE,"Required for bandages"));
-        inventory.add(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Heals 80 HP"));
-        inventory.add(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Required for building barriers"));
         
-        player.setInventory(inventory);
+        // Add Main Character Image & HP Label
+        gamePane.getChildren().add(mainCharacter.getImageView());
+        createHealthLabel(mainCharacter);
 
-        // --- FIX: ADD ITEMS TO PLAYER INVENTORY (DO NOT REPLACE LIST) ---
-        // This ensures weapons bought in the shop are kept, or adds them for testing.
+        // --- INVENTORY SETUP ---
+        // Clear old list if needed, or just add directly to player
+        // Note: Using a local list to initialize player inventory might overwrite shop purchases.
+        // It is safer to check if items exist, or just add them.
+        
+        // Add default items
         player.addItem(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
         player.addItem(new InventoryItem("Grenade", InventoryItem.GRENADE_IMAGE,"Boom")); 
         player.addItem(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Required for building barriers"));
@@ -138,11 +127,10 @@ public class WarAreaScreen {
         player.addItem(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Heals 80 HP"));
         player.addItem(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Required for building barriers"));
         
-        // --- ADD WEAPONS FOR TESTING (Remove these if you want to buy them in shop only) ---
-        player.addItem(new InventoryItem(InventoryItem.MALLET, InventoryItem.MALLET_IMAGE, "Smash"));
+        // Add Weapons for testing
+//        player.addItem(new InventoryItem(InventoryItem.MALLET, InventoryItem.MALLET_IMAGE, "Smash"));
         player.addItem(new InventoryItem(InventoryItem.KATANA, InventoryItem.KATANA_IMAGE, "Slash"));
         player.addItem(new InventoryItem(InventoryItem.MACHINE_GUN, InventoryItem.MACHINE_GUN_IMAGE, "Pew Pew"));
-        // ----------------------------------------------------------------------------------
         
         // Grid
         GridPane gameGrid = new GridPane();
@@ -178,8 +166,6 @@ public class WarAreaScreen {
         seedBank.setPadding(new Insets(10));
         seedBank.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 10;");
         seedBank.setMaxHeight(110);
-
-        seedBank.setMaxWidth(230);
         seedBank.setMaxWidth(600); 
         seedBank.setPickOnBounds(false);
         
@@ -192,7 +178,6 @@ public class WarAreaScreen {
         seedBank.getChildren().addAll(archerCard, spearmanCard, handCard);
 
         // --- DYNAMICALLY ADD WEAPONS ---
-        // Now that we used player.addItem(), findItem() will work correctly.
         int weaponsAdded = 0;
 
         if (findItem(InventoryItem.MALLET) != null && weaponsAdded < 2) {
@@ -220,37 +205,21 @@ public class WarAreaScreen {
         resourceBar.setPadding(new Insets(5, 15, 5, 15));
         resourceBar.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6); -fx-background-radius: 15;");
         resourceBar.setMaxHeight(50);
+        resourceBar.setMaxWidth(550); 
 
-        resourceBar.setMaxWidth(550); // Increased width to fit Level info
-        //=== back to main menu
+        // Main Menu Button
         Button menuButton = new Button("MAIN MENU");
         menuButton.getStyleClass().add("dashboard-button"); 
-        
-        // Optional: Make it red to indicate "Exit/Back"
         menuButton.setStyle("-fx-background-color: #8B0000; -fx-text-fill: white; -fx-font-family: 'Zombies Brainless'; -fx-font-size: 16px;");
-
         menuButton.setOnAction(e -> {
-            System.out.println("Returning to Main Menu...");
-            
-            // 1. Stop the game loop so zombies freeze
-            if (gameLoop != null) {
-                gameLoop.stop();
-            }
-            
-            // 2. Go back to Dashboard
-            // (From there, you can click 'Logout' to save your file)
+            if (gameLoop != null) gameLoop.stop();
             mainApp.showDashboardScreen(); 
         });
-
-        // Position: Bottom Right
         StackPane.setAlignment(menuButton, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(menuButton, new Insets(0, 30, 30, 0)); 
-        
         gamePane.getChildren().add(menuButton);
-        // Burger
 
-        resourceBar.setMaxWidth(550);
-
+        // Stats Labels
         HBox burgerBox = new HBox(10);
         burgerBox.setAlignment(Pos.CENTER_LEFT);
         ImageView burgerIcon = new ImageView();
@@ -311,8 +280,6 @@ public class WarAreaScreen {
         StackPane.setMargin(itemBank, new Insets(20, 50, 0, 20));
         gamePane.getChildren().add(itemBank);
 
-        
-        
         spawnZombie(0);
         spawnZombie(2);
         spawnZombie(4);
@@ -442,8 +409,9 @@ public class WarAreaScreen {
                     boolean hasTarget = false;
                     for (Zombie z : zombies) {
                         if (z.isAlive() && z.getLane() == soldier.getLane()) {
+                            // Check for zombies to the right
                             if (z.getImageView().getTranslateX() > soldier.getImageView().getTranslateX() 
-                                    && z.getPositionX() < 1280) { 
+                                    && z.getPositionX() < 600) { 
                                 hasTarget = true; break;
                             }
                         }
@@ -471,15 +439,23 @@ public class WarAreaScreen {
     }
 
     private void shootProjectile(Soldier soldier) {
-        double startX = soldier.getImageView().getTranslateX() + 50;
+        // Adjust Start Position
+        double startX = soldier.getImageView().getTranslateX();
         double startY = soldier.getImageView().getTranslateY(); 
         
         int damage = soldier.getDamage();
+        String projectileType = "/assets/arrow-sprite.png"; // Default Arrow
+
         if (soldier instanceof MainCharacter) {
             damage = getWeaponDamage(player.getEquippedWeapon());
+            
+            // USE "BULLET" IF GUN IS EQUIPPED
+            if (InventoryItem.MACHINE_GUN.equals(player.getEquippedWeapon())) {
+                projectileType = "BULLET"; 
+            }
         }
 
-        Projectile proj = new Projectile(startX, startY, soldier.getLane(), damage);
+        Projectile proj = new Projectile(startX, startY, soldier.getLane(), damage, projectileType);
         projectiles.add(proj);
         gamePane.getChildren().add(proj.getView());
     }

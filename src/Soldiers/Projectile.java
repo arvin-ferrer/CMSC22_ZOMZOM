@@ -1,61 +1,74 @@
 package Soldiers;
 
+import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-public class Projectile {
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
-    // load the image
-    private static final String IMAGE_PATH = "/assets/arrow-sprite.png";
-    private static Image projectileImage; 
+public class Projectile {
 
     private double x;
     private double y;
-    private double speed = 400; // pixels per second
+    private double speed = 400; // Default speed
     private int lane;
     private int damage;
     private boolean isActive;
-    protected ImageView imageView;
+    
+    // Changed to Node to support both ImageView and Shape
+    protected Node view; 
 
-    public Projectile(double startX, double startY, int lane, int damage) {
+    /**
+     * @param imagePathOrType Pass a file path for images, or "BULLET" for a circle shape.
+     */
+    public Projectile(double startX, double startY, int lane, int damage, String imagePathOrType) {
         this.x = startX;
         this.y = startY;
         this.lane = lane;
         this.damage = damage;
         this.isActive = true;
         
-        // initialize image only if its not loaded yet
-        if (projectileImage == null) {
+        // Check if we want a geometric bullet or an image
+        if (imagePathOrType.equals("BULLET")) {
+            // Create a small Gold Circle
+            Circle bullet = new Circle(5); 
+            bullet.setFill(Color.GOLD);
+            bullet.setStroke(Color.BLACK);
+            bullet.setStrokeWidth(1);
+            
+            this.view = bullet;
+            this.speed = 900; // Bullets fly faster than arrows
+        } else {
+            // Load Image (e.g., Arrow)
             try {
-                projectileImage = new Image(getClass().getResourceAsStream(IMAGE_PATH));
+                ImageView imgView = new ImageView(new Image(getClass().getResourceAsStream(imagePathOrType)));
+                imgView.setFitWidth(60); 
+                imgView.setFitHeight(20);
+                this.view = imgView;
+                this.speed = 400; // Arrows are slower
             } catch (Exception e) {
-                System.err.println("Error loading projectile image: " + IMAGE_PATH);
+                System.err.println("Error loading projectile image: " + imagePathOrType);
+                this.view = new Circle(5, Color.RED); // Error fallback
             }
         }
 
-        this.imageView = new ImageView(projectileImage);
-       
-//        this.imageView.setFitWidth(60); 
-//        this.imageView.setFitHeight(20);
-        
-        // set the initial visual position!
-        this.imageView.setTranslateX(this.x);
-        this.imageView.setTranslateY(this.y);
+        // Set initial position
+        this.view.setTranslateX(this.x);
+        this.view.setTranslateY(this.y);
     }
 
     public void update(double deltaTime) {
         x += speed * deltaTime;
-        
-        //update the visual x position every frame
-        this.imageView.setTranslateX(x);
+        this.view.setTranslateX(x);
     }
 
-    public ImageView getView() { return this.imageView; }
+    public Node getView() { return this.view; }
     public double getX() { return x; }
     public int getLane() { return lane; }
     public int getDamage() { return damage; }
     
     public void setInactive() {
         this.isActive = false;
-        this.imageView.setVisible(false);
+        this.view.setVisible(false);
     }
 }
