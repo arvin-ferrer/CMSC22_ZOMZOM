@@ -5,13 +5,11 @@ import javafx.scene.image.Image;
 
 public abstract class Zombie {
 	
-	protected String type; // "Normal", "Speed", "Flying", "Tank"
+	protected String type; 
 	public static final String NORMAL = "NORMAL";
 	public static final String NURSE = "NURSE";
 	public static final String TANK = "TANK";
 	
-	
-	//gameplay attributes
     protected int health;
     protected int speed; 
     protected int damage;
@@ -24,7 +22,6 @@ public abstract class Zombie {
     protected double spawnRate; 
     protected int expValue;
     
-    // position and rendering attributes
     protected String imagePath; 
     protected ImageView imageView;
     protected int currentLane;
@@ -38,16 +35,12 @@ public abstract class Zombie {
         this.isAlive = true;
         this.imagePath = imageFileName;
 
-        // load the GIF
         try {
             Image zombieImage = new Image(getClass().getResourceAsStream(imagePath));
             this.imageView = new ImageView(zombieImage);
-            
-            // set initial position
             this.imageView.setTranslateX(this.positionX);
             this.imageView.setTranslateY(this.positionY);
             
-            // rendering size adjustments
             this.imageView.setFitWidth(112); 
             this.imageView.setFitHeight(112);
             this.size = 1.0; 
@@ -55,17 +48,31 @@ public abstract class Zombie {
             
         } catch (Exception e) {
             System.err.println("ERROR: Could not load zombie image: " + imagePath);
-            e.printStackTrace();
             this.imageView = new ImageView(); 
         }
     }
 
+    // --- NEW: DIFFICULTY LOGIC ---
+    public void applyDifficulty(int level, boolean isOddLevel) {
+        // 1. Scale EXP based on level (always rewarding)
+        this.expValue += (level * 5); 
+        this.rewardPoints += level;
 
+        // 2. Odd Level Logic: More Health
+        if (isOddLevel) {
+            double multiplier = 1.0 + (level * 0.15); // 15% increase per level
+            this.health = (int) (this.health * multiplier);
+            System.out.println("Odd Level Buff Applied: Zombie HP is now " + this.health);
+        } else {
+            // Even levels get normal scaling or small scaling
+            double multiplier = 1.0 + (level * 0.05);
+            this.health = (int) (this.health * multiplier);
+        }
+    }
 
     public void update(double deltaTime) {
         if (!isAlive) return;
         move(deltaTime);
-        // add other update logic here like attack(), checkCollision() etc.
     }
 
     protected void move(double deltaTime) {
@@ -73,85 +80,48 @@ public abstract class Zombie {
         this.imageView.setTranslateX(this.positionX);
     }
 
-    public void takeDamage(int amount) { // Damage amount is int
+    public void takeDamage(int amount) { 
         this.health -= amount;
-        System.out.println(this.health);
+        // System.out.println(this.health); // Optional Debug
         if (this.health <= 0) {
             this.isAlive = false;
             this.imageView.setVisible(false);
-            // add a death animation or remove from parent here later
         }
     }
     
-    // GETTERS ===============================================================================
+    // GETTERS & SETTERS (Kept same as provided)
     public boolean isAlive() {return this.isAlive;}
-    
     public String getType() { return type; }
-    
-    // gameplay getters ---------------------------------------------------------------------
     public int getHealth() { return this.health;  }
-   
     public int getSpeed() { return speed; }
-
     public int getDamage() { return damage; }
-       
     public int getLane() { return currentLane; }
-
     public int getRewardPoints() { return rewardPoints; }
-    
     public double getSize() { return size; }
-    
     public String getSpecialAbility() { return specialAbility; }
-    
     public int getAttackRange() { return attackRange; }
-    
     public double getSpawnRate() { return spawnRate; }
-
     public int getExpvalue() {return this.expValue;}
-    // position and rendering getters ----------------------------------------------------------------
     public ImageView getImageView() {return this.imageView;}
-    
     public String getImagePath() {return imagePath; }
-    
     public double getPositionX() { return positionX; }
-    
     public double getPositionY() { return positionY; }
     public int getBurgerPoints() { return this.burgerPoints;}
-
     
-    
-    // SETTERS =======================================================================================
     protected void setType(String type) { this.type = type; } 
-    
-    // gameplay setters ------------------------------------------------------
     public void setHealth(int health) { this.health = health; }
-    
     public void setDamage(int damage) { this.damage = damage; }
-    
     public void setSpeed(int speed) { this.speed = speed; }
-    
     public void setAttackRange(int attackRange) { this.attackRange = attackRange; }
-    
     public void setSpecialAbility(String specialAbility) { this.specialAbility = specialAbility; }
-    
     public void setSpawnRate(double spawnRate) { this.spawnRate = spawnRate; }
-    
     public void setRewardPoints(int rewardPoints) { this.rewardPoints = rewardPoints; }
-    
-    // position  and rendering setters ----------------------------------------------------------
     public void setPositionY(double positionY) { this.imageView.setTranslateY(positionY); }
-    
     public void setLane(int currentLane) { this.currentLane = currentLane; }
-    
     public void setPositionX(double positionX) { 
         this.positionX = positionX;
         this.imageView.setTranslateX(this.positionX); 
     }
-    public void setBurgerPoints(int burger) {
-    	this.burgerPoints = burger;
-    }
-    
+    public void setBurgerPoints(int burger) { this.burgerPoints = burger; }
     public void setExpValue(int exp) { this.expValue = exp;}
-
-
 }

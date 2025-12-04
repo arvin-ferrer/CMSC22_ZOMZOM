@@ -17,7 +17,11 @@ public abstract class Soldier {
     protected boolean isAlive; 
     protected int SoldierCost;
     
-    // positions (Keep these private, use setters!)
+    // NEW: Base stats to calculate scaling correctly
+    protected int baseHealth;
+    protected int baseDamage;
+    
+    // positions
     private int lane;
     private int col;
     
@@ -36,9 +40,8 @@ public abstract class Soldier {
             Image soldierImage = new Image(getClass().getResourceAsStream(imagePath));
             this.imageView = new ImageView(soldierImage);
             
-            updateVisualPosition(); // Helper method to set X/Y
+            updateVisualPosition(); 
             
-            // set image size
             this.imageView.setFitWidth(width); 
             this.imageView.setFitHeight(height); 
             
@@ -46,18 +49,43 @@ public abstract class Soldier {
             System.err.println("ERROR: Could not load image: " + imagePath);
             this.imageView = new ImageView(); 
         }
+        
+        // Initialize base stats equal to current stats
+        // Subclasses set damage/health after super(), so we might update this in setters too.
+        this.baseHealth = this.health;
+        this.baseDamage = this.damage;
     }
 
     public void update(double deltaTime) {
         if (!isAlive) return;
     }
+    
+    // --- NEW: LEVEL SCALING LOGIC ---
+    public void applyLevelScaling(int level) {
+        // If level is 1, no change needed
+        if (level <= 1) return;
 
-    // --- NEW HELPER FOR POSITIONING ---
+        // Logic: +10% Health and +5% Damage per level
+        double hpMultiplier = 1.0 + (level * 0.10); 
+        double dmgMultiplier = 1.0 + (level * 0.05);
+        
+        // If base stats weren't set correctly (e.g. 0), grab current health
+        if (this.baseHealth == 0) this.baseHealth = this.health;
+        if (this.baseDamage == 0) this.baseDamage = this.damage;
+
+        // Apply
+        this.damage = (int) (this.baseDamage * dmgMultiplier);
+        
+        // Only scale health for non-MainCharacter soldiers here
+        // (MainCharacter has special health bar logic)
+        if (!this.type.equals(MAIN_CHARACTER)) {
+            this.health = (int) (this.baseHealth * hpMultiplier);
+        }
+    }
+
     protected void updateVisualPosition() {
-        // (col * TILE_WIDTH) - Offset
-        this.imageView.setTranslateX((this.col * 96) - 360); // 96 is tile width
-        // (lane * TILE_HEIGHT) - Offset
-        this.imageView.setTranslateY((this.lane * 96) - 192); // 96 is tile height
+        this.imageView.setTranslateX((this.col * 96) - 360); 
+        this.imageView.setTranslateY((this.lane * 96) - 192); 
     }
 
     public void takeDamage(int amount) { 
@@ -71,18 +99,24 @@ public abstract class Soldier {
     public boolean isAlive() { return this.isAlive; }
 
     // setters
-    public void setHealth(int health) { this.health = health; }
-    public void setDamage(int damage) { this.damage = damage; }
+    public void setHealth(int health) { 
+        this.health = health;
+        if (this.baseHealth == 0) this.baseHealth = health; // Capture base
+    }
+    
+    public void setDamage(int damage) { 
+        this.damage = damage; 
+        if (this.baseDamage == 0) this.baseDamage = damage; // Capture base
+    }
+    
     protected void setType(String type) { this.type = type; } 
     public void setSoldierCost(int cost) { this.SoldierCost = cost; }
     
-    // --- FIXED POSITION SETTERS ---
     public void setLane(int currentLane) { 
         this.lane = currentLane; 
         updateVisualPosition(); 
     }
     
-    // ADDED THIS METHOD
     public void setCol(int currentCol) {
         this.col = currentCol;
         updateVisualPosition();
@@ -97,7 +131,7 @@ public abstract class Soldier {
     public int getSoldierCost() { return this.SoldierCost; }
     
     public int getLane() { return this.lane; }
-    public int getCol() { return this.col; } // Added Getter
+    public int getCol() { return this.col; } 
 
     public int[] getPosition() {
         int[] coordinates = {this.col, this.lane};

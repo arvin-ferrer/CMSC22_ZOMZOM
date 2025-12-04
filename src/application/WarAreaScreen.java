@@ -49,7 +49,7 @@ public class WarAreaScreen {
     private List<Soldier> soldiers;
     private List<Projectile> projectiles;
     
-    // HP Labels Map
+    // HP Labels Map for standard soldiers
     private Map<Soldier, Label> healthLabels; 
     
     private java.util.Map<Soldier, Double> soldierAttackTimers;
@@ -69,6 +69,9 @@ public class WarAreaScreen {
   
     private MainCharacter mainCharacter;
     
+    // NEW: Tracking level changes to trigger effects
+    private int trackedLevel;
+    
     public WarAreaScreen(Main mainApp) {
         this.mainApp = mainApp;
         this.gameMap = new GameMap();
@@ -78,6 +81,7 @@ public class WarAreaScreen {
         this.healthLabels = new HashMap<>(); 
         
         this.player = mainApp.getCurrentPlayer(); 
+        this.trackedLevel = player.getLevel(); // Initialize tracker
         
         // 1. SET DEFAULT WEAPON
         this.player.setEquippedWeapon(InventoryItem.HAND);
@@ -94,6 +98,10 @@ public class WarAreaScreen {
         
         // 3. SETUP MAIN CHARACTER
         this.mainCharacter = new MainCharacter(0, 2);
+        
+        // Apply Level Scaling immediately
+        this.mainCharacter.applyLevelScaling(player.getLevel());
+        
         this.mainCharacter.setWeaponSprite(InventoryItem.HAND); // Set initial sprite
         this.soldiers.add(this.mainCharacter); 
         this.gameMap.setSlot(0, 2, GameMap.SLOT_SOLDIER); 
@@ -110,16 +118,11 @@ public class WarAreaScreen {
         StackPane.setAlignment(houseClickArea, Pos.CENTER_LEFT);
         gamePane.getChildren().add(houseClickArea);
         
-        // Add Main Character Image & HP Label
+        // --- ADD MAIN CHARACTER AND HEALTH BAR (FIXED) ---
         gamePane.getChildren().add(mainCharacter.getImageView());
-        createHealthLabel(mainCharacter);
+        gamePane.getChildren().add(mainCharacter.getHealthLabel()); 
 
         // --- INVENTORY SETUP ---
-        // Clear old list if needed, or just add directly to player
-        // Note: Using a local list to initialize player inventory might overwrite shop purchases.
-        // It is safer to check if items exist, or just add them.
-        
-        // Add default items
         player.addItem(new InventoryItem(InventoryItem.BANDAGE, InventoryItem.BANDAGE_IMAGE, "Heals 50 HP"));
         player.addItem(new InventoryItem("Grenade", InventoryItem.GRENADE_IMAGE,"Boom")); 
         player.addItem(new InventoryItem(InventoryItem.STONE, InventoryItem.STONE_IMAGE,"Required for building barriers"));
@@ -127,8 +130,7 @@ public class WarAreaScreen {
         player.addItem(new InventoryItem(InventoryItem.MEDKIT, InventoryItem.MEDKIT_IMAGE,"Heals 80 HP"));
         player.addItem(new InventoryItem(InventoryItem.WOOD, InventoryItem.WOOD_IMAGE,"Required for building barriers"));
         
-        // Add Weapons for testing
-//        player.addItem(new InventoryItem(InventoryItem.MALLET, InventoryItem.MALLET_IMAGE, "Smash"));
+        // Add Weapons
         player.addItem(new InventoryItem(InventoryItem.KATANA, InventoryItem.KATANA_IMAGE, "Slash"));
         player.addItem(new InventoryItem(InventoryItem.MACHINE_GUN, InventoryItem.MACHINE_GUN_IMAGE, "Pew Pew"));
         
@@ -279,10 +281,6 @@ public class WarAreaScreen {
         StackPane.setAlignment(itemBank, Pos.TOP_RIGHT);
         StackPane.setMargin(itemBank, new Insets(20, 50, 0, 20));
         gamePane.getChildren().add(itemBank);
-
-        spawnZombie(0);
-        spawnZombie(2);
-        spawnZombie(4);
     }
 
     public void showScreen() {
@@ -305,18 +303,28 @@ public class WarAreaScreen {
                 double deltaTime = (now - lastUpdateTime) / 1_000_000_000.0;
                 lastUpdateTime = now;
                 
-                // Update UI Labels
-                if (burgerLabel != null) burgerLabel.setText(String.valueOf(player.getBurger())); 
-                if (coinLabel != null) coinLabel.setText(String.valueOf(player.getCurrency())); 
+                updateUI();
                 
-                if (levelLabel != null) {
-                    levelLabel.setText(player.getLevel() + " [" + player.getExperiencePoints() + "/" + player.getExperienceToNextLevel() + "]");
+                // CHECK FOR LEVEL UP
+                if (player.getLevel() > trackedLevel) {
+                    trackedLevel = player.getLevel();
+                    // Update Main Character Stats on Level Up
+                    mainCharacter.applyLevelScaling(trackedLevel);
+                    System.out.println("WarArea: Level Up detected! Scaling Main Character to level " + trackedLevel);
                 }
        
                 spawnTimer += deltaTime;
-                if (spawnTimer >= 5.0) {
-                    int randomLane = random.nextInt(6);
-                    spawnZombie(randomLane);
+                
+                // CALCULATE SPAWN THRESHOLD BASED ON LEVEL
+                double spawnThreshold = 5.0; // Default
+                if (player.getLevel() >= 50) {
+                    spawnThreshold = 1.0;
+                } else if (player.getLevel() >= 30) {
+                    spawnThreshold = 3.0;
+                }
+                
+                if (spawnTimer >= spawnThreshold) {
+                    spawnLevelBasedZombie();
                     spawnTimer = 0;
                 }
 
@@ -330,6 +338,53 @@ public class WarAreaScreen {
         gameLoop.start();
     }
     
+    private void updateUI() {
+        if (burgerLabel != null) burgerLabel.setText(String.valueOf(player.getBurger())); 
+        if (coinLabel != null) coinLabel.setText(String.valueOf(player.getCurrency())); 
+        
+        if (levelLabel != null) {
+            levelLabel.setText(player.getLevel() + " [" + player.getExperiencePoints() + "/" + player.getExperienceToNextLevel() + "]");
+        }
+    }
+    
+    // --- LEVEL BASED SPAWNER LOGIC ---
+    private void spawnLevelBasedZombie() {
+        int level = player.getLevel();
+        
+        // Even Levels: Increase lanes
+        // Level 1: 2 + 0 = 2 lanes
+        // Level 2: 2 + 1 = 3 lanes
+        // Max 6.
+        int activeSpawners = 2 + (level / 2);
+        if (activeSpawners > 6) activeSpawners = 6;
+        
+        int randomLane = random.nextInt(activeSpawners);
+        
+        // Odd Levels: Increase HP/Difficulty
+        boolean isOdd = (level % 2 != 0);
+
+        spawnZombie(randomLane, level, isOdd);
+    }
+    
+    // Helper to actually spawn
+    private void spawnZombie(int lane, int level, boolean isOdd) {
+        double startX = 1280; 
+        int zombieType = random.nextInt(3); 
+        Zombie newZombie = null;
+        switch (zombieType) {
+            case 0: newZombie = new NormalZombie(startX, lane); break;
+            case 1: newZombie = new TankZombie(startX, lane); break;
+            case 2: newZombie = new nurseZombie(startX, lane); break;
+        }
+        if (newZombie != null) {
+            // Apply buffs
+            newZombie.applyDifficulty(level, isOdd);
+            
+            zombies.add(newZombie);
+            gamePane.getChildren().add(newZombie.getImageView());
+        }
+    }
+
     // --- COMBAT HELPERS ---
     
     private int getWeaponDamage(String weapon) {
@@ -401,7 +456,15 @@ public class WarAreaScreen {
             // --- MAIN CHARACTER WEAPON COMBAT ---
             else if (soldier instanceof MainCharacter) {
                 String weapon = player.getEquippedWeapon();
-                int dmg = getWeaponDamage(weapon);
+                
+                // Scale Weapon Damage based on level logic (or just rely on MainCharacter.damage)
+                // Since MC damage is already scaled in applyLevelScaling(), we can use that,
+                // OR scale the base weapon damage dynamically here. 
+                // Let's scale base weapon damage for consistency with switching weapons.
+                int baseWepDamage = getWeaponDamage(weapon);
+                double dmgMultiplier = 1.0 + (player.getLevel() * 0.05);
+                int finalDamage = (int)(baseWepDamage * dmgMultiplier);
+                
                 double speed = getWeaponAttackSpeed(weapon);
                 
                 // Machine Gun (Ranged)
@@ -417,7 +480,7 @@ public class WarAreaScreen {
                         }
                     }
                     if (hasTarget) {
-                        shootProjectile(soldier); 
+                        shootProjectile(soldier, finalDamage); 
                         soldierAttackTimers.put(soldier, speed); 
                     }
                 } 
@@ -427,7 +490,7 @@ public class WarAreaScreen {
                         if (z.isAlive() && z.getLane() == soldier.getLane()) {
                             double dist = z.getImageView().getTranslateX() - soldier.getImageView().getTranslateX();
                             if (dist > 0 && dist < 120) { 
-                                z.takeDamage(dmg); 
+                                z.takeDamage(finalDamage); 
                                 soldierAttackTimers.put(soldier, speed); 
                                 break;
                             }
@@ -438,30 +501,34 @@ public class WarAreaScreen {
         }
     }
 
+    // Standard shoot (Soldiers)
     private void shootProjectile(Soldier soldier) {
+        shootProjectile(soldier, soldier.getDamage());
+    }
+
+    // Overload for Custom Damage (MC)
+    private void shootProjectile(Soldier soldier, int dmgOverride) {
         // Adjust Start Position
         double startX = soldier.getImageView().getTranslateX();
         double startY = soldier.getImageView().getTranslateY(); 
         
-        int damage = soldier.getDamage();
         String projectileType = "/assets/arrow-sprite.png"; // Default Arrow
 
         if (soldier instanceof MainCharacter) {
-            damage = getWeaponDamage(player.getEquippedWeapon());
-            
             // USE "BULLET" IF GUN IS EQUIPPED
             if (InventoryItem.MACHINE_GUN.equals(player.getEquippedWeapon())) {
                 projectileType = "BULLET"; 
             }
         }
 
-        Projectile proj = new Projectile(startX, startY, soldier.getLane(), damage, projectileType);
+        Projectile proj = new Projectile(startX, startY, soldier.getLane(), dmgOverride, projectileType);
         projectiles.add(proj);
         gamePane.getChildren().add(proj.getView());
     }
 
     private void createHealthLabel(Soldier s) {
         if (s instanceof Soldiers.Grenade) return;
+        if (s instanceof MainCharacter) return; // Do not create duplicate for MC
 
         Label hpLabel = new Label(String.valueOf(s.getHealth()));
         hpLabel.setStyle("-fx-text-fill: #ff0000; -fx-font-weight: bold; -fx-font-size: 14px; -fx-effect: dropshadow(gaussian, black, 2, 1, 0, 0);");
@@ -574,6 +641,10 @@ public class WarAreaScreen {
                 if (healthLabels.containsKey(s)) {
                     Label lbl = healthLabels.remove(s);
                     gamePane.getChildren().remove(lbl);
+                }
+                // Handle MC removal (if you want game over logic, add here)
+                if (s instanceof MainCharacter) {
+                     gamePane.getChildren().remove(((MainCharacter) s).getHealthLabel());
                 }
                 
                 int[] pos = s.getPosition();
@@ -727,6 +798,10 @@ public class WarAreaScreen {
 	    if (newSoldier != null) {
 	        int cost = newSoldier.getSoldierCost();
 	        if (player.getBurger() >= cost) {
+                
+                // SCALE SOLDIER BEFORE ADDING
+                newSoldier.applyLevelScaling(player.getLevel());
+
 	            soldiers.add(newSoldier);
 	            soldierAttackTimers.put(newSoldier, 0.0);
 	            gamePane.getChildren().add(newSoldier.getImageView());
@@ -742,20 +817,6 @@ public class WarAreaScreen {
 	    }
     }
     
-    private void spawnZombie(int lane) {
-        double startX = 1280; 
-        int zombieType = random.nextInt(3); 
-        Zombie newZombie = null;
-        switch (zombieType) {
-            case 0: newZombie = new NormalZombie(startX, lane); break;
-            case 1: newZombie = new TankZombie(startX, lane); break;
-            case 2: newZombie = new nurseZombie(startX, lane); break;
-        }
-        if (newZombie != null) {
-            zombies.add(newZombie);
-            gamePane.getChildren().add(newZombie.getImageView());
-        }
-    }
     private void useHealingItem(String itemType) {
         // find item
         InventoryItem item = findItem(itemType);
@@ -766,17 +827,10 @@ public class WarAreaScreen {
             if (itemType.equals("Medkit")) healAmount = 100;
             else if (itemType.equals("Bandage")) healAmount = 50;
             
-            // check if healing is needed
-            if (mainCharacter.getHealth() < 200) { // check max health
-                // heal zom
-                mainCharacter.heal(healAmount);
-                
-                // Consume Item
-                item.addQuantity(-1);
-                System.out.println("Used " + itemType + ". Quantity remaining: " + item.getQuantity());
-            } else {
-                System.out.println("Zom is already at full health!");
-            }
+            // Just call heal, the MainCharacter logic handles max HP clamping
+            mainCharacter.heal(healAmount);
+            item.addQuantity(-1);
+            System.out.println("Used " + itemType + ". Quantity remaining: " + item.getQuantity());
         } else {
             System.out.println("You don't have any " + itemType + "s!");
         }
