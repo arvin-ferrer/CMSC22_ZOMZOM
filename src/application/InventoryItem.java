@@ -13,7 +13,7 @@ public class InventoryItem implements Serializable {
     public static final String STONE = "Rock";
     public static final String GUNPOWDER = "Gunpowder";
     public static final String GRENADE = "Grenade";
-    public static final String BARRIER = "Barrier";
+    public static final String BARRIER = "Barrier"; // Fixed string
     
     // NEW WEAPONS
     public static final String HAND = "Hand";
@@ -31,11 +31,11 @@ public class InventoryItem implements Serializable {
     public static final String BARRIER_IMAGE = "/assets/barrier-card.png";
     public static final String GUNPOWDER_IMAGE = "/assets/gunpowder.png";
     
-    // Weapon Images (Ensure you have these files or use placeholders)
+    // Weapon Images
     public static final String MALLET_IMAGE = "/assets/mallet-card.png";
     public static final String KATANA_IMAGE = "/assets/katana-card.png";
     public static final String MACHINE_GUN_IMAGE = "/assets/gun-card.png";
-    public static final String HAND_IMAGE = "/assets/hand-card.png"; // Optional icon
+    public static final String HAND_IMAGE = "/assets/hand-card.png"; 
 
     private String name;
     private String imagePath;
@@ -54,6 +54,13 @@ public class InventoryItem implements Serializable {
         this.imagePath = imagePath;
         this.description = description;
         this.quantity = quantity;
+    }
+    
+    // NEW HELPER METHOD
+    public boolean isWeapon() {
+        return name.equals(MALLET) || 
+               name.equals(KATANA) || 
+               name.equals(MACHINE_GUN);
     }
 
     public void addQuantity(int amount) { this.quantity += amount; }

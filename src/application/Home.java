@@ -35,6 +35,9 @@ public class Home {
     private Label nameLabel;
     private Label descLabel;
     private ImageView selectedItemView;
+    
+    // NEW: Equip Button Reference
+    private Button equipButton;
 
     public Home(Main mainApp) {
         this.mainApp = mainApp;
@@ -121,14 +124,19 @@ public class Home {
         mainApp.getPrimaryStage().show();
     }
        
-    // --- INVENTORY LOGIC ---
+    // --- INVENTORY LOGIC (UPDATED FOR MULTIPLE WEAPONS) ---
     private void refreshInventoryGrid() {
         if (inventoryGrid == null) return;
         inventoryGrid.getChildren().clear();
 
         int cols = 7; int rows = 5; int slotSize = 52; 
 
-        List<InventoryItem> playerItems = mainApp.getCurrentPlayer().getInventory();
+        Player player = mainApp.getCurrentPlayer();
+        List<InventoryItem> playerItems = player.getInventory();
+        
+        // NEW: Get the list of equipped weapons
+        List<String> equippedWeapons = player.getEquippedWeapons();
+        
         if (playerItems == null) playerItems = new java.util.ArrayList<>();
 
         for (int y = 0; y < rows; y++) {
@@ -141,6 +149,12 @@ public class Home {
 
                 if (index < playerItems.size()) {
                     InventoryItem item = playerItems.get(index);
+                    
+                    // HIGHLIGHT: Check if this specific item is in the equipped list
+                    if (equippedWeapons.contains(item.getName())) {
+                        slot.setStyle("-fx-border-color: #39ff14; -fx-border-width: 2px; -fx-border-radius: 5px;");
+                    }
+                    
                     try {
                         ImageView itemIcon = new ImageView(new Image(getClass().getResourceAsStream(item.getImagePath())));
                         itemIcon.setFitWidth(40); itemIcon.setFitHeight(40); itemIcon.setPreserveRatio(true);
@@ -167,8 +181,51 @@ public class Home {
                         try {
                             selectedItemView.setImage(new Image(getClass().getResourceAsStream(clickedItem.getImagePath())));
                         } catch (Exception ex) {}
+                        
+                        // --- UPDATED: EQUIP BUTTON LOGIC ---
+                        if (clickedItem.isWeapon()) {
+                            equipButton.setVisible(true);
+                            equipButton.setDisable(false); // Reset disabled state
+                            
+                            boolean isEquipped = player.isWeaponEquipped(clickedItem.getName());
+                            int equippedCount = player.getEquippedWeapons().size();
+
+                            if (isEquipped) {
+                                // CASE 1: Item is equipped -> Allow Unequip
+                                equipButton.setText("UNEQUIP");
+                                equipButton.setStyle("-fx-background-color: #555; -fx-text-fill: white; -fx-font-weight: bold;");
+                                equipButton.setOnAction(ev -> {
+                                    player.unequipWeapon(clickedItem.getName());
+                                    refreshInventoryGrid(); 
+                                    slot.getOnMouseClicked().handle(e); // Refresh detail view
+                                });
+                            } else {
+                                // CASE 2: Item not equipped
+                                if (equippedCount >= 2) {
+                                    // Max limit reached -> Disable button
+                                    equipButton.setText("MAX (2)");
+                                    equipButton.setStyle("-fx-background-color: #333; -fx-text-fill: gray;");
+                                    equipButton.setDisable(true);
+                                } else {
+                                    // Limit not reached -> Allow Equip
+                                    equipButton.setText("EQUIP");
+                                    equipButton.setStyle("-fx-background-color: #39ff14; -fx-text-fill: black; -fx-font-weight: bold;");
+                                    equipButton.setOnAction(ev -> {
+                                        player.equipWeapon(clickedItem.getName());
+                                        refreshInventoryGrid();
+                                        slot.getOnMouseClicked().handle(e); 
+                                    });
+                                }
+                            }
+                        } else {
+                            // Not a weapon, hide button
+                            equipButton.setVisible(false);
+                        }
+                        
                     } else {
+                        // Empty Slot
                         nameLabel.setText(""); descLabel.setText(""); selectedItemView.setImage(null);
+                        equipButton.setVisible(false);
                     }
                 });
                 inventoryGrid.add(slot, x, y);
@@ -204,7 +261,7 @@ public class Home {
 
         // Info Box
         VBox infoBox = new VBox(10);
-        infoBox.setMaxSize(200, 180);
+        infoBox.setMaxSize(200, 200); // Slightly taller for button
         infoBox.setAlignment(Pos.TOP_LEFT);
         
         this.nameLabel = new Label("SELECT ITEM");
@@ -216,7 +273,12 @@ public class Home {
         descLabel.setWrapText(true);
         descLabel.setMaxWidth(200);
 
-        infoBox.getChildren().addAll(nameLabel, descLabel);
+        // Equip Button
+        this.equipButton = new Button("EQUIP");
+        equipButton.setPrefWidth(120);
+        equipButton.setVisible(false); 
+
+        infoBox.getChildren().addAll(nameLabel, descLabel, equipButton);
         StackPane.setAlignment(infoBox, Pos.TOP_RIGHT);
         StackPane.setMargin(infoBox, new Insets(65, 0, 0, 32));
         inventoryContainer.getChildren().add(infoBox);
@@ -256,14 +318,13 @@ public class Home {
         shopContainer.setPrefSize(480, 640);
 
         java.util.List<ShopItem> shopList = new java.util.ArrayList<>();
-        // Ensure these names match InventoryItem constants exactly
         shopList.add(new ShopItem(InventoryItem.WOOD, 50, InventoryItem.WOOD_IMAGE, "Construction material"));
         shopList.add(new ShopItem(InventoryItem.CLOTH, 30, InventoryItem.CLOTH_IMAGE, "For crafting bandages"));
         shopList.add(new ShopItem(InventoryItem.GUNPOWDER, 100, InventoryItem.GUNPOWDER_IMAGE, "Explosive component"));
         shopList.add(new ShopItem(InventoryItem.STONE, 20, InventoryItem.STONE_IMAGE, "Basic resource"));
-        shopList.add(new ShopItem("Mallet", 500, "/assets/mallet.png", "Melee weapon"));
-        shopList.add(new ShopItem("Katana", 1500, "/assets/katana.png", "Sharp blade"));
-        shopList.add(new ShopItem("Machine Gun", 5000, "/assets/machinegun.png", "Rapid fire"));
+        shopList.add(new ShopItem("Mallet", 500, "/assets/mallet-card.png", "Melee weapon"));
+        shopList.add(new ShopItem("Katana", 1500, "/assets/katana-card.png", "Sharp blade"));
+        shopList.add(new ShopItem("Machine Gun", 5000, "/assets/gun-card.png", "Rapid fire"));
 
         ImageView selectedItemView = new ImageView();
         selectedItemView.setFitWidth(80); selectedItemView.setFitHeight(80); selectedItemView.setPreserveRatio(true);
@@ -508,10 +569,6 @@ public class Home {
         outputIconView.setImage(null);
 
         // 1. RECIPE: BARRIER 
-        // Pattern: 3 Wood in the bottom row (Like a fence)
-        // [ ] [ ] [ ]
-        // [ ] [ ] [ ]
-        // [W] [W] [W]
         if (checkPattern(
             null, null, null,
             null, null, null,
@@ -522,10 +579,6 @@ public class Home {
         }
 
         // 2. RECIPE: BANDAGE
-        // Pattern: 3 Cloth in the middle row
-        // [ ] [ ] [ ]
-        // [C] [C] [C]
-        // [ ] [ ] [ ]
         if (checkPattern(
             null, null, null,
             InventoryItem.CLOTH, InventoryItem.CLOTH, InventoryItem.CLOTH,
@@ -536,10 +589,6 @@ public class Home {
         }
 
         // 3. RECIPE: MEDKIT
-        // Pattern: Bandage in center, surrounded by 3 Cloth (Top, Left, Right)
-        // [ ] [C] [ ]
-        // [C] [B] [C]
-        // [ ] [ ] [ ]
         if (checkPattern(
             null, InventoryItem.CLOTH, null,
             InventoryItem.CLOTH, InventoryItem.BANDAGE, InventoryItem.CLOTH,
@@ -550,11 +599,6 @@ public class Home {
         }
 
         // 4. RECIPE: GRENADE
-        // Pattern: 5 Gunpowder (X Shape), 3 Rocks (Filling gaps)
-        // [G] [R] [G]
-        // [R] [G] [R]
-        // [G] [G] [G]
-        // Note: This matches your count of 5 Gunpowder + 3 Rocks
         if (checkPattern(
             InventoryItem.GUNPOWDER, InventoryItem.STONE,     InventoryItem.GUNPOWDER,
             InventoryItem.STONE,     InventoryItem.GUNPOWDER, InventoryItem.STONE,
@@ -567,8 +611,6 @@ public class Home {
 
     /**
      * Helper method to compare the crafting matrix against a specific 3x3 pattern.
-     * Arguments represent slots: 00, 10, 20 (Row 1), 01, 11, 21 (Row 2), etc.
-     * Pass 'null' to demand an empty slot.
      */
     private boolean checkPattern(
             String r0c0, String r1c0, String r2c0,  // Row 1 (y=0)
@@ -583,18 +625,12 @@ public class Home {
 
     private boolean matchSlot(int x, int y, String expectedName) {
         InventoryItem itemInSlot = craftingMatrix[x][y];
-
-        // 1. If recipe expects Empty, slot must be null
         if (expectedName == null) {
             return itemInSlot == null;
         }
-
-        // 2. If recipe expects Item, slot must NOT be null AND name must match
         if (itemInSlot != null) {
             return itemInSlot.getName().equals(expectedName);
         }
-
-        // 3. Expected item but slot was empty
         return false;
     }
 
@@ -607,17 +643,12 @@ public class Home {
 
     private void craftItem() {
         if (currentCraftingResult != null) {
-            // Add result to inventory
             mainApp.getCurrentPlayer().addItem(currentCraftingResult);
-            
-            // Clear entire grid (consumed)
             for (int y = 0; y < 3; y++) {
                 for (int x = 0; x < 3; x++) {
                     craftingMatrix[x][y] = null;
                 }
             }
-            
-            // Reset logic
             updateCraftingGridUI();
             outputIconView.setImage(null);
             currentCraftingResult = null;
@@ -657,13 +688,10 @@ public class Home {
                     } catch (Exception e) {}
                 }
 
-                // Selection Logic
                 slot.setOnMouseClicked(e -> {
                     if (index < playerItems.size()) {
                         selectedInventoryItem = playerItems.get(index);
-                        // Refresh grid to clear old selection borders
                         refreshCraftingGrid(); 
-                        // Apply yellow border to THIS slot
                         slot.setStyle("-fx-border-color: yellow; -fx-border-width: 3px; -fx-border-radius: 5px;");
                     } else {
                         selectedInventoryItem = null;
@@ -674,16 +702,11 @@ public class Home {
                 craftingInventoryGrid.add(slot, x, y);
             }
         }
-        
-        // Re-apply selection style if an item is already selected
-        if (selectedInventoryItem != null) {
-            // This loop just ensures the highlight persists if we refresh logic elsewhere,
-            // but the click handler above does the heavy lifting.
-        }
     }
     
     public void showInventory() { 
         System.out.println("Opening Inventory...");
+        refreshInventoryGrid(); // Ensure refreshed before showing
         inventoryOverlay.setVisible(true);
     }
     private void showShop() { shopOverlay.setVisible(true); }
