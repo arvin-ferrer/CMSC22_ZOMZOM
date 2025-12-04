@@ -65,19 +65,16 @@ public class Player implements Serializable {
         if (weapon.equals(InventoryItem.HAND)) {
             equippedWeapons.clear();
         } else {
-            // If legacy code calls this, we treat it as the primary weapon
+
             if (!equippedWeapons.contains(weapon)) {
                 if (equippedWeapons.size() >= 2) {
-                    equippedWeapons.remove(0); // Remove oldest
+                    equippedWeapons.remove(0); 
                 }
                 equippedWeapons.add(weapon);
             }
         }
     }
-
-    /**
-     * Tries to equip a weapon. Only allows if not already equipped and count < 2.
-     */
+	// max equipped weapons is 2
     public void equipWeapon(String weaponName) {
         if (equippedWeapons == null) equippedWeapons = new ArrayList<>();
         
