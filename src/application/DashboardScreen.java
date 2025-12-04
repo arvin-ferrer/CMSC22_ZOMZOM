@@ -41,7 +41,6 @@ public class DashboardScreen {
     }
     private ImageView animationIcon;
     private void claimReward() {
-        //cooldown
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastClaimTime < COOLDOWN_MS) {
             long secondsLeft = (COOLDOWN_MS - (currentTime - lastClaimTime)) / 1000;
@@ -49,40 +48,54 @@ public class DashboardScreen {
             return;
         }
 
-        // RNG
         int roll = random.nextInt(100);
         
-        // items to get
+        // --- ARRAYS REORDERED TO MATCH RARITY (Common -> Legendary) ---
         String[] names = {
-        	    "Medkit", 
-        	    "Grenade", 
-        	    "Gold",       // Moved Gold here to match coin-sprite
-        	    "Burger",     // Moved Burger here to match burger-sprite
-        	    "Stone",      // Moved Stone here to match stone.png
-        	    "Gunpowder",  // Moved Gunpowder here to match gunpowder.png
-        	    "Cloth"       // Moved Cloth here to match whiteCloth.png
-        	};
+            "Stone",       // Index 0: Common
+            "Cloth",       // Index 1: Common
+            "Burger",      // Index 2: Uncommon (Item version)
+            "Gunpowder",   // Index 3: Uncommon
+            "Grenade",     // Index 4: Rare
+            "Medkit",      // Index 5: Rare
+            "Gold"         // Index 6: Legendary (Item version)
+        };
 
-        	String[] paths = {
-        	    "/assets/medkit.png", 
-        	    "/assets/grenade-sprite.png", 
-        	    "/assets/coin-sprite.gif", 
-        	    "/assets/burger-sprite.png", 
-        	    "/assets/stone.png", 
-        	    "/assets/gunpowder.png", 
-        	    "/assets/whiteCloth.png"
-        	};
+        String[] paths = {
+            "/assets/stone.png", 
+            "/assets/whiteCloth.png", 
+            "/assets/burger-sprite.png", 
+            "/assets/gunpowder.png", 
+            "/assets/grenade-sprite.png", 
+            "/assets/medkit.png", 
+            "/assets/coin-sprite.gif"
+        };
 
-        	String[] descs = {
-        	    "Heals 50 HP", 
-        	    "Explosive Damage", 
-        	    "Currency", 
-        	    "Heals", 
-        	    "Building Material", 
-        	    "Crafting Material", 
-        	    "Crafting Material"
-        	};
-        int calculatedItemIndex = random.nextInt(names.length); 
+        String[] descs = {
+            "Building Material", 
+            "Crafting Material", 
+            "Restores Hunger", 
+            "Crafting Material", 
+            "Explosive Damage", 
+            "Heals 50 HP", 
+            "Currency"
+        };
+      
+        int[] weights = {
+            50, // Stone (Common)
+            50, // Cloth (Common)
+            25, // Burger (Uncommon)
+            25, // Gunpowder (Uncommon)
+            10, // Grenade (Rare)
+            10, // Medkit (Rare)
+            1   // Gold (Legendary)
+        };
+
+        String[] rarityTags = {
+            "COMMON", "COMMON", "UNCOMMON", "UNCOMMON", "RARE", "RARE", "LEGENDARY"
+        };
+
+        int calculatedItemIndex = 0; 
 
         String imagePathToLoad = "/assets/medkit.png"; // Default fallback
 
@@ -93,8 +106,20 @@ public class DashboardScreen {
             imagePathToLoad = "/assets/burger-sprite.png"; 
         } 
         else {
-        	// rare items
-            imagePathToLoad = paths[calculatedItemIndex % paths.length];
+            int totalWeight = 0;
+            for (int w : weights) totalWeight += w;
+
+            int randomTicket = random.nextInt(totalWeight);
+            
+            for (int i = 0; i < weights.length; i++) {
+                randomTicket -= weights[i];
+                if (randomTicket < 0) {
+                    calculatedItemIndex = i;
+                    break;
+                }
+            }
+            
+            imagePathToLoad = paths[calculatedItemIndex];
         }
 
         if (animationIcon == null) {
@@ -133,8 +158,6 @@ public class DashboardScreen {
                 Player player = mainApp.getCurrentPlayer();
                 String message = "";
                 
-        
-                
                 if (finalRoll < 40) {
                     int amount = 50 + random.nextInt(101); 
                     player.addCurrency(amount);
@@ -146,11 +169,22 @@ public class DashboardScreen {
                     message = "You gathered " + amount + " Burgers!";
                 } 
                 else {
-                    int idx = finalItemIndex % names.length;
+                    // item Drop Logic
+                    int idx = finalItemIndex;
                     
-                    InventoryItem newItem = new InventoryItem(names[idx], paths[idx % paths.length], descs[idx % descs.length]);
+                    InventoryItem newItem = new InventoryItem(names[idx], paths[idx], descs[idx]);
                     player.addItem(newItem);
-                    message = "LUCKY! You found a " + names[idx] + "!";
+                    
+                    // custom message based on rarity
+                    String rarity = rarityTags[idx];
+                    
+                    if (rarity.equals("LEGENDARY")) {
+                        message = "OMG!! LEGENDARY DROP! You found " + names[idx] + "!";
+                    } else if (rarity.equals("RARE")) {
+                        message = "Great find! You got a Rare " + names[idx] + "!";
+                    } else {
+                        message = "You found " + names[idx] + " (" + rarity + ").";
+                    }
                 }
                 
                 updateLabels();
