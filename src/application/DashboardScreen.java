@@ -292,6 +292,7 @@ public class DashboardScreen {
             mainApp.showLoginScreen();    
         });
         
+        
         playButton.setOnAction(e -> {
             mainApp.showWarAreaScreen(); 
         });

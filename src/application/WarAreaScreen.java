@@ -969,6 +969,7 @@ public class WarAreaScreen {
                     }
                 }
                 
+                
                
                  InventoryItem itemToRemove = findItem(brokenWeapon);
                  if (itemToRemove != null) {

@@ -135,6 +135,7 @@ public class Player implements Serializable {
     public int getExperienceToNextLevel() { return experienceToNextLevel; }
 
     public void addExperience(int amount) {
+    	
         this.experiencePoints += amount;
         if (this.experiencePoints >= this.experienceToNextLevel) {
             levelUp();
